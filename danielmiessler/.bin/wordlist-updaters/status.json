@@ -1,8 +1,3 @@
-{
-    "Jwt secrets update": {
-        "last_update": 1765599042
-    },
-    "Trickest wordlist update": {
-        "last_update": 1765706833
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:7471646249072a76b4260625e25ef042482be2411ecd9e5b5216953f3d715b18
+size 146

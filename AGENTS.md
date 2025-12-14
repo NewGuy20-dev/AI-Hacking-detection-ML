@@ -28,6 +28,16 @@
 - Security datasets
 - Payload repositories
 
+**Datasets (8 total)**:
+- NSL-KDD (network intrusion)
+- KDD99 (network intrusion)
+- CICIDS2017 (intrusion detection)
+- UNSW-NB15 (network traffic)
+- Phishing dataset
+- Spam corpus
+- Malware URLs
+- Domain lists (Alexa top 1M)
+
 ## Training Agent
 
 **Purpose**: Model optimization and retraining

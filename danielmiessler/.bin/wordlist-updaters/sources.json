@@ -1,22 +1,3 @@
-[
-    {
-        "name": "Jwt secrets update",
-        "type": "file",
-        "source": "https://raw.githubusercontent.com/wallarm/jwt-secrets/master/jwt.secrets.list",
-        "output": "Passwords/scraped-JWT-secrets.txt",
-        "post_run_script": "",
-        "frequency": "3d"
-    },
-    {
-        "name": "Trickest wordlist update",
-        "type": "git_dir",
-        "source": "https://github.com/trickest/wordlists.git",
-        "output": ".working_space",
-        "post_run_script": ".bin/trickest-patcher.py",
-        "update_time": "1030",
-        "additional_paths": [
-            "Discovery/Web-Content/trickest-robots-disallowed-wordlists/",
-            "Discovery/Web-Content/CMS/trickest-cms-wordlist/"
-        ]
-    }
-]
+version https://git-lfs.github.com/spec/v1
+oid sha256:2da3672a5fc33df297b86fb8327144692d12da8f2d0220fdaed0ca9c51a34873
+size 736
