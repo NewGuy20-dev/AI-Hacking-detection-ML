@@ -172,16 +172,7 @@ python src/ensemble.py
 - joblib
 - matplotlib (for visualization)
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create feature branch
-3. Add tests for new functionality
-4. Submit pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🔗 Related Projects
 
