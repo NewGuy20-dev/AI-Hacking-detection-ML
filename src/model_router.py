@@ -1,5 +1,6 @@
-"""Router to direct inputs to appropriate specialized model."""
+"""Router to direct inputs to appropriate specialized model (4 models)."""
 import joblib
+import pickle
 import numpy as np
 import math
 from pathlib import Path
@@ -7,7 +8,7 @@ from urllib.parse import urlparse
 
 
 class ModelRouter:
-    """Routes inputs to Network, Fraud, or URL model based on input type."""
+    """Routes inputs to Network, Fraud, URL, or Payload model based on input type."""
     
     def __init__(self, models_dir: str = None):
         base = Path('/workspaces/AI-Hacking-detection-ML')
@@ -28,8 +29,13 @@ class ModelRouter:
             if path.exists():
                 self.models[name] = joblib.load(path)
                 print(f"Loaded {name} model")
-            else:
-                print(f"Warning: {name} model not found")
+        
+        # Load payload classifier
+        payload_path = self.models_dir / 'payload_classifier.pkl'
+        if payload_path.exists():
+            with open(payload_path, 'rb') as f:
+                self.models['payload'] = pickle.load(f)
+            print("Loaded payload model")
     
     def detect_input_type(self, data) -> str:
         """Auto-detect input type."""
@@ -63,6 +69,20 @@ class ModelRouter:
         
         if model_type not in self.models:
             return {'error': f'Model {model_type} not loaded'}
+        
+        # Handle payload model separately
+        if model_type == 'payload':
+            m = self.models['payload']
+            X = m['vectorizer'].transform([str(data)])
+            proba = m['classifier'].predict_proba(X)[0]
+            prob = proba[1] if len(proba) > 1 else proba[0]
+            return {
+                'model_type': 'payload',
+                'prediction': 1 if prob > 0.5 else 0,
+                'probability': float(prob),
+                'is_threat': prob > 0.5,
+                'confidence': float(prob) if prob > 0.5 else float(1 - prob)
+            }
         
         model_data = self.models[model_type]
         model = model_data['model']

@@ -21,8 +21,24 @@ datasets/
 │   ├── phishing/         # Phishing dataset
 │   └── domains/          # Alexa Top 1M
 │
-└── email_spam/            # 15 MB
-    └── spam_corpus       # Spam email corpus
+├── email_spam/            # 15 MB
+│   └── spam_corpus       # Spam email corpus
+│
+└── security_payloads/     # 1.7 GB (8000+ files)
+    ├── injection/        # XSS, SQLi, CRLF, Open Redirect
+    ├── passwords/        # Default creds, password lists
+    ├── wordlists/        # SecLists, dirsearch, subdomains
+    ├── fuzzing/          # FuzzDB, IntruderPayloads, naughty strings
+    └── misc/             # CVE tests, robots.txt, misc tools
 ```
 
-## Total: ~2 GB across 32 files
+## Total: ~3.6 GB across 8000+ files
+
+## Models Trained
+
+| Model | Dataset | Accuracy |
+|-------|---------|----------|
+| Network Intrusion | NSL-KDD + CICIDS2017 | 78.07% |
+| Fraud Detection | Credit Card | 87.4% |
+| URL Analysis | Malicious URLs | 88.94% |
+| Payload Classifier | Security Payloads | 95.33% |
