@@ -1,230 +1,243 @@
-"""Train 3 specialized models: Network Intrusion, Fraud Detection, URL Analysis."""
-import gc
-import joblib
-import numpy as np
+"""Train all 4 specialized models with organized datasets."""
 import pandas as pd
+import numpy as np
+import joblib
+import pickle
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (accuracy_score, f1_score, precision_score, 
-                             recall_score, average_precision_score, classification_report)
-import xgboost as xgb
-import lightgbm as lgb
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
 BASE = Path('/workspaces/AI-Hacking-detection-ML')
+DATASETS = BASE / 'datasets'
+MODELS = BASE / 'models'
 
-
-def train_network_model():
-    """Train Network Intrusion Detection model."""
-    print("\n" + "="*60)
-    print("TRAINING: Network Intrusion Detection Model")
-    print("="*60)
-    
+def load_network_data():
+    """Load all network intrusion datasets."""
     dfs = []
     
     # NSL-KDD
-    print("Loading NSL-KDD...")
-    cols = ['duration','protocol_type','service','flag','src_bytes','dst_bytes','land',
-            'wrong_fragment','urgent','hot','num_failed_logins','logged_in','num_compromised',
-            'root_shell','su_attempted','num_root','num_file_creations','num_shells',
-            'num_access_files','num_outbound_cmds','is_host_login','is_guest_login','count',
-            'srv_count','serror_rate','srv_serror_rate','rerror_rate','srv_rerror_rate',
-            'same_srv_rate','diff_srv_rate','srv_diff_host_rate','dst_host_count',
-            'dst_host_srv_count','dst_host_same_srv_rate','dst_host_diff_srv_rate',
+    nsl = DATASETS / 'network_intrusion/nsl_kdd'
+    cols = ['duration','protocol_type','service','flag','src_bytes','dst_bytes','land','wrong_fragment',
+            'urgent','hot','num_failed_logins','logged_in','num_compromised','root_shell','su_attempted',
+            'num_root','num_file_creations','num_shells','num_access_files','num_outbound_cmds',
+            'is_host_login','is_guest_login','count','srv_count','serror_rate','srv_serror_rate',
+            'rerror_rate','srv_rerror_rate','same_srv_rate','diff_srv_rate','srv_diff_host_rate',
+            'dst_host_count','dst_host_srv_count','dst_host_same_srv_rate','dst_host_diff_srv_rate',
             'dst_host_same_src_port_rate','dst_host_srv_diff_host_rate','dst_host_serror_rate',
             'dst_host_srv_serror_rate','dst_host_rerror_rate','dst_host_srv_rerror_rate','label','difficulty']
+    for f in ['KDDTrain+.txt', 'KDDTest+.txt']:
+        p = nsl / f
+        if p.exists():
+            df = pd.read_csv(p, names=cols)
+            df['label'] = (df['label'] != 'normal').astype(int)
+            dfs.append(df.drop('difficulty', axis=1))
     
-    df = pd.read_csv(BASE / 'data/nsl_kdd_train.csv', names=cols)
-    df['is_attack'] = (df['label'] != 'normal').astype(int)
-    dfs.append(df[['duration','src_bytes','dst_bytes','count','srv_count','serror_rate',
-                   'same_srv_rate','dst_host_count','dst_host_srv_count','is_attack']])
+    # CICIDS2017
+    cicids = DATASETS / 'network_intrusion/cicids2017'
+    for f in cicids.glob('*.csv'):
+        try:
+            df = pd.read_csv(f, low_memory=False)
+            df.columns = df.columns.str.strip()
+            if 'Label' in df.columns:
+                df['label'] = (df['Label'] != 'BENIGN').astype(int)
+                df = df.drop('Label', axis=1)
+                df = df.select_dtypes(include=[np.number])
+                df['label'] = df.get('label', 0)
+                dfs.append(df.head(50000))  # Sample per file
+        except: pass
     
-    # CICIDS2017 (sample)
-    print("Loading CICIDS2017...")
-    for f in list((BASE / 'cicids2017/MachineLearningCVE').glob('*.csv'))[:4]:
-        df = pd.read_csv(f, low_memory=False, nrows=20000)
-        df.columns = df.columns.str.strip()
-        df['is_attack'] = (df['Label'] != 'BENIGN').astype(int)
-        df = df[['Flow Duration','Total Fwd Packets','Total Backward Packets',
-                 'Flow Packets/s','Flow Bytes/s','Fwd Packets/s','Bwd Packets/s',
-                 'Subflow Fwd Packets','Subflow Bwd Packets','is_attack']].copy()
-        df.columns = ['duration','src_bytes','dst_bytes','count','srv_count','serror_rate',
-                      'same_srv_rate','dst_host_count','dst_host_srv_count','is_attack']
-        dfs.append(df)
+    # UNSW-NB15
+    unsw = DATASETS / 'network_intrusion/unsw_nb15'
+    for f in unsw.glob('*.csv'):
+        try:
+            df = pd.read_csv(f, low_memory=False)
+            if 'label' in df.columns:
+                df = df.select_dtypes(include=[np.number])
+                dfs.append(df.head(50000))
+        except: pass
     
-    # UNSW-NB15 (sample)
-    print("Loading UNSW-NB15...")
-    df = pd.read_csv(BASE / 'datasets/unsw_nb15/UNSW_NB15_training-set.csv', nrows=50000)
-    df['is_attack'] = df['label'].astype(int)
-    df = df[['dur','sbytes','dbytes','sload','dload','spkts','dpkts','stcpb','dtcpb','is_attack']].copy()
-    df.columns = ['duration','src_bytes','dst_bytes','count','srv_count','serror_rate',
-                  'same_srv_rate','dst_host_count','dst_host_srv_count','is_attack']
-    dfs.append(df)
+    if not dfs:
+        return None, None
     
-    # Cyber Attacks
-    print("Loading Cyber Attacks...")
-    df = pd.read_csv(BASE / 'datasets/cyber_attacks/cybersecurity_attacks.csv')
-    df['is_attack'] = (df['Attack Type'] != 'Normal').astype(int) if 'Attack Type' in df.columns else 1
-    df = df[['Source Port','Destination Port','Packet Length','Anomaly Scores','is_attack']].copy()
-    df.columns = ['duration','src_bytes','dst_bytes','count','is_attack']
-    df['srv_count'] = df['count']
-    df['serror_rate'] = 0
-    df['same_srv_rate'] = 0
-    df['dst_host_count'] = df['src_bytes']
-    df['dst_host_srv_count'] = df['dst_bytes']
-    dfs.append(df[['duration','src_bytes','dst_bytes','count','srv_count','serror_rate',
-                   'same_srv_rate','dst_host_count','dst_host_srv_count','is_attack']])
-    
-    # Combine
+    # Combine and align features
     combined = pd.concat(dfs, ignore_index=True)
     combined = combined.replace([np.inf, -np.inf], np.nan).fillna(0)
-    del dfs
-    gc.collect()
     
-    X = combined.drop('is_attack', axis=1).astype('float32').values
-    y = combined['is_attack'].values
-    print(f"Total samples: {len(y)}, Attack ratio: {y.mean():.2%}")
+    y = combined['label'].values
+    X = combined.drop('label', axis=1).select_dtypes(include=[np.number]).values
     
-    # Scale
-    scaler = MinMaxScaler()
-    X = scaler.fit_transform(X)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    
-    model = RandomForestClassifier(n_estimators=100, max_depth=20, n_jobs=4, random_state=42, class_weight='balanced')
-    print("Training RandomForest...")
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    metrics = {
-        'accuracy': accuracy_score(y_test, y_pred),
-        'f1_score': f1_score(y_test, y_pred, average='weighted')
-    }
-    print(f"\nMetrics: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1_score']:.4f}")
-    
-    joblib.dump({'model': model, 'scaler': scaler}, BASE / 'models/network_intrusion_model.pkl')
-    return metrics
+    print(f"Network data: {len(X)} samples, {X.shape[1]} features")
+    return X, y
 
-
-def train_fraud_model():
-    """Train Fraud Detection model."""
-    print("\n" + "="*60)
-    print("TRAINING: Fraud Detection Model")
-    print("="*60)
-    
-    print("Loading Credit Card Fraud dataset...")
-    df = pd.read_csv(BASE / 'datasets/fraud/creditcard.csv')
-    
-    X = df.drop('Class', axis=1).values
+def load_fraud_data():
+    """Load fraud detection data."""
+    f = DATASETS / 'fraud_detection/creditcard.csv'
+    if not f.exists():
+        return None, None
+    df = pd.read_csv(f)
     y = df['Class'].values
-    print(f"Total samples: {len(y)}, Fraud ratio: {y.mean():.4%}")
-    
-    scaler = MinMaxScaler()
-    X = scaler.fit_transform(X)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    
-    # XGBoost handles imbalanced data well
-    model = xgb.XGBClassifier(n_estimators=100, max_depth=6, scale_pos_weight=100,
-                              n_jobs=4, random_state=42, eval_metric='aucpr')
-    print("Training XGBoost...")
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    y_prob = model.predict_proba(X_test)[:, 1]
-    
-    metrics = {
-        'precision': precision_score(y_test, y_pred),
-        'recall': recall_score(y_test, y_pred),
-        'auc_pr': average_precision_score(y_test, y_prob)
-    }
-    print(f"\nMetrics: Precision={metrics['precision']:.4f}, Recall={metrics['recall']:.4f}, AUC-PR={metrics['auc_pr']:.4f}")
-    
-    joblib.dump({'model': model, 'scaler': scaler}, BASE / 'models/fraud_detection_model.pkl')
-    return metrics
+    X = df.drop('Class', axis=1).values
+    print(f"Fraud data: {len(X)} samples")
+    return X, y
 
-
-def train_url_model():
-    """Train URL Analysis model."""
-    print("\n" + "="*60)
-    print("TRAINING: URL Analysis Model")
-    print("="*60)
+def load_url_data():
+    """Load URL analysis data."""
+    dfs = []
+    url_dir = DATASETS / 'url_analysis'
     
-    import math
-    from urllib.parse import urlparse
-    
-    def extract_features(url):
+    for f in url_dir.rglob('*.csv'):
         try:
-            parsed = urlparse(url if '://' in str(url) else f'http://{url}')
-            domain = parsed.netloc or str(url).split('/')[0]
-        except:
-            domain = str(url)
-        
-        url_str = str(url)
-        entropy = 0
-        if url_str:
-            prob = [url_str.count(c)/len(url_str) for c in set(url_str)]
-            entropy = -sum(p * math.log2(p) for p in prob if p > 0)
-        
+            df = pd.read_csv(f, low_memory=False)
+            # Look for URL and label columns
+            url_col = next((c for c in df.columns if 'url' in c.lower()), None)
+            label_col = next((c for c in df.columns if c.lower() in ['label', 'type', 'class', 'is_malicious']), None)
+            if url_col and label_col:
+                df = df[[url_col, label_col]].dropna()
+                df.columns = ['url', 'label']
+                # Convert labels to binary
+                if df['label'].dtype == 'object':
+                    df['label'] = df['label'].apply(lambda x: 0 if str(x).lower() in ['benign', 'good', 'legitimate', '0'] else 1)
+                dfs.append(df)
+        except: pass
+    
+    if not dfs:
+        return None, None
+    
+    combined = pd.concat(dfs, ignore_index=True).drop_duplicates('url')
+    
+    # Extract URL features
+    def url_features(url):
+        url = str(url)
         return [
-            len(url_str),
-            len(domain),
-            url_str.count('/'),
-            url_str.count('.'),
-            url_str.count('-'),
-            sum(c.isdigit() for c in url_str) / max(len(url_str), 1),
-            entropy,
-            1 if any(url_str.endswith(t) for t in ['.xyz','.tk','.ml','.ga','.top']) else 0
+            len(url), url.count('/'), url.count('.'), url.count('-'),
+            url.count('?'), url.count('='), url.count('&'),
+            sum(c.isdigit() for c in url) / max(len(url), 1),
+            sum(c.isupper() for c in url) / max(len(url), 1),
+            1 if any(url.endswith(t) for t in ['.xyz','.tk','.ml','.ga','.top','.pw']) else 0
         ]
     
-    print("Loading Malicious URLs dataset...")
-    df = pd.read_csv(BASE / 'datasets/malware_urls/malicious_phish.csv')
-    
-    # Map labels
-    label_map = {'benign': 0, 'defacement': 1, 'phishing': 1, 'malware': 1}
-    df['is_malicious'] = df['type'].map(label_map).fillna(1).astype(int)
-    
-    print("Extracting URL features...")
-    features = [extract_features(url) for url in df['url'].values]
-    X = np.array(features, dtype='float32')
-    y = df['is_malicious'].values
-    
-    X = np.nan_to_num(X, nan=0, posinf=0, neginf=0)
-    print(f"Total samples: {len(y)}, Malicious ratio: {y.mean():.2%}")
-    
-    scaler = MinMaxScaler()
-    X = scaler.fit_transform(X)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    
-    model = lgb.LGBMClassifier(n_estimators=100, max_depth=15, n_jobs=4, random_state=42, verbose=-1)
-    print("Training LightGBM...")
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    metrics = {
-        'accuracy': accuracy_score(y_test, y_pred),
-        'f1_score': f1_score(y_test, y_pred)
-    }
-    print(f"\nMetrics: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1_score']:.4f}")
-    
-    joblib.dump({'model': model, 'scaler': scaler}, BASE / 'models/url_analysis_model.pkl')
-    return metrics
+    X = np.array([url_features(u) for u in combined['url']])
+    y = combined['label'].values
+    print(f"URL data: {len(X)} samples")
+    return X, y
 
+def load_payload_data():
+    """Load security payload data."""
+    payloads = DATASETS / 'security_payloads'
+    data = []
+    
+    # Malicious payloads
+    for folder in ['injection', 'fuzzing']:
+        for f in (payloads / folder).rglob('*'):
+            if f.is_file() and f.suffix in ('', '.txt', '.lst', '.list'):
+                try:
+                    for line in f.read_text(errors='ignore').splitlines()[:500]:
+                        if line.strip():
+                            data.append((line.strip(), 1))
+                except: pass
+    
+    mal_count = len(data)
+    
+    # Benign - common words
+    for f in (payloads / 'wordlists').rglob('*'):
+        if f.is_file() and 'english' in f.name.lower():
+            try:
+                for line in f.read_text(errors='ignore').splitlines()[:5000]:
+                    if line.strip() and len(line) < 50 and line.isalpha():
+                        data.append((line.strip(), 0))
+            except: pass
+    
+    # Add synthetic benign
+    benign = ["hello world", "user123", "test@email.com", "john doe", "2024-01-01",
+              "normal text", "username", "password123", "example.com", "search query"]
+    data += [(b, 0) for b in benign] * 500
+    
+    # Balance
+    mal = [d for d in data if d[1] == 1]
+    ben = [d for d in data if d[1] == 0][:len(mal)]
+    data = mal + ben
+    
+    if not data:
+        return None, None, None
+    
+    texts, labels = zip(*data)
+    vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1,3), analyzer='char_wb')
+    X = vectorizer.fit_transform(texts)
+    y = np.array(labels)
+    print(f"Payload data: {len(y)} samples")
+    return X, y, vectorizer
 
-if __name__ == '__main__':
-    all_metrics = {}
-    all_metrics['network'] = train_network_model()
-    all_metrics['fraud'] = train_fraud_model()
-    all_metrics['url'] = train_url_model()
+def train_model(name, X, y, model_class, **kwargs):
+    """Train and save a model."""
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    print("\n" + "="*60)
-    print("TRAINING COMPLETE - ALL METRICS")
-    print("="*60)
-    for model_name, metrics in all_metrics.items():
-        print(f"\n{model_name.upper()}:")
-        for k, v in metrics.items():
-            print(f"  {k}: {v:.4f}")
+    # Scale if dense
+    scaler = None
+    if hasattr(X_train, 'toarray'):
+        X_train_scaled, X_test_scaled = X_train, X_test
+    else:
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
     
-    joblib.dump(all_metrics, BASE / 'models/training_metrics.pkl')
+    model = model_class(**kwargs)
+    model.fit(X_train_scaled, y_train)
+    
+    acc = model.score(X_test_scaled, y_test)
+    print(f"{name}: Accuracy={acc:.2%}")
+    
+    return {'model': model, 'scaler': scaler, 'accuracy': acc}
+
+def main():
+    MODELS.mkdir(exist_ok=True)
+    results = {}
+    
+    # 1. Network Intrusion
+    print("\n=== Training Network Intrusion Model ===")
+    X, y = load_network_data()
+    if X is not None:
+        r = train_model('Network', X, y, RandomForestClassifier, n_estimators=100, n_jobs=-1, random_state=42)
+        joblib.dump(r, MODELS / 'network_intrusion_model.pkl')
+        results['network'] = r['accuracy']
+    
+    # 2. Fraud Detection
+    print("\n=== Training Fraud Detection Model ===")
+    X, y = load_fraud_data()
+    if X is not None:
+        r = train_model('Fraud', X, y, XGBClassifier, n_estimators=100, max_depth=6, random_state=42, eval_metric='logloss')
+        joblib.dump(r, MODELS / 'fraud_detection_model.pkl')
+        results['fraud'] = r['accuracy']
+    
+    # 3. URL Analysis
+    print("\n=== Training URL Analysis Model ===")
+    X, y = load_url_data()
+    if X is not None:
+        r = train_model('URL', X, y, LGBMClassifier, n_estimators=100, random_state=42, verbose=-1)
+        joblib.dump(r, MODELS / 'url_analysis_model.pkl')
+        results['url'] = r['accuracy']
+    
+    # 4. Payload Classifier
+    print("\n=== Training Payload Classifier ===")
+    X, y, vectorizer = load_payload_data()
+    if X is not None:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        clf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
+        clf.fit(X_train, y_train)
+        acc = clf.score(X_test, y_test)
+        print(f"Payload: Accuracy={acc:.2%}")
+        with open(MODELS / 'payload_classifier.pkl', 'wb') as f:
+            pickle.dump({'vectorizer': vectorizer, 'classifier': clf}, f)
+        results['payload'] = acc
+    
+    print("\n=== Training Complete ===")
+    for name, acc in results.items():
+        print(f"  {name}: {acc:.2%}")
+    
+    joblib.dump(results, MODELS / 'training_metrics.pkl')
+
+if __name__ == "__main__":
+    main()

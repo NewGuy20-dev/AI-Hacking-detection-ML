@@ -118,15 +118,14 @@ class ModelRouter:
             domain = str(url)
         
         url_str = str(url)
-        entropy = 0
-        if url_str:
-            prob = [url_str.count(c)/len(url_str) for c in set(url_str)]
-            entropy = -sum(p * math.log2(p) for p in prob if p > 0)
         
+        # Must match training features (10 features)
         return np.array([
-            len(url_str), len(domain), url_str.count('/'), url_str.count('.'),
-            url_str.count('-'), sum(c.isdigit() for c in url_str) / max(len(url_str), 1),
-            entropy, 1 if any(url_str.endswith(t) for t in ['.xyz','.tk','.ml','.ga','.top']) else 0
+            len(url_str), url_str.count('/'), url_str.count('.'), url_str.count('-'),
+            url_str.count('?'), url_str.count('='), url_str.count('&'),
+            sum(c.isdigit() for c in url_str) / max(len(url_str), 1),
+            sum(c.isupper() for c in url_str) / max(len(url_str), 1),
+            1 if any(url_str.endswith(t) for t in ['.xyz','.tk','.ml','.ga','.top','.pw']) else 0
         ], dtype='float32')
     
     def predict_batch(self, data_list: list, model_type: str) -> list:
