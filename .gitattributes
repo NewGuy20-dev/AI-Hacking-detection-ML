@@ -9,4 +9,6 @@ datasets/kdd99/kddcup.data_10_percent/kddcup.data_10_percent filter=lfs diff=lfs
 cicids2017/MachineLearningCSV.zip filter=lfs diff=lfs merge=lfs -text
 datasets/kdd99/kddcup.testdata.unlabeled/kddcup.testdata.unlabeled filter=lfs diff=lfs merge=lfs -text
 datasets/kdd99/kddcup.data.corrected filter=lfs diff=lfs merge=lfs -text
+datasets/kdd99/**/* filter=lfs diff=lfs merge=lfs -text
+cicids2017/*.zip filter=lfs diff=lfs merge=lfs -text
 datasets/kdd99/kddcup.data/kddcup.data filter=lfs diff=lfs merge=lfs -text
