@@ -1,41 +1,85 @@
-"""Geolocation-based threat analysis and IP mapping."""
+"""Geolocation-based threat analysis using IP2Location LITE database."""
+import csv
+import struct
+import socket
 from collections import defaultdict
+from pathlib import Path
+
+
+class IP2LocationDB:
+    """IP2Location LITE database lookup."""
+    
+    def __init__(self, db_path: str = None):
+        base = Path('/workspaces/AI-Hacking-detection-ML')
+        self.db_path = db_path or str(base / 'data/IP2LOCATION-LITE-DB1.CSV')
+        self.ranges = []  # [(start_int, end_int, country_code, country_name)]
+        self._load_db()
+    
+    def _load_db(self):
+        """Load IP ranges from CSV."""
+        if not Path(self.db_path).exists():
+            print(f"Warning: IP2Location DB not found at {self.db_path}")
+            return
+        
+        with open(self.db_path, 'r') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) >= 4:
+                    self.ranges.append((int(row[0]), int(row[1]), row[2], row[3]))
+        
+        # Sort by start IP for binary search
+        self.ranges.sort(key=lambda x: x[0])
+    
+    def _ip_to_int(self, ip: str) -> int:
+        """Convert IP string to integer."""
+        try:
+            return struct.unpack("!I", socket.inet_aton(ip))[0]
+        except:
+            return 0
+    
+    def lookup(self, ip: str) -> dict:
+        """Lookup country for IP address."""
+        # Handle private IPs
+        if ip.startswith(('10.', '192.168.', '172.16.', '172.17.', '172.18.', 
+                          '172.19.', '172.2', '172.30.', '172.31.', '127.')):
+            return {'ip': ip, 'country_code': 'PRIVATE', 'country_name': 'Private Network'}
+        
+        ip_int = self._ip_to_int(ip)
+        if ip_int == 0:
+            return {'ip': ip, 'country_code': 'INVALID', 'country_name': 'Invalid IP'}
+        
+        # Binary search
+        left, right = 0, len(self.ranges) - 1
+        while left <= right:
+            mid = (left + right) // 2
+            start, end, code, name = self.ranges[mid]
+            if start <= ip_int <= end:
+                return {'ip': ip, 'country_code': code, 'country_name': name}
+            elif ip_int < start:
+                right = mid - 1
+            else:
+                left = mid + 1
+        
+        return {'ip': ip, 'country_code': 'UNKNOWN', 'country_name': 'Unknown'}
 
 
 class GeoAnalyzer:
     """Analyze threats by geographic location."""
     
-    # Sample IP ranges to country (simplified - real impl would use MaxMind/IP2Location)
-    IP_GEO_SAMPLE = {
-        '1.': 'CN', '14.': 'CN', '27.': 'CN', '36.': 'CN',
-        '5.': 'RU', '31.': 'RU', '46.': 'RU', '77.': 'RU',
-        '41.': 'NG', '105.': 'NG',
-        '185.': 'EU', '193.': 'EU', '194.': 'EU',
-        '8.': 'US', '12.': 'US', '15.': 'US', '20.': 'US',
-        '192.168.': 'PRIVATE', '10.': 'PRIVATE', '172.': 'PRIVATE',
-    }
-    
-    HIGH_RISK_COUNTRIES = {'CN', 'RU', 'KP', 'IR', 'NG', 'RO', 'UA', 'BR'}
+    HIGH_RISK_COUNTRIES = {'CN', 'RU', 'KP', 'IR', 'NG', 'RO', 'UA', 'BR', 'VN', 'IN'}
     
     def __init__(self):
+        self.db = IP2LocationDB()
         self.country_stats = defaultdict(lambda: {'attacks': 0, 'total': 0, 'ips': set()})
-        self.ip_cache = {}
     
-    def get_country(self, ip: str) -> str:
-        """Get country code for IP (simplified lookup)."""
-        if ip in self.ip_cache:
-            return self.ip_cache[ip]
-        
-        for prefix, country in self.IP_GEO_SAMPLE.items():
-            if ip.startswith(prefix):
-                self.ip_cache[ip] = country
-                return country
-        self.ip_cache[ip] = 'UNKNOWN'
-        return 'UNKNOWN'
+    def get_country(self, ip: str) -> dict:
+        """Get country info for IP."""
+        return self.db.lookup(ip)
     
     def record(self, ip: str, is_attack: bool = False):
         """Record IP activity."""
-        country = self.get_country(ip)
+        info = self.get_country(ip)
+        country = info['country_code']
         self.country_stats[country]['total'] += 1
         self.country_stats[country]['ips'].add(ip)
         if is_attack:
@@ -43,22 +87,25 @@ class GeoAnalyzer:
     
     def get_risk_score(self, ip: str) -> dict:
         """Calculate geographic risk score for IP."""
-        country = self.get_country(ip)
+        info = self.get_country(ip)
+        country = info['country_code']
         
         base_risk = 0.7 if country in self.HIGH_RISK_COUNTRIES else 0.2
         if country == 'PRIVATE':
             base_risk = 0.1
-        elif country == 'UNKNOWN':
+        elif country in ('UNKNOWN', 'INVALID'):
             base_risk = 0.5
         
-        # Adjust based on historical attacks from this country
+        # Adjust based on historical attacks
         stats = self.country_stats[country]
         if stats['total'] > 0:
             attack_ratio = stats['attacks'] / stats['total']
             base_risk = 0.5 * base_risk + 0.5 * attack_ratio
         
         return {
-            'ip': ip, 'country': country, 
+            'ip': ip,
+            'country_code': country,
+            'country_name': info['country_name'],
             'risk_score': round(base_risk, 3),
             'high_risk_country': country in self.HIGH_RISK_COUNTRIES
         }
@@ -72,7 +119,7 @@ class GeoAnalyzer:
                     'country': country,
                     'attacks': stats['attacks'],
                     'unique_ips': len(stats['ips']),
-                    'attack_ratio': round(stats['attacks']/stats['total'], 3) if stats['total'] else 0
+                    'attack_ratio': round(stats['attacks']/stats['total'], 3)
                 })
         return sorted(result, key=lambda x: x['attacks'], reverse=True)
 
@@ -80,15 +127,17 @@ class GeoAnalyzer:
 if __name__ == '__main__':
     geo = GeoAnalyzer()
     
-    # Simulate traffic
-    geo.record('1.2.3.4', is_attack=True)   # CN
-    geo.record('1.2.3.5', is_attack=True)   # CN
-    geo.record('5.6.7.8', is_attack=True)   # RU
-    geo.record('8.8.8.8', is_attack=False)  # US
-    geo.record('192.168.1.1', is_attack=False)  # Private
+    # Test lookups
+    test_ips = [
+        '8.8.8.8',        # Google DNS (US)
+        '1.1.1.1',        # Cloudflare (AU)
+        '114.114.114.114', # China
+        '77.88.8.8',      # Yandex (RU)
+        '192.168.1.1',    # Private
+    ]
     
-    print("Risk Scores:")
-    for ip in ['1.2.3.4', '8.8.8.8', '192.168.1.1']:
-        print(f"  {ip}: {geo.get_risk_score(ip)}")
-    
-    print(f"\nThreat Map: {geo.get_threat_map()}")
+    print("IP2Location Lookups:")
+    for ip in test_ips:
+        result = geo.get_risk_score(ip)
+        risk = "⚠️ HIGH RISK" if result['high_risk_country'] else "✓"
+        print(f"  {ip:18s} -> {result['country_code']:3s} ({result['country_name'][:20]:20s}) risk={result['risk_score']:.2f} {risk}")
