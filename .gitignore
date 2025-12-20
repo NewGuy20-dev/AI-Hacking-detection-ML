@@ -1,1 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
 master.zip
+conv.txt
+*.log
+
+# ============================================
+# DATASETS - Download via: python scripts/setup_datasets.py
+# ============================================
+
+# Large CSV/data files
+datasets/url_analysis/*.csv
+datasets/url_analysis/*.zip
+datasets/fraud_detection/*.csv
+datasets/email_spam/*.tar.bz2
+
+# NumPy arrays (generated/downloaded)
+datasets/timeseries/*.npy
+
+# Git-cloned repositories (large)
+datasets/security_payloads/SecLists/
+datasets/security_payloads/PayloadsAllTheThings/
+
+# Network intrusion datasets
+datasets/network_intrusion/cicids2017/*.csv
+datasets/network_intrusion/nsl_kdd/*.txt
+datasets/network_intrusion/unsw_nb15/*.csv
+datasets/network_intrusion/kdd99/*.gz
+
+# Keep directory structure and READMEs
+!datasets/README.md
+!datasets/**/README.md
+!datasets/**/.gitkeep
+
+# Keep small curated data (under 2MB total)
+!datasets/curated_benign/
+
+# Keep small text files for payloads
+!datasets/security_payloads/injection/
+!datasets/security_payloads/fuzzing/
+!datasets/security_payloads/misc/
+!datasets/security_payloads/wordlists/
+
+# Models - keep trained models in repo (or use Git LFS)
+# Uncomment below to exclude models too:
+# models/*.pkl
+# models/*.pt
+# models/*.pth

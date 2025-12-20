@@ -1,0 +1,2000 @@
+D:\Projects\MyApp\src
+../config/settings.json
+./scripts/run.sh
+~/Downloads/file.pdf
+../config/settings.json
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+C:\Program Files\Application
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Program Files\Application
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Windows\System32
+C:\Windows\System32
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/var/log/application.log
+D:\Projects\MyApp\src
+./scripts/run.sh
+D:\Projects\MyApp\src
+/home/user/documents
+C:\Program Files\Application
+C:\Windows\System32
+../config/settings.json
+D:\Projects\MyApp\src
+./scripts/run.sh
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+/var/log/application.log
+/var/log/application.log
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/home/user/documents
+/var/log/application.log
+./scripts/run.sh
+./scripts/run.sh
+/home/user/documents
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Windows\System32
+~/Downloads/file.pdf
+/home/user/documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/home/user/documents
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+../config/settings.json
+/home/user/documents
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+../config/settings.json
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+../config/settings.json
+~/Downloads/file.pdf
+/var/log/application.log
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+C:\Windows\System32
+/home/user/documents
+~/Downloads/file.pdf
+./scripts/run.sh
+./scripts/run.sh
+/home/user/documents
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+../config/settings.json
+C:\Windows\System32
+/var/log/application.log
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/var/log/application.log
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Program Files\Application
+/var/log/application.log
+../config/settings.json
+../config/settings.json
+C:\Windows\System32
+C:\Windows\System32
+C:\Windows\System32
+/home/user/documents
+C:\Program Files\Application
+./scripts/run.sh
+/home/user/documents
+C:\Users\Admin\Documents
+../config/settings.json
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+../config/settings.json
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Windows\System32
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Windows\System32
+D:\Projects\MyApp\src
+/home/user/documents
+../config/settings.json
+~/Downloads/file.pdf
+C:\Program Files\Application
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Windows\System32
+../config/settings.json
+/etc/nginx/nginx.conf
+../config/settings.json
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+./scripts/run.sh
+/etc/nginx/nginx.conf
+../config/settings.json
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/var/log/application.log
+../config/settings.json
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+./scripts/run.sh
+/var/log/application.log
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/home/user/documents
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Users\Admin\Documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+../config/settings.json
+C:\Program Files\Application
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+./scripts/run.sh
+D:\Projects\MyApp\src
+./scripts/run.sh
+/home/user/documents
+../config/settings.json
+C:\Users\Admin\Documents
+/var/log/application.log
+/var/log/application.log
+C:\Users\Admin\Documents
+../config/settings.json
+C:\Windows\System32
+C:\Program Files\Application
+/home/user/documents
+./scripts/run.sh
+../config/settings.json
+../config/settings.json
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/var/log/application.log
+C:\Program Files\Application
+/var/log/application.log
+/var/log/application.log
+/home/user/documents
+D:\Projects\MyApp\src
+./scripts/run.sh
+C:\Program Files\Application
+./scripts/run.sh
+/home/user/documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+../config/settings.json
+../config/settings.json
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+../config/settings.json
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Program Files\Application
+/var/log/application.log
+./scripts/run.sh
+C:\Program Files\Application
+/home/user/documents
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+../config/settings.json
+~/Downloads/file.pdf
+C:\Program Files\Application
+~/Downloads/file.pdf
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+../config/settings.json
+/var/log/application.log
+C:\Windows\System32
+C:\Users\Admin\Documents
+../config/settings.json
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/var/log/application.log
+/var/log/application.log
+C:\Program Files\Application
+/var/log/application.log
+C:\Program Files\Application
+/var/log/application.log
+C:\Program Files\Application
+C:\Windows\System32
+C:\Windows\System32
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+/var/log/application.log
+../config/settings.json
+/home/user/documents
+./scripts/run.sh
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Windows\System32
+/var/log/application.log
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Windows\System32
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/home/user/documents
+D:\Projects\MyApp\src
+./scripts/run.sh
+./scripts/run.sh
+./scripts/run.sh
+../config/settings.json
+~/Downloads/file.pdf
+C:\Windows\System32
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+../config/settings.json
+C:\Program Files\Application
+../config/settings.json
+C:\Program Files\Application
+../config/settings.json
+D:\Projects\MyApp\src
+/home/user/documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+/var/log/application.log
+/home/user/documents
+../config/settings.json
+./scripts/run.sh
+~/Downloads/file.pdf
+../config/settings.json
+/home/user/documents
+/home/user/documents
+C:\Windows\System32
+C:\Windows\System32
+~/Downloads/file.pdf
+../config/settings.json
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Windows\System32
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/home/user/documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/home/user/documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Program Files\Application
+../config/settings.json
+./scripts/run.sh
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+../config/settings.json
+/home/user/documents
+./scripts/run.sh
+/etc/nginx/nginx.conf
+../config/settings.json
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+/home/user/documents
+../config/settings.json
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+../config/settings.json
+C:\Windows\System32
+../config/settings.json
+C:\Users\Admin\Documents
+../config/settings.json
+/var/log/application.log
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+../config/settings.json
+../config/settings.json
+C:\Windows\System32
+../config/settings.json
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+../config/settings.json
+../config/settings.json
+../config/settings.json
+/home/user/documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Windows\System32
+/home/user/documents
+../config/settings.json
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+C:\Program Files\Application
+/home/user/documents
+/home/user/documents
+../config/settings.json
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+../config/settings.json
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Program Files\Application
+/home/user/documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Windows\System32
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/etc/nginx/nginx.conf
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+./scripts/run.sh
+C:\Program Files\Application
+/home/user/documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/home/user/documents
+../config/settings.json
+./scripts/run.sh
+./scripts/run.sh
+C:\Windows\System32
+/home/user/documents
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+C:\Windows\System32
+C:\Windows\System32
+C:\Program Files\Application
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Windows\System32
+/var/log/application.log
+C:\Windows\System32
+./scripts/run.sh
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Program Files\Application
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+/home/user/documents
+/var/log/application.log
+~/Downloads/file.pdf
+/var/log/application.log
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+./scripts/run.sh
+../config/settings.json
+C:\Windows\System32
+/var/log/application.log
+/etc/nginx/nginx.conf
+../config/settings.json
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+/home/user/documents
+~/Downloads/file.pdf
+/home/user/documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/home/user/documents
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Windows\System32
+D:\Projects\MyApp\src
+../config/settings.json
+./scripts/run.sh
+C:\Windows\System32
+/var/log/application.log
+./scripts/run.sh
+/home/user/documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Users\Admin\Documents
+./scripts/run.sh
+/home/user/documents
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/home/user/documents
+./scripts/run.sh
+/etc/nginx/nginx.conf
+../config/settings.json
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Program Files\Application
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Windows\System32
+D:\Projects\MyApp\src
+/home/user/documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+/home/user/documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Windows\System32
+/etc/nginx/nginx.conf
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/home/user/documents
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+/home/user/documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+/var/log/application.log
+C:\Program Files\Application
+/var/log/application.log
+/home/user/documents
+C:\Program Files\Application
+C:\Windows\System32
+/var/log/application.log
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+./scripts/run.sh
+../config/settings.json
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+C:\Program Files\Application
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Users\Admin\Documents
+/home/user/documents
+/var/log/application.log
+C:\Windows\System32
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+/home/user/documents
+C:\Windows\System32
+/home/user/documents
+../config/settings.json
+/var/log/application.log
+D:\Projects\MyApp\src
+../config/settings.json
+../config/settings.json
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+../config/settings.json
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+~/Downloads/file.pdf
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/var/log/application.log
+../config/settings.json
+../config/settings.json
+./scripts/run.sh
+/home/user/documents
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+./scripts/run.sh
+C:\Program Files\Application
+~/Downloads/file.pdf
+/home/user/documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+./scripts/run.sh
+C:\Users\Admin\Documents
+./scripts/run.sh
+/home/user/documents
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/home/user/documents
+../config/settings.json
+../config/settings.json
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+../config/settings.json
+/etc/nginx/nginx.conf
+../config/settings.json
+../config/settings.json
+C:\Users\Admin\Documents
+./scripts/run.sh
+../config/settings.json
+C:\Program Files\Application
+./scripts/run.sh
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+../config/settings.json
+../config/settings.json
+~/Downloads/file.pdf
+./scripts/run.sh
+/home/user/documents
+~/Downloads/file.pdf
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/var/log/application.log
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Windows\System32
+D:\Projects\MyApp\src
+/home/user/documents
+../config/settings.json
+~/Downloads/file.pdf
+/home/user/documents
+C:\Windows\System32
+C:\Windows\System32
+D:\Projects\MyApp\src
+C:\Program Files\Application
+/home/user/documents
+/home/user/documents
+~/Downloads/file.pdf
+C:\Windows\System32
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Windows\System32
+../config/settings.json
+/var/log/application.log
+./scripts/run.sh
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Program Files\Application
+./scripts/run.sh
+C:\Windows\System32
+../config/settings.json
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Windows\System32
+/var/log/application.log
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+../config/settings.json
+/home/user/documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/home/user/documents
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+/home/user/documents
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Program Files\Application
+/var/log/application.log
+/home/user/documents
+~/Downloads/file.pdf
+/var/log/application.log
+../config/settings.json
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Program Files\Application
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Program Files\Application
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+./scripts/run.sh
+/home/user/documents
+./scripts/run.sh
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+../config/settings.json
+/home/user/documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+../config/settings.json
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/home/user/documents
+/home/user/documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+C:\Program Files\Application
+~/Downloads/file.pdf
+/home/user/documents
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/var/log/application.log
+/var/log/application.log
+D:\Projects\MyApp\src
+C:\Program Files\Application
+../config/settings.json
+../config/settings.json
+../config/settings.json
+/var/log/application.log
+C:\Windows\System32
+./scripts/run.sh
+/var/log/application.log
+~/Downloads/file.pdf
+./scripts/run.sh
+../config/settings.json
+./scripts/run.sh
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Windows\System32
+C:\Program Files\Application
+../config/settings.json
+C:\Program Files\Application
+./scripts/run.sh
+D:\Projects\MyApp\src
+./scripts/run.sh
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Program Files\Application
+../config/settings.json
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Program Files\Application
+D:\Projects\MyApp\src
+../config/settings.json
+./scripts/run.sh
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+../config/settings.json
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/var/log/application.log
+/home/user/documents
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/home/user/documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+../config/settings.json
+~/Downloads/file.pdf
+/home/user/documents
+C:\Program Files\Application
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Windows\System32
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+C:\Program Files\Application
+/var/log/application.log
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+../config/settings.json
+C:\Windows\System32
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+./scripts/run.sh
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+./scripts/run.sh
+C:\Windows\System32
+/var/log/application.log
+../config/settings.json
+~/Downloads/file.pdf
+/home/user/documents
+/var/log/application.log
+../config/settings.json
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Users\Admin\Documents
+/home/user/documents
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Windows\System32
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+~/Downloads/file.pdf
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/home/user/documents
+/home/user/documents
+/home/user/documents
+./scripts/run.sh
+./scripts/run.sh
+C:\Program Files\Application
+C:\Program Files\Application
+/home/user/documents
+./scripts/run.sh
+/etc/nginx/nginx.conf
+/var/log/application.log
+./scripts/run.sh
+C:\Windows\System32
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+/home/user/documents
+../config/settings.json
+/etc/nginx/nginx.conf
+../config/settings.json
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Program Files\Application
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+/home/user/documents
+/var/log/application.log
+C:\Windows\System32
+/var/log/application.log
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Users\Admin\Documents
+../config/settings.json
+~/Downloads/file.pdf
+./scripts/run.sh
+../config/settings.json
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+./scripts/run.sh
+./scripts/run.sh
+./scripts/run.sh
+./scripts/run.sh
+../config/settings.json
+./scripts/run.sh
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+C:\Windows\System32
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/var/log/application.log
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Program Files\Application
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+/home/user/documents
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Windows\System32
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/var/log/application.log
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+/var/log/application.log
+../config/settings.json
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+/home/user/documents
+/home/user/documents
+C:\Program Files\Application
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/home/user/documents
+/home/user/documents
+../config/settings.json
+./scripts/run.sh
+C:\Windows\System32
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+C:\Windows\System32
+D:\Projects\MyApp\src
+/var/log/application.log
+../config/settings.json
+/home/user/documents
+../config/settings.json
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+../config/settings.json
+../config/settings.json
+/home/user/documents
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Windows\System32
+C:\Users\Admin\Documents
+/var/log/application.log
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+D:\Projects\MyApp\src
+./scripts/run.sh
+../config/settings.json
+C:\Windows\System32
+../config/settings.json
+D:\Projects\MyApp\src
+/var/log/application.log
+/home/user/documents
+../config/settings.json
+/var/log/application.log
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Windows\System32
+../config/settings.json
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+C:\Program Files\Application
+../config/settings.json
+C:\Program Files\Application
+../config/settings.json
+D:\Projects\MyApp\src
+../config/settings.json
+/home/user/documents
+/var/log/application.log
+/var/log/application.log
+./scripts/run.sh
+./scripts/run.sh
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Program Files\Application
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Users\Admin\Documents
+/var/log/application.log
+../config/settings.json
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/var/log/application.log
+/home/user/documents
+C:\Users\Admin\Documents
+../config/settings.json
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/var/log/application.log
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+/var/log/application.log
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+../config/settings.json
+C:\Program Files\Application
+../config/settings.json
+/home/user/documents
+C:\Windows\System32
+/home/user/documents
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Windows\System32
+/home/user/documents
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Windows\System32
+../config/settings.json
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+/home/user/documents
+C:\Windows\System32
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Program Files\Application
+/home/user/documents
+/var/log/application.log
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Windows\System32
+/var/log/application.log
+C:\Program Files\Application
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+./scripts/run.sh
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Program Files\Application
+/home/user/documents
+C:\Program Files\Application
+../config/settings.json
+../config/settings.json
+C:\Program Files\Application
+/var/log/application.log
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Windows\System32
+/var/log/application.log
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/var/log/application.log
+C:\Program Files\Application
+/home/user/documents
+/home/user/documents
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/var/log/application.log
+./scripts/run.sh
+/var/log/application.log
+./scripts/run.sh
+/home/user/documents
+../config/settings.json
+/home/user/documents
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/var/log/application.log
+../config/settings.json
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+/var/log/application.log
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Program Files\Application
+/home/user/documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Program Files\Application
+C:\Windows\System32
+/home/user/documents
+../config/settings.json
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/home/user/documents
+/home/user/documents
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+C:\Windows\System32
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+./scripts/run.sh
+~/Downloads/file.pdf
+/home/user/documents
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Users\Admin\Documents
+/home/user/documents
+D:\Projects\MyApp\src
+../config/settings.json
+/etc/nginx/nginx.conf
+./scripts/run.sh
+D:\Projects\MyApp\src
+/home/user/documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+../config/settings.json
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/var/log/application.log
+/var/log/application.log
+/var/log/application.log
+../config/settings.json
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+/etc/nginx/nginx.conf
+/var/log/application.log
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/var/log/application.log
+../config/settings.json
+../config/settings.json
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/home/user/documents
+/home/user/documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+../config/settings.json
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Program Files\Application
+D:\Projects\MyApp\src
+/home/user/documents
+/var/log/application.log
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/var/log/application.log
+../config/settings.json
+C:\Program Files\Application
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/home/user/documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Windows\System32
+C:\Windows\System32
+./scripts/run.sh
+C:\Program Files\Application
+/var/log/application.log
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+../config/settings.json
+/etc/nginx/nginx.conf
+../config/settings.json
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Windows\System32
+../config/settings.json
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/home/user/documents
+./scripts/run.sh
+C:\Program Files\Application
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Users\Admin\Documents
+/var/log/application.log
+./scripts/run.sh
+/home/user/documents
+C:\Windows\System32
+./scripts/run.sh
+/var/log/application.log
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Windows\System32
+C:\Users\Admin\Documents
+/var/log/application.log
+./scripts/run.sh
+/var/log/application.log
+D:\Projects\MyApp\src
+C:\Program Files\Application
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Users\Admin\Documents
+../config/settings.json
+./scripts/run.sh
+./scripts/run.sh
+C:\Users\Admin\Documents
+../config/settings.json
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Windows\System32
+./scripts/run.sh
+./scripts/run.sh
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Users\Admin\Documents
+/home/user/documents
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/home/user/documents
+/etc/nginx/nginx.conf
+/var/log/application.log
+/var/log/application.log
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Program Files\Application
+/home/user/documents
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Windows\System32
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+../config/settings.json
+/var/log/application.log
+/etc/nginx/nginx.conf
+/home/user/documents
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Windows\System32
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+../config/settings.json
+/var/log/application.log
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/home/user/documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Windows\System32
+C:\Windows\System32
+C:\Windows\System32
+C:\Windows\System32
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+./scripts/run.sh
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+./scripts/run.sh
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+C:\Windows\System32
+/home/user/documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Windows\System32
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+C:\Windows\System32
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+../config/settings.json
+~/Downloads/file.pdf
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+../config/settings.json
+C:\Windows\System32
+D:\Projects\MyApp\src
+/var/log/application.log
+./scripts/run.sh
+/home/user/documents
+./scripts/run.sh
+/home/user/documents
+/home/user/documents
+../config/settings.json
+~/Downloads/file.pdf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+../config/settings.json
+../config/settings.json
+C:\Program Files\Application
+D:\Projects\MyApp\src
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Program Files\Application
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+/home/user/documents
+/home/user/documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Windows\System32
+D:\Projects\MyApp\src
+../config/settings.json
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Program Files\Application
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Windows\System32
+../config/settings.json
+C:\Program Files\Application
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Windows\System32
+/home/user/documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+./scripts/run.sh
+../config/settings.json
+/home/user/documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/home/user/documents
+/var/log/application.log
+/home/user/documents
+/home/user/documents
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/home/user/documents
+../config/settings.json
+C:\Windows\System32
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/home/user/documents
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Program Files\Application
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+../config/settings.json
+/var/log/application.log
+C:\Windows\System32
+/var/log/application.log
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/home/user/documents
+C:\Windows\System32
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Windows\System32
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Windows\System32
+C:\Program Files\Application
+./scripts/run.sh
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Program Files\Application
+/home/user/documents
+../config/settings.json
+C:\Users\Admin\Documents
+../config/settings.json
+/etc/nginx/nginx.conf
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/var/log/application.log
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Program Files\Application
+/var/log/application.log
+/etc/nginx/nginx.conf
+C:\Windows\System32
+/var/log/application.log
+~/Downloads/file.pdf
+/home/user/documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+C:\Users\Admin\Documents
+../config/settings.json
+/home/user/documents
+../config/settings.json
+C:\Program Files\Application
+./scripts/run.sh
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+../config/settings.json
+/var/log/application.log
+C:\Users\Admin\Documents
+/var/log/application.log
+./scripts/run.sh
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Users\Admin\Documents
+../config/settings.json
+D:\Projects\MyApp\src
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Program Files\Application
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+C:\Program Files\Application
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Program Files\Application
+C:\Users\Admin\Documents
+C:\Windows\System32
+D:\Projects\MyApp\src
+/var/log/application.log
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/var/log/application.log
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Windows\System32
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+/home/user/documents
+./scripts/run.sh
+/etc/nginx/nginx.conf
+/var/log/application.log
+C:\Program Files\Application
+C:\Users\Admin\Documents
+/home/user/documents
+~/Downloads/file.pdf
+./scripts/run.sh
+/home/user/documents
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Windows\System32
+C:\Windows\System32
+C:\Users\Admin\Documents
+/var/log/application.log
+C:\Users\Admin\Documents
+C:\Windows\System32
+./scripts/run.sh
+/var/log/application.log
+C:\Program Files\Application
+/home/user/documents
+/etc/nginx/nginx.conf
+../config/settings.json
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+../config/settings.json
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+C:\Windows\System32
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+/home/user/documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+../config/settings.json
+C:\Windows\System32
+./scripts/run.sh
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/var/log/application.log
+/var/log/application.log
+C:\Windows\System32
+D:\Projects\MyApp\src
+/home/user/documents
+D:\Projects\MyApp\src
+/var/log/application.log
+/etc/nginx/nginx.conf
+../config/settings.json
+./scripts/run.sh
+C:\Windows\System32
+./scripts/run.sh
+/var/log/application.log
+~/Downloads/file.pdf
+../config/settings.json
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Program Files\Application
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Users\Admin\Documents
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Windows\System32
+/etc/nginx/nginx.conf
+./scripts/run.sh
+C:\Program Files\Application
+../config/settings.json
+/var/log/application.log
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+D:\Projects\MyApp\src
+/home/user/documents
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+./scripts/run.sh
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/home/user/documents
+./scripts/run.sh
+C:\Program Files\Application
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+./scripts/run.sh
+~/Downloads/file.pdf
+./scripts/run.sh
+./scripts/run.sh
+/etc/nginx/nginx.conf
+../config/settings.json
+./scripts/run.sh
+C:\Program Files\Application
+./scripts/run.sh
+C:\Program Files\Application
+C:\Program Files\Application
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+C:\Windows\System32
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+/home/user/documents
+C:\Program Files\Application
+C:\Program Files\Application
+C:\Windows\System32
+D:\Projects\MyApp\src
+../config/settings.json
+../config/settings.json
+D:\Projects\MyApp\src
+./scripts/run.sh
+./scripts/run.sh
+/var/log/application.log
+/etc/nginx/nginx.conf
+/var/log/application.log
+~/Downloads/file.pdf
+/var/log/application.log
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+../config/settings.json
+/var/log/application.log
+/home/user/documents
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+../config/settings.json
+~/Downloads/file.pdf
+/var/log/application.log
+D:\Projects\MyApp\src
+C:\Program Files\Application
+./scripts/run.sh
+C:\Program Files\Application
+C:\Windows\System32
+/home/user/documents
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+D:\Projects\MyApp\src
+~/Downloads/file.pdf
+C:\Program Files\Application
+../config/settings.json
+~/Downloads/file.pdf
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/var/log/application.log
+C:\Program Files\Application
+./scripts/run.sh
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/etc/nginx/nginx.conf
+C:\Users\Admin\Documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+/home/user/documents
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+../config/settings.json
+D:\Projects\MyApp\src
+D:\Projects\MyApp\src
+C:\Windows\System32
+/etc/nginx/nginx.conf
+../config/settings.json
+../config/settings.json
+~/Downloads/file.pdf
+C:\Windows\System32
+../config/settings.json
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+/etc/nginx/nginx.conf
+/home/user/documents
+C:\Program Files\Application
+/etc/nginx/nginx.conf
+/etc/nginx/nginx.conf
+./scripts/run.sh
+~/Downloads/file.pdf
+../config/settings.json
+/home/user/documents
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Windows\System32
+/home/user/documents
+C:\Windows\System32
+./scripts/run.sh
+/home/user/documents
+/var/log/application.log
+/etc/nginx/nginx.conf
+~/Downloads/file.pdf
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+C:\Windows\System32
+C:\Program Files\Application
+C:\Windows\System32
+../config/settings.json
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+C:\Users\Admin\Documents
+~/Downloads/file.pdf
+C:\Program Files\Application
+./scripts/run.sh
+./scripts/run.sh
+C:\Program Files\Application
+/var/log/application.log
+D:\Projects\MyApp\src
+C:\Windows\System32
+../config/settings.json
+~/Downloads/file.pdf
+/var/log/application.log
+~/Downloads/file.pdf
+./scripts/run.sh
+C:\Program Files\Application
+../config/settings.json
+~/Downloads/file.pdf
+~/Downloads/file.pdf
+./scripts/run.sh
+./scripts/run.sh
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/var/log/application.log
+~/Downloads/file.pdf
+C:\Users\Admin\Documents
+/home/user/documents
+C:\Users\Admin\Documents
+/home/user/documents
+/var/log/application.log
+../config/settings.json
+D:\Projects\MyApp\src
+/etc/nginx/nginx.conf
+/var/log/application.log
+./scripts/run.sh
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf
+../config/settings.json
+D:\Projects\MyApp\src
+C:\Users\Admin\Documents
+/var/log/application.log
+./scripts/run.sh
+/var/log/application.log
+../config/settings.json
+C:\Users\Admin\Documents
+./scripts/run.sh
+./scripts/run.sh
+C:\Program Files\Application
+/var/log/application.log
+/home/user/documents
+C:\Windows\System32
+C:\Users\Admin\Documents
+/etc/nginx/nginx.conf

@@ -1,2 +1,0 @@
-# XSS-Payloads
-XSS Payloads

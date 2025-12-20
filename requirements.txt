@@ -1,6 +1,19 @@
+# Core ML
 pandas
 scikit-learn
 numpy
-requests
+joblib
+xgboost
+lightgbm
+
+# PyTorch (install with CUDA: pip install torch --index-url https://download.pytorch.org/whl/cu121)
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Visualization
 matplotlib
 seaborn
+
+# Utilities
+requests
+tqdm

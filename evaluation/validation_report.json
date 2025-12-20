@@ -1,0 +1,43 @@
+{
+  "timestamp": "2025-12-20T20:51:47.355544",
+  "summary": {
+    "total_tests": 42,
+    "passed": 39,
+    "failed": 3,
+    "pass_rate": 0.9285714285714286
+  },
+  "results": {
+    "payload": {
+      "passed": 25,
+      "failed": 3,
+      "failures": [
+        {
+          "category": "benign_edge_cases",
+          "input": "john.doe@example.com",
+          "expected": false,
+          "predicted": true,
+          "confidence": 0.81103515625
+        },
+        {
+          "category": "benign_edge_cases",
+          "input": "SELECT * FROM menu",
+          "expected": false,
+          "predicted": true,
+          "confidence": 0.59814453125
+        },
+        {
+          "category": "benign_edge_cases",
+          "input": "<3 love this product",
+          "expected": false,
+          "predicted": true,
+          "confidence": 0.93798828125
+        }
+      ]
+    },
+    "url": {
+      "passed": 14,
+      "failed": 0,
+      "failures": []
+    }
+  }
+}

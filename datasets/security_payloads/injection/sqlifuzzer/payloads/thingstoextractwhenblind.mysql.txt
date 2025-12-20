@@ -1,3 +1,0 @@
-user()
-system_user()
-database()
