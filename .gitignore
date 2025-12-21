@@ -25,6 +25,7 @@ Thumbs.db
 master.zip
 conv.txt
 *.log
+conv.txt
 
 # ============================================
 # DATASETS - Download via: python scripts/setup_datasets.py
@@ -48,6 +49,9 @@ datasets/network_intrusion/cicids2017/*.csv
 datasets/network_intrusion/nsl_kdd/*.txt
 datasets/network_intrusion/unsw_nb15/*.csv
 datasets/network_intrusion/kdd99/*.gz
+# NEVER track security payload datasets
+datasets/security_payloads/
+
 
 # Keep directory structure and READMEs
 !datasets/README.md
@@ -62,6 +66,7 @@ datasets/network_intrusion/kdd99/*.gz
 !datasets/security_payloads/fuzzing/
 !datasets/security_payloads/misc/
 !datasets/security_payloads/wordlists/
+
 
 # Models - keep trained models in repo (or use Git LFS)
 # Uncomment below to exclude models too:
