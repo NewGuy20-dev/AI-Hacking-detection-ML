@@ -73,3 +73,10 @@ datasets/security_payloads/
 # models/*.pkl
 # models/*.pt
 # models/*.pth
+
+/dashboard/node_modules
+/dashboard/build
+/dashboard/dist
+/dashboard/.env
+/dashboard/.env.local
+/dashboard/.next

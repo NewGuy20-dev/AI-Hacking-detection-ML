@@ -1,0 +1,20 @@
+# Ignore everything except dashboard
+*
+!dashboard/
+!dashboard/**
+
+# Explicitly ignore heavy stuff
+models/
+datasets/
+src/
+*.pt
+*.pkl
+*.csv
+*.npy
+*.tar.bz2
+*.zip
+__pycache__/
+.pytest_cache/
+forensics/
+alerts/
+evaluation/

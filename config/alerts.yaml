@@ -1,0 +1,37 @@
+# Alert System Configuration
+
+channels:
+  webhook:
+    enabled: false
+    url: "${WEBHOOK_URL}"  # Set via environment variable
+    format: "slack"        # slack, discord
+    retry_attempts: 3
+    timeout_seconds: 10
+  
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    username: "${SMTP_USER}"
+    password: "${SMTP_PASS}"
+    from_address: "alerts@yourdomain.com"
+    recipients:
+      - "security@company.com"
+  
+  console:
+    enabled: true
+    log_file: null  # Optional: "logs/alerts.log"
+
+# Severity -> Channel routing
+routing:
+  CRITICAL: [webhook, email, console]
+  HIGH: [webhook, console]
+  MEDIUM: [console]
+  LOW: [console]
+
+# Rate limiting
+rate_limit:
+  enabled: true
+  max_per_minute: 10
+  aggregation_window_seconds: 60

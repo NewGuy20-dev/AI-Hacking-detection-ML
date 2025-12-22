@@ -149,12 +149,32 @@ python scripts/evaluate_models.py
 
 ## 📈 Performance Metrics
 
+### Model Accuracy (Latest Training)
+| Model | Validation Accuracy |
+|-------|---------------------|
+| Payload CNN | 99.89% |
+| URL CNN | 97.47% |
+| Time-Series LSTM | 75.38% |
+
+### Validation Results: 92.9% (39/42 tests passed)
+- **Payload Detection**: 89.3% (25/28)
+- **URL Detection**: 100% (14/14)
+
+### Known Limitations
+The payload model may flag certain benign patterns as suspicious:
+
+| Pattern | Behavior | Reason |
+|---------|----------|--------|
+| `<3` emoji (e.g., `<3 love this`) | False positive (~95%) | `<` character resembles HTML/XSS tag start |
+| `SELECT * FROM menu` | Flagged as suspicious (~72%) | Ambiguous - could be SQL injection on restaurant sites |
+| Emails with dots (e.g., `john.doe@example.com`) | Borderline (~52%) | Dot patterns can appear in injection payloads |
+
+These are acceptable trade-offs for security - the model errs on the side of caution for ambiguous patterns.
+
+### General Metrics
 - **Real-time Inference**: <100ms per prediction
-- **Model Accuracy**: >95% on test datasets
 - **False Positive Rate**: <2%
 - **Ensemble Precision/Recall**: Optimized for security use cases
-- **Daily Model Updates**: Automated retraining pipeline
-- **24/7 Monitoring**: Continuous threat detection
 
 ## 🛠️ Model Components
 
@@ -305,4 +325,4 @@ For issues and questions:
 
 **Built for cybersecurity professionals by cybersecurity professionals** 🛡️
 
-Last Updated: December 20, 2025
+Last Updated: December 21, 2025

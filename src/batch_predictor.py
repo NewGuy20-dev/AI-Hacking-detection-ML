@@ -1,19 +1,27 @@
-"""Phase D1: Enhanced HybridPredictor with batch processing optimization."""
+"""Enhanced HybridPredictor with batch processing, validation, and monitoring."""
 import torch
 import joblib
 import numpy as np
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import time
+from typing import Optional
+
+from .input_validator import InputValidator, ValidationError
+from .model_monitor import ModelMonitor
 
 
 class BatchHybridPredictor:
-    """Optimized predictor with batch processing and async support."""
+    """Optimized predictor with batch processing, validation, and monitoring."""
     
-    def __init__(self, models_dir='models', device=None, batch_size=256):
+    def __init__(self, models_dir='models', device=None, batch_size=256,
+                 registry=None, validator: bool = True, monitor: ModelMonitor = None):
         self.models_dir = Path(models_dir)
         self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.batch_size = batch_size
+        self.registry = registry
+        self.validator = InputValidator() if validator else None
+        self.monitor = monitor
         self.sklearn_models = {}
         self.pytorch_models = {}
         self.loaded = False
@@ -111,23 +119,47 @@ class BatchHybridPredictor:
         
         return np.concatenate(results)
     
-    def predict_batch(self, data):
-        """Full batch prediction pipeline."""
+    def predict_batch(self, data, validate: bool = True):
+        """Full batch prediction pipeline with optional validation and monitoring."""
         if not self.loaded:
             self.load_models()
+        
+        # Validate inputs if validator enabled
+        if validate and self.validator:
+            if 'payloads' in data:
+                data['payloads'] = [self.validator.validate_payload(p) for p in data['payloads']]
+            if 'urls' in data:
+                data['urls'] = [self.validator.validate_url(u) for u in data['urls']]
         
         n = max(len(data.get('payloads', [])), len(data.get('urls', [])), 
                 len(data.get('timeseries', [[]])), 1)
         
         scores = {}
         
-        # Run predictions
+        # Run predictions with optional monitoring
         if 'payloads' in data:
-            scores['payload'] = self.predict_payload_batch(data['payloads'])
+            if self.monitor:
+                with self.monitor.track('payload_cnn') as ctx:
+                    scores['payload'] = self.predict_payload_batch(data['payloads'])
+                    ctx['confidence'] = scores['payload']
+            else:
+                scores['payload'] = self.predict_payload_batch(data['payloads'])
+        
         if 'urls' in data:
-            scores['url'] = self.predict_url_batch(data['urls'])
+            if self.monitor:
+                with self.monitor.track('url_cnn') as ctx:
+                    scores['url'] = self.predict_url_batch(data['urls'])
+                    ctx['confidence'] = scores['url']
+            else:
+                scores['url'] = self.predict_url_batch(data['urls'])
+        
         if 'timeseries' in data:
-            scores['timeseries'] = self.predict_timeseries_batch(data['timeseries'])
+            if self.monitor:
+                with self.monitor.track('timeseries_lstm') as ctx:
+                    scores['timeseries'] = self.predict_timeseries_batch(data['timeseries'])
+                    ctx['confidence'] = scores['timeseries']
+            else:
+                scores['timeseries'] = self.predict_timeseries_batch(data['timeseries'])
         
         # Fill missing with neutral
         for key in ['payload', 'url', 'timeseries', 'network', 'fraud']:
@@ -167,6 +199,11 @@ class BatchHybridPredictor:
         return throughput
 
 
-def create_batch_predictor(models_dir='models', batch_size=256):
-    """Factory function."""
-    return BatchHybridPredictor(models_dir, batch_size=batch_size).load_models()
+def create_batch_predictor(models_dir='models', batch_size=256, 
+                           enable_validation=True, enable_monitoring=False):
+    """Factory function with optional validation and monitoring."""
+    monitor = ModelMonitor() if enable_monitoring else None
+    return BatchHybridPredictor(
+        models_dir, batch_size=batch_size, 
+        validator=enable_validation, monitor=monitor
+    ).load_models()

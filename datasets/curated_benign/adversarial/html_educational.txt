@@ -1,379 +1,319 @@
-Use the <div> tag for containers
-Forms need <input> fields
-The <span> is inline
-Add <img> for images
-Forms need <input> fields
-The <span> is inline
 Lists: <ul> and <ol>
-The <body> contains content
-Use <head> for metadata
 Create links with <a> tag
-Lists: <ul> and <ol>
-The <body> contains content
-Tables use <tr> and <td>
-Forms need <input> fields
-Forms need <input> fields
-The <span> is inline
-The <p> element for paragraphs
 Use the <div> tag for containers
-The <span> is inline
 The <p> element for paragraphs
+The <body> contains content
 Create links with <a> tag
-The <span> is inline
 Forms need <input> fields
 Add <img> for images
-Add <img> for images
-The <body> contains content
 Use the <div> tag for containers
+Lists: <ul> and <ol>
 The <body> contains content
-Forms need <input> fields
-Forms need <input> fields
+The <body> contains content
 Lists: <ul> and <ol>
-Create links with <a> tag
+Lists: <ul> and <ol>
 Create links with <a> tag
-Use <head> for metadata
-The <body> contains content
-Use the <div> tag for containers
-The <p> element for paragraphs
 The <span> is inline
-The <p> element for paragraphs
 Forms need <input> fields
+Use <head> for metadata
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-Use the <div> tag for containers
 The <p> element for paragraphs
-Use the <div> tag for containers
-Use the <div> tag for containers
-The <body> contains content
 The <span> is inline
-Forms need <input> fields
-Lists: <ul> and <ol>
-Create links with <a> tag
-Create links with <a> tag
 Add <img> for images
 Forms need <input> fields
+The <body> contains content
 Add <img> for images
-The <p> element for paragraphs
+Use <head> for metadata
+Use <head> for metadata
 Use the <div> tag for containers
-Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Add <img> for images
 Use <head> for metadata
-Forms need <input> fields
-The <body> contains content
 Use the <div> tag for containers
 Add <img> for images
-Lists: <ul> and <ol>
 Add <img> for images
-Tables use <tr> and <td>
-The <body> contains content
-The <span> is inline
-The <body> contains content
-Create links with <a> tag
 Add <img> for images
-The <span> is inline
-The <p> element for paragraphs
-Create links with <a> tag
-The <span> is inline
-Create links with <a> tag
-The <body> contains content
-Tables use <tr> and <td>
-Use <head> for metadata
-Lists: <ul> and <ol>
-The <p> element for paragraphs
-Create links with <a> tag
-Use <head> for metadata
-The <span> is inline
-Use <head> for metadata
 Forms need <input> fields
-Create links with <a> tag
-The <span> is inline
 The <span> is inline
-Use <head> for metadata
-The <span> is inline
-The <span> is inline
-Tables use <tr> and <td>
+Create links with <a> tag
 Use <head> for metadata
+Use the <div> tag for containers
+The <body> contains content
 The <span> is inline
 Tables use <tr> and <td>
-Use <head> for metadata
-Use <head> for metadata
-Add <img> for images
-Lists: <ul> and <ol>
-Create links with <a> tag
+The <p> element for paragraphs
 Add <img> for images
-Create links with <a> tag
-Create links with <a> tag
-Use the <div> tag for containers
-The <span> is inline
-Create links with <a> tag
-The <span> is inline
 Lists: <ul> and <ol>
 The <body> contains content
-Forms need <input> fields
+Tables use <tr> and <td>
 The <span> is inline
 Add <img> for images
+The <body> contains content
+The <span> is inline
+Use the <div> tag for containers
+Use the <div> tag for containers
+Lists: <ul> and <ol>
+Create links with <a> tag
 Tables use <tr> and <td>
+Use <head> for metadata
 Tables use <tr> and <td>
-Use the <div> tag for containers
-Add <img> for images
+The <p> element for paragraphs
 The <body> contains content
+Use the <div> tag for containers
+The <p> element for paragraphs
 Use <head> for metadata
 Lists: <ul> and <ol>
-The <body> contains content
-Use <head> for metadata
-Use <head> for metadata
-Use the <div> tag for containers
-The <body> contains content
+Forms need <input> fields
 Create links with <a> tag
-Lists: <ul> and <ol>
 Lists: <ul> and <ol>
+Tables use <tr> and <td>
+The <span> is inline
+The <p> element for paragraphs
+The <p> element for paragraphs
 The <span> is inline
+The <p> element for paragraphs
+Forms need <input> fields
 The <span> is inline
+Create links with <a> tag
 Use the <div> tag for containers
+Use <head> for metadata
 Forms need <input> fields
+The <p> element for paragraphs
+The <p> element for paragraphs
 Add <img> for images
 Create links with <a> tag
 Forms need <input> fields
+Add <img> for images
 Forms need <input> fields
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
 The <body> contains content
-Lists: <ul> and <ol>
 Use <head> for metadata
-The <span> is inline
 Add <img> for images
-Use the <div> tag for containers
 Use the <div> tag for containers
-Forms need <input> fields
 The <p> element for paragraphs
-Tables use <tr> and <td>
 Tables use <tr> and <td>
-Use the <div> tag for containers
-Create links with <a> tag
-Create links with <a> tag
-Create links with <a> tag
 The <span> is inline
-Create links with <a> tag
-Add <img> for images
 The <span> is inline
-Tables use <tr> and <td>
-Forms need <input> fields
-Tables use <tr> and <td>
 The <body> contains content
-Add <img> for images
-Tables use <tr> and <td>
-Use <head> for metadata
-Forms need <input> fields
-The <span> is inline
-Use the <div> tag for containers
-Tables use <tr> and <td>
 The <body> contains content
-Add <img> for images
-Add <img> for images
 Lists: <ul> and <ol>
-Lists: <ul> and <ol>
 Use the <div> tag for containers
-The <span> is inline
-Add <img> for images
-Forms need <input> fields
-Tables use <tr> and <td>
-Create links with <a> tag
+Use <head> for metadata
 Use the <div> tag for containers
-Tables use <tr> and <td>
 Tables use <tr> and <td>
+Forms need <input> fields
+Use <head> for metadata
 The <body> contains content
-Add <img> for images
+Forms need <input> fields
+The <p> element for paragraphs
 Forms need <input> fields
 The <p> element for paragraphs
+The <body> contains content
+Add <img> for images
 Tables use <tr> and <td>
-Use <head> for metadata
-Use the <div> tag for containers
-Use <head> for metadata
-Create links with <a> tag
 Forms need <input> fields
+Use the <div> tag for containers
 The <span> is inline
-Forms need <input> fields
+The <body> contains content
 Use <head> for metadata
-Forms need <input> fields
-Add <img> for images
-Add <img> for images
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Use the <div> tag for containers
-Add <img> for images
 The <p> element for paragraphs
-Add <img> for images
+Tables use <tr> and <td>
+The <body> contains content
 The <p> element for paragraphs
 Use <head> for metadata
+Create links with <a> tag
+The <p> element for paragraphs
 Create links with <a> tag
+Use <head> for metadata
+Use <head> for metadata
 Use the <div> tag for containers
 Forms need <input> fields
-Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Add <img> for images
 Forms need <input> fields
-Lists: <ul> and <ol>
-The <p> element for paragraphs
-Create links with <a> tag
-Lists: <ul> and <ol>
+Add <img> for images
+Add <img> for images
+Add <img> for images
 Lists: <ul> and <ol>
+Tables use <tr> and <td>
 Use the <div> tag for containers
-Use <head> for metadata
 The <p> element for paragraphs
 The <body> contains content
-The <body> contains content
-Use <head> for metadata
-Add <img> for images
 Use <head> for metadata
-The <span> is inline
-Forms need <input> fields
+Lists: <ul> and <ol>
 Create links with <a> tag
 The <body> contains content
+Add <img> for images
+Tables use <tr> and <td>
 Use <head> for metadata
+Add <img> for images
 Tables use <tr> and <td>
-Use the <div> tag for containers
+Tables use <tr> and <td>
 The <span> is inline
-Add <img> for images
-Use <head> for metadata
 The <body> contains content
-Forms need <input> fields
+Add <img> for images
+The <p> element for paragraphs
 Use the <div> tag for containers
-Tables use <tr> and <td>
 Lists: <ul> and <ol>
-The <body> contains content
+Tables use <tr> and <td>
+The <span> is inline
 Create links with <a> tag
 Forms need <input> fields
 Create links with <a> tag
-Forms need <input> fields
-The <span> is inline
-Lists: <ul> and <ol>
-Add <img> for images
-The <p> element for paragraphs
 Add <img> for images
-The <p> element for paragraphs
+Lists: <ul> and <ol>
 The <span> is inline
-Use the <div> tag for containers
-Tables use <tr> and <td>
+The <body> contains content
 Add <img> for images
-Use the <div> tag for containers
 Forms need <input> fields
-The <span> is inline
+Use <head> for metadata
 Create links with <a> tag
+The <span> is inline
+The <span> is inline
+Use the <div> tag for containers
 Tables use <tr> and <td>
+Tables use <tr> and <td>
+The <p> element for paragraphs
+Add <img> for images
 Create links with <a> tag
 The <span> is inline
+Add <img> for images
 Create links with <a> tag
-Forms need <input> fields
-The <body> contains content
+Create links with <a> tag
 Add <img> for images
-Tables use <tr> and <td>
-Use <head> for metadata
 The <p> element for paragraphs
-Use the <div> tag for containers
-The <span> is inline
-The <span> is inline
+Lists: <ul> and <ol>
 Use the <div> tag for containers
-Create links with <a> tag
 Use <head> for metadata
+The <body> contains content
 Use the <div> tag for containers
-The <span> is inline
+Lists: <ul> and <ol>
 Use <head> for metadata
+The <span> is inline
 Create links with <a> tag
+Create links with <a> tag
+Create links with <a> tag
 The <body> contains content
+Add <img> for images
+The <p> element for paragraphs
+Use <head> for metadata
 Lists: <ul> and <ol>
 The <body> contains content
-The <span> is inline
-The <body> contains content
-The <span> is inline
-Use the <div> tag for containers
 Add <img> for images
-The <body> contains content
+Add <img> for images
+Use the <div> tag for containers
+Create links with <a> tag
 The <span> is inline
 Use <head> for metadata
-The <span> is inline
 The <p> element for paragraphs
 The <p> element for paragraphs
-Tables use <tr> and <td>
+The <p> element for paragraphs
+The <body> contains content
 Create links with <a> tag
+The <span> is inline
+The <span> is inline
+The <p> element for paragraphs
 Use the <div> tag for containers
-Create links with <a> tag
-Create links with <a> tag
-The <body> contains content
-Forms need <input> fields
+Use the <div> tag for containers
+Use the <div> tag for containers
 Lists: <ul> and <ol>
-Add <img> for images
 Forms need <input> fields
-The <p> element for paragraphs
+Lists: <ul> and <ol>
+Use <head> for metadata
+Lists: <ul> and <ol>
+Use the <div> tag for containers
 The <p> element for paragraphs
-Forms need <input> fields
-Forms need <input> fields
-Create links with <a> tag
+Use the <div> tag for containers
 Tables use <tr> and <td>
-Forms need <input> fields
+Add <img> for images
+The <p> element for paragraphs
+Add <img> for images
 Use the <div> tag for containers
+The <span> is inline
 Lists: <ul> and <ol>
-Use the <div> tag for containers
 Use <head> for metadata
-Forms need <input> fields
-Add <img> for images
-The <body> contains content
-Add <img> for images
 Forms need <input> fields
-Create links with <a> tag
 Create links with <a> tag
 Create links with <a> tag
-Create links with <a> tag
-Lists: <ul> and <ol>
-Add <img> for images
-Use <head> for metadata
+The <p> element for paragraphs
+The <p> element for paragraphs
 Use the <div> tag for containers
-The <span> is inline
+Use <head> for metadata
 The <span> is inline
-Lists: <ul> and <ol>
 Add <img> for images
-Use <head> for metadata
 Add <img> for images
-Create links with <a> tag
+Add <img> for images
 Add <img> for images
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Forms need <input> fields
+The <body> contains content
 The <span> is inline
-Use the <div> tag for containers
+Tables use <tr> and <td>
+Create links with <a> tag
+Add <img> for images
 Use <head> for metadata
+Use the <div> tag for containers
 The <body> contains content
 Forms need <input> fields
+Use <head> for metadata
+The <span> is inline
+Tables use <tr> and <td>
+Use <head> for metadata
+Tables use <tr> and <td>
 The <body> contains content
+Lists: <ul> and <ol>
 Forms need <input> fields
+Add <img> for images
 The <p> element for paragraphs
+The <p> element for paragraphs
+Use <head> for metadata
+The <body> contains content
+Tables use <tr> and <td>
 Forms need <input> fields
+Forms need <input> fields
+Lists: <ul> and <ol>
 The <span> is inline
-Add <img> for images
-Tables use <tr> and <td>
-Add <img> for images
+Create links with <a> tag
 The <body> contains content
-Tables use <tr> and <td>
+Forms need <input> fields
+Create links with <a> tag
+Lists: <ul> and <ol>
+Create links with <a> tag
+Forms need <input> fields
+Forms need <input> fields
+The <span> is inline
+Forms need <input> fields
+The <span> is inline
 Add <img> for images
 The <p> element for paragraphs
+Create links with <a> tag
+Create links with <a> tag
 The <span> is inline
-Use <head> for metadata
-Add <img> for images
-The <body> contains content
-Use <head> for metadata
-Add <img> for images
 Use the <div> tag for containers
-The <p> element for paragraphs
+Forms need <input> fields
 Use the <div> tag for containers
+Add <img> for images
+The <span> is inline
+Create links with <a> tag
+Use <head> for metadata
+The <body> contains content
 The <body> contains content
+Tables use <tr> and <td>
+Use the <div> tag for containers
 The <p> element for paragraphs
 Create links with <a> tag
-Use the <div> tag for containers
 Create links with <a> tag
-The <p> element for paragraphs
+Use the <div> tag for containers
+Forms need <input> fields
 Tables use <tr> and <td>
+The <span> is inline
 Tables use <tr> and <td>
-The <body> contains content
-The <body> contains content
-Lists: <ul> and <ol>
-The <body> contains content
-Use <head> for metadata
-The <p> element for paragraphs
+Tables use <tr> and <td>
+Forms need <input> fields
 Lists: <ul> and <ol>
-Create links with <a> tag
+Add <img> for images
 Lists: <ul> and <ol>
 The <span> is inline
 The <p> element for paragraphs
@@ -382,1619 +322,1679 @@ Tables use <tr> and <td>
 The <span> is inline
 The <body> contains content
 Forms need <input> fields
-Create links with <a> tag
 Use <head> for metadata
-Create links with <a> tag
+Use <head> for metadata
 Create links with <a> tag
+Forms need <input> fields
 Use <head> for metadata
+Use the <div> tag for containers
+Tables use <tr> and <td>
 Forms need <input> fields
-The <body> contains content
-Lists: <ul> and <ol>
-Create links with <a> tag
 Tables use <tr> and <td>
-The <body> contains content
+Create links with <a> tag
+Use <head> for metadata
+Add <img> for images
 Use the <div> tag for containers
+Use the <div> tag for containers
 The <p> element for paragraphs
-Tables use <tr> and <td>
-Add <img> for images
+The <p> element for paragraphs
+Use the <div> tag for containers
 Tables use <tr> and <td>
+Use the <div> tag for containers
+Use the <div> tag for containers
+Use the <div> tag for containers
+The <body> contains content
+The <p> element for paragraphs
 Create links with <a> tag
-Forms need <input> fields
+The <span> is inline
 Add <img> for images
-The <p> element for paragraphs
+Use <head> for metadata
+The <body> contains content
+Add <img> for images
 Lists: <ul> and <ol>
+The <body> contains content
+Add <img> for images
+The <body> contains content
+Forms need <input> fields
 Tables use <tr> and <td>
-Lists: <ul> and <ol>
+The <body> contains content
+Create links with <a> tag
 Forms need <input> fields
-Use the <div> tag for containers
-The <span> is inline
 Lists: <ul> and <ol>
 Create links with <a> tag
+Tables use <tr> and <td>
 Use <head> for metadata
+Use <head> for metadata
+Tables use <tr> and <td>
+Use <head> for metadata
 Create links with <a> tag
-The <span> is inline
-The <span> is inline
+Use <head> for metadata
+The <body> contains content
+Use <head> for metadata
+Use <head> for metadata
+Tables use <tr> and <td>
+Use the <div> tag for containers
+Add <img> for images
+Tables use <tr> and <td>
 Forms need <input> fields
 Use <head> for metadata
+Lists: <ul> and <ol>
+Forms need <input> fields
+Add <img> for images
 The <body> contains content
-The <p> element for paragraphs
+Use the <div> tag for containers
 The <body> contains content
 Use <head> for metadata
+Use the <div> tag for containers
 Use <head> for metadata
+The <p> element for paragraphs
 The <body> contains content
-Add <img> for images
 Tables use <tr> and <td>
+The <p> element for paragraphs
+The <p> element for paragraphs
+Forms need <input> fields
 The <span> is inline
+The <span> is inline
+Use the <div> tag for containers
+The <body> contains content
+Use <head> for metadata
+The <span> is inline
+The <span> is inline
 Use the <div> tag for containers
 Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+Forms need <input> fields
+Tables use <tr> and <td>
+Forms need <input> fields
 The <body> contains content
-The <p> element for paragraphs
+Use the <div> tag for containers
+Forms need <input> fields
 The <body> contains content
 Create links with <a> tag
-The <body> contains content
-The <p> element for paragraphs
+Tables use <tr> and <td>
+Add <img> for images
+Create links with <a> tag
+Use <head> for metadata
+Add <img> for images
 Use the <div> tag for containers
 The <span> is inline
 Use <head> for metadata
+Use the <div> tag for containers
+Use <head> for metadata
+Forms need <input> fields
+Tables use <tr> and <td>
+Use the <div> tag for containers
 The <span> is inline
+Add <img> for images
 Use the <div> tag for containers
+Forms need <input> fields
+The <p> element for paragraphs
 The <body> contains content
-Lists: <ul> and <ol>
+Create links with <a> tag
 The <span> is inline
+The <p> element for paragraphs
+The <p> element for paragraphs
 The <p> element for paragraphs
+The <body> contains content
 Use <head> for metadata
+Lists: <ul> and <ol>
+The <body> contains content
 Lists: <ul> and <ol>
 The <p> element for paragraphs
 Tables use <tr> and <td>
 The <body> contains content
-Forms need <input> fields
-Forms need <input> fields
-Lists: <ul> and <ol>
 Use the <div> tag for containers
 Tables use <tr> and <td>
-The <p> element for paragraphs
-Use the <div> tag for containers
-Add <img> for images
-Add <img> for images
-The <body> contains content
-The <p> element for paragraphs
 Tables use <tr> and <td>
 Use the <div> tag for containers
-The <span> is inline
 The <p> element for paragraphs
+Use <head> for metadata
 Create links with <a> tag
 Create links with <a> tag
-The <span> is inline
-The <body> contains content
 Add <img> for images
 Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Use the <div> tag for containers
-The <p> element for paragraphs
-Use <head> for metadata
+Add <img> for images
 Create links with <a> tag
-Tables use <tr> and <td>
-The <body> contains content
-Use <head> for metadata
+Use the <div> tag for containers
 Forms need <input> fields
-Add <img> for images
 The <span> is inline
-Use <head> for metadata
 The <span> is inline
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
+Add <img> for images
 Forms need <input> fields
-Use <head> for metadata
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Tables use <tr> and <td>
-Tables use <tr> and <td>
-The <p> element for paragraphs
 Forms need <input> fields
+Add <img> for images
+Create links with <a> tag
 The <span> is inline
 Use <head> for metadata
-The <span> is inline
 Create links with <a> tag
-Use the <div> tag for containers
-Use <head> for metadata
+The <body> contains content
+Create links with <a> tag
 Forms need <input> fields
-Tables use <tr> and <td>
+The <span> is inline
+The <body> contains content
 Use the <div> tag for containers
-Tables use <tr> and <td>
+The <body> contains content
 Tables use <tr> and <td>
+Lists: <ul> and <ol>
+Add <img> for images
+Use the <div> tag for containers
+Use <head> for metadata
+Add <img> for images
 Tables use <tr> and <td>
 Tables use <tr> and <td>
-The <body> contains content
-The <body> contains content
 Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Add <img> for images
 The <span> is inline
-The <body> contains content
+The <span> is inline
+Create links with <a> tag
 Use <head> for metadata
-Forms need <input> fields
+The <span> is inline
+Tables use <tr> and <td>
+The <span> is inline
 Create links with <a> tag
-The <body> contains content
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
-Forms need <input> fields
+The <span> is inline
 Forms need <input> fields
-Create links with <a> tag
-Add <img> for images
-Add <img> for images
 Forms need <input> fields
-The <p> element for paragraphs
-The <p> element for paragraphs
 The <span> is inline
 Forms need <input> fields
-Lists: <ul> and <ol>
-Add <img> for images
-Forms need <input> fields
-The <body> contains content
 Tables use <tr> and <td>
-Use <head> for metadata
-Use <head> for metadata
-The <p> element for paragraphs
-The <body> contains content
-The <span> is inline
-Add <img> for images
+Use the <div> tag for containers
+Forms need <input> fields
 Use the <div> tag for containers
 Lists: <ul> and <ol>
+Tables use <tr> and <td>
 The <span> is inline
-Create links with <a> tag
-The <body> contains content
-Create links with <a> tag
-Add <img> for images
+Use <head> for metadata
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
 Tables use <tr> and <td>
 Use the <div> tag for containers
-The <p> element for paragraphs
 Add <img> for images
-The <span> is inline
-Use <head> for metadata
+Create links with <a> tag
+Forms need <input> fields
 Use the <div> tag for containers
-Lists: <ul> and <ol>
+Use <head> for metadata
+The <body> contains content
+The <p> element for paragraphs
+Create links with <a> tag
 Use the <div> tag for containers
-The <span> is inline
+Create links with <a> tag
 The <span> is inline
 Add <img> for images
-Create links with <a> tag
+The <p> element for paragraphs
 The <p> element for paragraphs
 Use <head> for metadata
-Forms need <input> fields
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
 The <span> is inline
 The <p> element for paragraphs
 Forms need <input> fields
-The <span> is inline
-Add <img> for images
 The <p> element for paragraphs
 Forms need <input> fields
-Tables use <tr> and <td>
-Forms need <input> fields
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
-The <body> contains content
-Add <img> for images
+The <span> is inline
+Create links with <a> tag
 The <p> element for paragraphs
 Add <img> for images
 Add <img> for images
+Tables use <tr> and <td>
+Add <img> for images
 Use <head> for metadata
+Forms need <input> fields
 Create links with <a> tag
-The <body> contains content
+Lists: <ul> and <ol>
+The <p> element for paragraphs
 Tables use <tr> and <td>
-Add <img> for images
-The <span> is inline
-Add <img> for images
-Add <img> for images
+Forms need <input> fields
 The <span> is inline
-Add <img> for images
-Use the <div> tag for containers
 Create links with <a> tag
-The <body> contains content
-Forms need <input> fields
 Create links with <a> tag
-The <p> element for paragraphs
 Forms need <input> fields
-The <body> contains content
-The <body> contains content
-The <body> contains content
+Create links with <a> tag
 The <body> contains content
+Use the <div> tag for containers
+Use the <div> tag for containers
 Create links with <a> tag
 Create links with <a> tag
 Tables use <tr> and <td>
-The <body> contains content
-The <body> contains content
-Use the <div> tag for containers
 The <body> contains content
-The <p> element for paragraphs
 Lists: <ul> and <ol>
 The <p> element for paragraphs
-Add <img> for images
-Add <img> for images
 Use the <div> tag for containers
+Use <head> for metadata
+The <p> element for paragraphs
+Use the <div> tag for containers
+Create links with <a> tag
+Tables use <tr> and <td>
+Add <img> for images
+The <p> element for paragraphs
 Add <img> for images
+Tables use <tr> and <td>
+The <span> is inline
 Tables use <tr> and <td>
 The <p> element for paragraphs
+Tables use <tr> and <td>
+Add <img> for images
 Forms need <input> fields
-Use the <div> tag for containers
-Lists: <ul> and <ol>
-Create links with <a> tag
+Add <img> for images
+The <span> is inline
+The <p> element for paragraphs
 Create links with <a> tag
-The <body> contains content
-The <body> contains content
 Create links with <a> tag
-Forms need <input> fields
 Lists: <ul> and <ol>
 The <span> is inline
 Use the <div> tag for containers
-Use the <div> tag for containers
-Create links with <a> tag
-The <span> is inline
-The <span> is inline
 Forms need <input> fields
 Forms need <input> fields
-Forms need <input> fields
-Forms need <input> fields
-The <span> is inline
-Add <img> for images
-The <span> is inline
-The <span> is inline
-The <span> is inline
-Add <img> for images
-The <body> contains content
-The <p> element for paragraphs
 Use <head> for metadata
-Tables use <tr> and <td>
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
 Use <head> for metadata
-Create links with <a> tag
-Add <img> for images
-Create links with <a> tag
-Add <img> for images
-The <body> contains content
-Use the <div> tag for containers
-The <body> contains content
-Create links with <a> tag
-Use the <div> tag for containers
 The <p> element for paragraphs
 Tables use <tr> and <td>
-Add <img> for images
-Use the <div> tag for containers
-The <span> is inline
 The <p> element for paragraphs
 The <p> element for paragraphs
-Use the <div> tag for containers
 Forms need <input> fields
-Create links with <a> tag
 Use <head> for metadata
-Add <img> for images
-Add <img> for images
-The <body> contains content
-Tables use <tr> and <td>
 Use the <div> tag for containers
-Add <img> for images
-The <p> element for paragraphs
-Use <head> for metadata
-Tables use <tr> and <td>
-Tables use <tr> and <td>
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
-Add <img> for images
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
 The <body> contains content
+Forms need <input> fields
 Use the <div> tag for containers
-Use <head> for metadata
-Use <head> for metadata
-The <span> is inline
 The <p> element for paragraphs
-Add <img> for images
-Create links with <a> tag
-The <body> contains content
-Tables use <tr> and <td>
-Create links with <a> tag
-Use the <div> tag for containers
-Use the <div> tag for containers
 Use the <div> tag for containers
 Use <head> for metadata
-Add <img> for images
-The <span> is inline
 Create links with <a> tag
+Tables use <tr> and <td>
 The <span> is inline
+The <p> element for paragraphs
 Forms need <input> fields
-Add <img> for images
-Add <img> for images
 Lists: <ul> and <ol>
 Use the <div> tag for containers
-Tables use <tr> and <td>
-Tables use <tr> and <td>
 Tables use <tr> and <td>
-Lists: <ul> and <ol>
-The <body> contains content
-Create links with <a> tag
+Forms need <input> fields
+Add <img> for images
 Use <head> for metadata
-The <span> is inline
-Tables use <tr> and <td>
+The <p> element for paragraphs
+The <p> element for paragraphs
 Create links with <a> tag
-Lists: <ul> and <ol>
 Use <head> for metadata
-Create links with <a> tag
+The <p> element for paragraphs
 Use <head> for metadata
-Create links with <a> tag
-The <body> contains content
-The <body> contains content
+The <p> element for paragraphs
+The <span> is inline
+Use the <div> tag for containers
 Forms need <input> fields
-Use <head> for metadata
-Tables use <tr> and <td>
+Forms need <input> fields
 Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Add <img> for images
+Tables use <tr> and <td>
 Tables use <tr> and <td>
+The <p> element for paragraphs
 Use <head> for metadata
 The <body> contains content
-The <span> is inline
+The <p> element for paragraphs
 Forms need <input> fields
+Use the <div> tag for containers
+The <span> is inline
+The <p> element for paragraphs
 Use <head> for metadata
 The <body> contains content
-Create links with <a> tag
+Use the <div> tag for containers
+Use the <div> tag for containers
+Tables use <tr> and <td>
+Use the <div> tag for containers
 The <body> contains content
-Add <img> for images
 The <body> contains content
-The <p> element for paragraphs
-Tables use <tr> and <td>
+Create links with <a> tag
 The <p> element for paragraphs
 The <body> contains content
 The <span> is inline
-The <body> contains content
+The <span> is inline
 The <p> element for paragraphs
-The <body> contains content
-Add <img> for images
+Tables use <tr> and <td>
 Create links with <a> tag
+Tables use <tr> and <td>
+The <body> contains content
+The <p> element for paragraphs
+The <p> element for paragraphs
 Add <img> for images
-The <span> is inline
+Lists: <ul> and <ol>
+Use the <div> tag for containers
+The <p> element for paragraphs
+Tables use <tr> and <td>
 Create links with <a> tag
 Forms need <input> fields
-Create links with <a> tag
-Use <head> for metadata
-Use the <div> tag for containers
+The <body> contains content
+The <body> contains content
 Forms need <input> fields
 The <body> contains content
-The <p> element for paragraphs
 Use <head> for metadata
+Use the <div> tag for containers
+The <body> contains content
+Forms need <input> fields
+Forms need <input> fields
+Forms need <input> fields
 Lists: <ul> and <ol>
 Forms need <input> fields
 Use <head> for metadata
-The <body> contains content
-Add <img> for images
 Use the <div> tag for containers
 The <span> is inline
-The <p> element for paragraphs
 Use the <div> tag for containers
-Use the <div> tag for containers
-Use <head> for metadata
 Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Use the <div> tag for containers
-Use <head> for metadata
-Use the <div> tag for containers
+The <span> is inline
 The <p> element for paragraphs
 Add <img> for images
-Use the <div> tag for containers
+Add <img> for images
+Add <img> for images
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
 Use <head> for metadata
-The <span> is inline
 Forms need <input> fields
+Create links with <a> tag
+Tables use <tr> and <td>
+The <body> contains content
 Use the <div> tag for containers
+Use <head> for metadata
+Create links with <a> tag
+Tables use <tr> and <td>
+The <body> contains content
 Use <head> for metadata
 Use <head> for metadata
+Use <head> for metadata
+Forms need <input> fields
+The <p> element for paragraphs
+Lists: <ul> and <ol>
+Add <img> for images
 The <body> contains content
+Forms need <input> fields
 The <body> contains content
 The <p> element for paragraphs
-Add <img> for images
-The <span> is inline
-Add <img> for images
-Use the <div> tag for containers
-Tables use <tr> and <td>
 The <body> contains content
 Lists: <ul> and <ol>
-Forms need <input> fields
-Tables use <tr> and <td>
+The <span> is inline
 Use the <div> tag for containers
+Add <img> for images
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+Add <img> for images
 Create links with <a> tag
 Add <img> for images
+Use the <div> tag for containers
+Use <head> for metadata
 Forms need <input> fields
 Add <img> for images
-Tables use <tr> and <td>
 Use the <div> tag for containers
-Use <head> for metadata
-Use <head> for metadata
+Create links with <a> tag
 Add <img> for images
+The <p> element for paragraphs
+Lists: <ul> and <ol>
 Use the <div> tag for containers
-Use <head> for metadata
+The <body> contains content
+Use the <div> tag for containers
+Create links with <a> tag
 The <body> contains content
 The <span> is inline
+The <span> is inline
 Tables use <tr> and <td>
+The <p> element for paragraphs
 Use <head> for metadata
-The <body> contains content
-Use the <div> tag for containers
 The <span> is inline
+Tables use <tr> and <td>
 Forms need <input> fields
-The <p> element for paragraphs
-Use the <div> tag for containers
+Use <head> for metadata
+Create links with <a> tag
+Add <img> for images
+Create links with <a> tag
+Create links with <a> tag
 Use the <div> tag for containers
+Forms need <input> fields
+Forms need <input> fields
+The <span> is inline
+Forms need <input> fields
 Lists: <ul> and <ol>
-Use the <div> tag for containers
+Add <img> for images
+Use <head> for metadata
+The <span> is inline
 Use the <div> tag for containers
-The <p> element for paragraphs
+Create links with <a> tag
+The <span> is inline
+The <span> is inline
+The <span> is inline
+Use <head> for metadata
+Forms need <input> fields
+The <body> contains content
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Forms need <input> fields
 The <body> contains content
 Tables use <tr> and <td>
+The <p> element for paragraphs
+Add <img> for images
+The <body> contains content
 Use the <div> tag for containers
+The <body> contains content
+The <p> element for paragraphs
+The <span> is inline
+The <span> is inline
 Use <head> for metadata
-Use the <div> tag for containers
 The <span> is inline
 Use <head> for metadata
 Add <img> for images
-The <span> is inline
+Tables use <tr> and <td>
+The <p> element for paragraphs
+Lists: <ul> and <ol>
+The <p> element for paragraphs
+Lists: <ul> and <ol>
 Add <img> for images
+The <body> contains content
 The <p> element for paragraphs
+The <body> contains content
+Use <head> for metadata
+Use <head> for metadata
 Add <img> for images
-Use the <div> tag for containers
+Tables use <tr> and <td>
+Use <head> for metadata
 Tables use <tr> and <td>
 Add <img> for images
+Forms need <input> fields
+Create links with <a> tag
+Use <head> for metadata
 Lists: <ul> and <ol>
 Lists: <ul> and <ol>
-The <span> is inline
 Lists: <ul> and <ol>
-Use the <div> tag for containers
-Add <img> for images
 The <span> is inline
-Use the <div> tag for containers
-The <body> contains content
-Lists: <ul> and <ol>
-Use the <div> tag for containers
-Lists: <ul> and <ol>
 The <span> is inline
 Create links with <a> tag
-The <body> contains content
-The <body> contains content
-Use <head> for metadata
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-Add <img> for images
-Forms need <input> fields
-Forms need <input> fields
 Lists: <ul> and <ol>
-Use <head> for metadata
-The <span> is inline
+Forms need <input> fields
+Use the <div> tag for containers
 The <span> is inline
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
 The <span> is inline
-Forms need <input> fields
-Forms need <input> fields
-The <p> element for paragraphs
-The <p> element for paragraphs
+Create links with <a> tag
+The <body> contains content
 Add <img> for images
 Forms need <input> fields
+Add <img> for images
+Add <img> for images
+Lists: <ul> and <ol>
 The <body> contains content
 Use <head> for metadata
-Create links with <a> tag
-The <p> element for paragraphs
-Use the <div> tag for containers
-Use the <div> tag for containers
-Forms need <input> fields
-Add <img> for images
+The <body> contains content
 The <body> contains content
 Lists: <ul> and <ol>
+Use the <div> tag for containers
 Lists: <ul> and <ol>
-The <p> element for paragraphs
-The <span> is inline
-Create links with <a> tag
+Lists: <ul> and <ol>
 Forms need <input> fields
+Create links with <a> tag
 Use <head> for metadata
+Lists: <ul> and <ol>
 The <p> element for paragraphs
+Lists: <ul> and <ol>
 The <span> is inline
-Use <head> for metadata
-Tables use <tr> and <td>
-Tables use <tr> and <td>
+Lists: <ul> and <ol>
 Create links with <a> tag
 The <p> element for paragraphs
-Forms need <input> fields
-The <body> contains content
 The <body> contains content
-Forms need <input> fields
 The <body> contains content
-Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Add <img> for images
 The <p> element for paragraphs
-Forms need <input> fields
+The <p> element for paragraphs
 Use the <div> tag for containers
 Tables use <tr> and <td>
-Forms need <input> fields
+The <body> contains content
 Lists: <ul> and <ol>
 Add <img> for images
+Lists: <ul> and <ol>
+The <span> is inline
 Use the <div> tag for containers
-Forms need <input> fields
-Tables use <tr> and <td>
-Tables use <tr> and <td>
-Forms need <input> fields
 The <body> contains content
-Create links with <a> tag
+The <p> element for paragraphs
 Create links with <a> tag
+Use <head> for metadata
 Use the <div> tag for containers
-Add <img> for images
+Tables use <tr> and <td>
 The <p> element for paragraphs
+Create links with <a> tag
+Add <img> for images
 Use the <div> tag for containers
-Tables use <tr> and <td>
 The <span> is inline
-Lists: <ul> and <ol>
 Create links with <a> tag
-The <span> is inline
 Use <head> for metadata
-Add <img> for images
-Create links with <a> tag
-The <body> contains content
-Add <img> for images
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-Use <head> for metadata
+Tables use <tr> and <td>
+The <body> contains content
+The <body> contains content
 Create links with <a> tag
 Create links with <a> tag
 The <span> is inline
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
+Use <head> for metadata
+Use the <div> tag for containers
+The <p> element for paragraphs
 Forms need <input> fields
 Add <img> for images
+Forms need <input> fields
+Tables use <tr> and <td>
 Tables use <tr> and <td>
+Lists: <ul> and <ol>
+Add <img> for images
+Add <img> for images
 The <p> element for paragraphs
-Create links with <a> tag
+Forms need <input> fields
+The <span> is inline
+Use the <div> tag for containers
+Forms need <input> fields
+The <p> element for paragraphs
+Use the <div> tag for containers
+Lists: <ul> and <ol>
 Use <head> for metadata
-Tables use <tr> and <td>
+Use <head> for metadata
 Tables use <tr> and <td>
-Use the <div> tag for containers
 Use <head> for metadata
+Use <head> for metadata
+Forms need <input> fields
 The <span> is inline
-The <p> element for paragraphs
-The <p> element for paragraphs
+Create links with <a> tag
 Add <img> for images
-The <p> element for paragraphs
-Tables use <tr> and <td>
 Use the <div> tag for containers
+Add <img> for images
+Add <img> for images
+Lists: <ul> and <ol>
 The <p> element for paragraphs
 Tables use <tr> and <td>
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
 Forms need <input> fields
-The <p> element for paragraphs
-Use <head> for metadata
 The <span> is inline
+The <p> element for paragraphs
 Create links with <a> tag
-Tables use <tr> and <td>
+The <body> contains content
 Create links with <a> tag
-Forms need <input> fields
 Lists: <ul> and <ol>
 Tables use <tr> and <td>
+Use <head> for metadata
+Use the <div> tag for containers
 Forms need <input> fields
+Use the <div> tag for containers
 The <body> contains content
+Tables use <tr> and <td>
 Lists: <ul> and <ol>
 Use <head> for metadata
-Use <head> for metadata
 Forms need <input> fields
-The <span> is inline
-The <body> contains content
+Add <img> for images
 Lists: <ul> and <ol>
-The <body> contains content
-Use the <div> tag for containers
 Tables use <tr> and <td>
-Create links with <a> tag
-Forms need <input> fields
-Create links with <a> tag
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-Use <head> for metadata
-Use the <div> tag for containers
-Create links with <a> tag
-Use the <div> tag for containers
-Forms need <input> fields
+The <body> contains content
 Create links with <a> tag
+Add <img> for images
+Add <img> for images
 The <body> contains content
+Use the <div> tag for containers
 Tables use <tr> and <td>
+Use <head> for metadata
 Use the <div> tag for containers
-The <p> element for paragraphs
-Use the <div> tag for containers
 The <body> contains content
-Create links with <a> tag
-The <p> element for paragraphs
-Create links with <a> tag
-Use the <div> tag for containers
-Lists: <ul> and <ol>
 The <span> is inline
-The <body> contains content
-The <body> contains content
-Create links with <a> tag
-Tables use <tr> and <td>
-The <p> element for paragraphs
 Use <head> for metadata
-The <body> contains content
+Use <head> for metadata
+Lists: <ul> and <ol>
 Add <img> for images
-Tables use <tr> and <td>
 Forms need <input> fields
-Use <head> for metadata
+Forms need <input> fields
 Tables use <tr> and <td>
 Lists: <ul> and <ol>
-The <p> element for paragraphs
-The <p> element for paragraphs
+Lists: <ul> and <ol>
 The <p> element for paragraphs
+Tables use <tr> and <td>
 The <body> contains content
+Use <head> for metadata
 Forms need <input> fields
-Use the <div> tag for containers
+Forms need <input> fields
 The <p> element for paragraphs
 Add <img> for images
 Lists: <ul> and <ol>
-Use the <div> tag for containers
-Use the <div> tag for containers
-Use <head> for metadata
-Create links with <a> tag
+Add <img> for images
 The <p> element for paragraphs
-Create links with <a> tag
-The <body> contains content
-Forms need <input> fields
-Use the <div> tag for containers
-Tables use <tr> and <td>
 Lists: <ul> and <ol>
-The <span> is inline
-Create links with <a> tag
 The <body> contains content
+Tables use <tr> and <td>
+Tables use <tr> and <td>
 Use <head> for metadata
-Forms need <input> fields
-Add <img> for images
-Forms need <input> fields
-Create links with <a> tag
-The <span> is inline
 Add <img> for images
 Use <head> for metadata
-Forms need <input> fields
-Create links with <a> tag
-The <body> contains content
-The <span> is inline
-Create links with <a> tag
 Tables use <tr> and <td>
-Forms need <input> fields
-The <p> element for paragraphs
-The <body> contains content
-The <body> contains content
+Create links with <a> tag
+Use the <div> tag for containers
+Add <img> for images
 Tables use <tr> and <td>
+Use <head> for metadata
 Add <img> for images
+Use <head> for metadata
+Use the <div> tag for containers
+Use the <div> tag for containers
+Use <head> for metadata
 The <p> element for paragraphs
-Forms need <input> fields
-The <span> is inline
 Use the <div> tag for containers
+Forms need <input> fields
+Add <img> for images
 Tables use <tr> and <td>
-Lists: <ul> and <ol>
+Use <head> for metadata
+Use <head> for metadata
 Lists: <ul> and <ol>
+Use <head> for metadata
+The <body> contains content
+The <span> is inline
+Add <img> for images
 Tables use <tr> and <td>
-Use the <div> tag for containers
-The <p> element for paragraphs
 Create links with <a> tag
 The <p> element for paragraphs
-The <span> is inline
+The <p> element for paragraphs
+The <p> element for paragraphs
 The <body> contains content
 Forms need <input> fields
-Use the <div> tag for containers
-The <p> element for paragraphs
-Tables use <tr> and <td>
+Forms need <input> fields
+Add <img> for images
 Tables use <tr> and <td>
+Add <img> for images
 The <span> is inline
-The <p> element for paragraphs
 Use the <div> tag for containers
+Use <head> for metadata
 Tables use <tr> and <td>
-Add <img> for images
-Lists: <ul> and <ol>
 Create links with <a> tag
-Lists: <ul> and <ol>
-The <span> is inline
+Create links with <a> tag
 Forms need <input> fields
-Tables use <tr> and <td>
-The <span> is inline
-Tables use <tr> and <td>
 Add <img> for images
-The <p> element for paragraphs
-The <p> element for paragraphs
-Forms need <input> fields
 Use the <div> tag for containers
-Forms need <input> fields
+Create links with <a> tag
+Create links with <a> tag
+Create links with <a> tag
+The <span> is inline
+Lists: <ul> and <ol>
+Create links with <a> tag
 The <p> element for paragraphs
-Add <img> for images
+Create links with <a> tag
 The <body> contains content
-Use the <div> tag for containers
-The <p> element for paragraphs
-Use the <div> tag for containers
+Add <img> for images
 The <span> is inline
 Use <head> for metadata
-The <p> element for paragraphs
-Lists: <ul> and <ol>
 The <span> is inline
+Use the <div> tag for containers
 Create links with <a> tag
-The <body> contains content
-The <body> contains content
 Add <img> for images
 Use <head> for metadata
-The <span> is inline
-The <span> is inline
+Create links with <a> tag
+Create links with <a> tag
+Use <head> for metadata
+Use the <div> tag for containers
+Create links with <a> tag
+Create links with <a> tag
 The <body> contains content
+Forms need <input> fields
 Add <img> for images
-The <span> is inline
+The <body> contains content
+Add <img> for images
+The <body> contains content
 Tables use <tr> and <td>
-Create links with <a> tag
 The <span> is inline
-Lists: <ul> and <ol>
+The <body> contains content
+Forms need <input> fields
+Tables use <tr> and <td>
 Lists: <ul> and <ol>
 Add <img> for images
+Use the <div> tag for containers
+Use <head> for metadata
+The <span> is inline
+Use the <div> tag for containers
 The <body> contains content
+Tables use <tr> and <td>
+The <p> element for paragraphs
+The <p> element for paragraphs
 Create links with <a> tag
-Use <head> for metadata
-Lists: <ul> and <ol>
-Forms need <input> fields
 Tables use <tr> and <td>
+Create links with <a> tag
+Create links with <a> tag
+The <body> contains content
+Lists: <ul> and <ol>
+The <span> is inline
+Use the <div> tag for containers
 Use <head> for metadata
-Forms need <input> fields
 Use <head> for metadata
-Forms need <input> fields
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
-Forms need <input> fields
+Create links with <a> tag
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
-Tables use <tr> and <td>
 The <span> is inline
-Lists: <ul> and <ol>
-The <body> contains content
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
-The <body> contains content
+The <span> is inline
+Add <img> for images
+Create links with <a> tag
 The <span> is inline
 The <span> is inline
 The <span> is inline
-Add <img> for images
-Lists: <ul> and <ol>
 Forms need <input> fields
-Add <img> for images
+Use <head> for metadata
 The <span> is inline
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
-Use the <div> tag for containers
-The <p> element for paragraphs
-Add <img> for images
-The <body> contains content
-Add <img> for images
-Tables use <tr> and <td>
-Forms need <input> fields
 The <span> is inline
 Forms need <input> fields
-Use <head> for metadata
-The <body> contains content
 Use the <div> tag for containers
+The <span> is inline
+Use the <div> tag for containers
 The <body> contains content
+Lists: <ul> and <ol>
+Forms need <input> fields
 Forms need <input> fields
 Create links with <a> tag
-The <body> contains content
 Forms need <input> fields
 The <body> contains content
 The <span> is inline
-Lists: <ul> and <ol>
-The <body> contains content
-Tables use <tr> and <td>
 Use the <div> tag for containers
-Add <img> for images
-Tables use <tr> and <td>
-Use the <div> tag for containers
+The <span> is inline
 Use the <div> tag for containers
 The <span> is inline
+Use the <div> tag for containers
+Use <head> for metadata
 The <p> element for paragraphs
-The <body> contains content
-Tables use <tr> and <td>
+Create links with <a> tag
+Lists: <ul> and <ol>
+Create links with <a> tag
+Forms need <input> fields
+Create links with <a> tag
 The <body> contains content
-Add <img> for images
 Use the <div> tag for containers
+The <p> element for paragraphs
+Create links with <a> tag
+Forms need <input> fields
 Lists: <ul> and <ol>
 Add <img> for images
+Create links with <a> tag
+Use <head> for metadata
+Use <head> for metadata
+Use <head> for metadata
 The <span> is inline
-Add <img> for images
+Use <head> for metadata
+Tables use <tr> and <td>
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+The <body> contains content
+Use the <div> tag for containers
+Use <head> for metadata
 The <span> is inline
-The <p> element for paragraphs
-Create links with <a> tag
-The <p> element for paragraphs
-Add <img> for images
+Forms need <input> fields
 Add <img> for images
+Forms need <input> fields
 The <span> is inline
 Lists: <ul> and <ol>
 Forms need <input> fields
-Use the <div> tag for containers
+The <p> element for paragraphs
 The <span> is inline
 The <body> contains content
-Use <head> for metadata
 Lists: <ul> and <ol>
-The <span> is inline
-The <p> element for paragraphs
 Use the <div> tag for containers
-The <span> is inline
-The <p> element for paragraphs
-Tables use <tr> and <td>
-The <span> is inline
+Use the <div> tag for containers
 The <span> is inline
-Add <img> for images
-Use <head> for metadata
 Add <img> for images
-The <body> contains content
 Use <head> for metadata
-Create links with <a> tag
 Forms need <input> fields
 Forms need <input> fields
 The <p> element for paragraphs
+Use <head> for metadata
 Lists: <ul> and <ol>
+Create links with <a> tag
 Forms need <input> fields
+The <body> contains content
 Use the <div> tag for containers
-The <span> is inline
-Lists: <ul> and <ol>
-Tables use <tr> and <td>
+Create links with <a> tag
+Forms need <input> fields
 Use the <div> tag for containers
+Lists: <ul> and <ol>
+Use <head> for metadata
 Create links with <a> tag
-The <body> contains content
-The <span> is inline
 Use <head> for metadata
-Lists: <ul> and <ol>
-The <span> is inline
 The <p> element for paragraphs
-The <span> is inline
+Use <head> for metadata
+Use the <div> tag for containers
 Forms need <input> fields
-The <body> contains content
+Create links with <a> tag
+Forms need <input> fields
 Use the <div> tag for containers
 The <p> element for paragraphs
-Forms need <input> fields
+The <p> element for paragraphs
+Use <head> for metadata
 Forms need <input> fields
-Create links with <a> tag
-The <body> contains content
 Tables use <tr> and <td>
-Create links with <a> tag
-Use <head> for metadata
-Create links with <a> tag
-Create links with <a> tag
-Use the <div> tag for containers
-The <p> element for paragraphs
-Lists: <ul> and <ol>
 Tables use <tr> and <td>
-Lists: <ul> and <ol>
-The <span> is inline
+Use the <div> tag for containers
 Forms need <input> fields
+The <span> is inline
+The <span> is inline
 Tables use <tr> and <td>
-Add <img> for images
-Use the <div> tag for containers
-Add <img> for images
-Lists: <ul> and <ol>
-Use <head> for metadata
-Use the <div> tag for containers
 Create links with <a> tag
-The <p> element for paragraphs
-The <span> is inline
 Create links with <a> tag
-Lists: <ul> and <ol>
-Use <head> for metadata
-The <p> element for paragraphs
-Use <head> for metadata
-The <span> is inline
 Create links with <a> tag
-The <body> contains content
-Forms need <input> fields
 Tables use <tr> and <td>
-Add <img> for images
-Use <head> for metadata
-Lists: <ul> and <ol>
-Forms need <input> fields
-Add <img> for images
-Lists: <ul> and <ol>
 The <p> element for paragraphs
-Use <head> for metadata
-Forms need <input> fields
 The <p> element for paragraphs
-Use the <div> tag for containers
 Tables use <tr> and <td>
-Use <head> for metadata
-Forms need <input> fields
-Add <img> for images
-Forms need <input> fields
-Add <img> for images
-Use <head> for metadata
-The <span> is inline
-The <span> is inline
-Use the <div> tag for containers
 Use the <div> tag for containers
-The <body> contains content
-Create links with <a> tag
 The <body> contains content
-The <body> contains content
-Use <head> for metadata
+Forms need <input> fields
+Use the <div> tag for containers
 Create links with <a> tag
 Lists: <ul> and <ol>
 Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-Use <head> for metadata
+Add <img> for images
 Use the <div> tag for containers
 The <body> contains content
-The <p> element for paragraphs
-Use <head> for metadata
-Add <img> for images
 Create links with <a> tag
 Lists: <ul> and <ol>
-Create links with <a> tag
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
-The <body> contains content
-The <body> contains content
-Use <head> for metadata
-Create links with <a> tag
+Lists: <ul> and <ol>
+The <span> is inline
 Add <img> for images
-The <p> element for paragraphs
+Create links with <a> tag
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Use the <div> tag for containers
 The <p> element for paragraphs
-Forms need <input> fields
-The <body> contains content
 Create links with <a> tag
-Add <img> for images
-Add <img> for images
 The <span> is inline
-The <p> element for paragraphs
-Use <head> for metadata
-Forms need <input> fields
+Use the <div> tag for containers
+The <span> is inline
 Create links with <a> tag
 The <p> element for paragraphs
 Create links with <a> tag
 Create links with <a> tag
 Use <head> for metadata
 The <body> contains content
-Lists: <ul> and <ol>
+The <span> is inline
 Add <img> for images
+The <span> is inline
 The <p> element for paragraphs
+The <span> is inline
+Use the <div> tag for containers
+Use <head> for metadata
 Create links with <a> tag
+The <span> is inline
+Use <head> for metadata
 Lists: <ul> and <ol>
+The <p> element for paragraphs
+The <p> element for paragraphs
 Use <head> for metadata
+The <body> contains content
 Use the <div> tag for containers
+The <p> element for paragraphs
+Add <img> for images
+Use <head> for metadata
 Create links with <a> tag
+Lists: <ul> and <ol>
 Use <head> for metadata
 The <p> element for paragraphs
+Lists: <ul> and <ol>
+The <body> contains content
+Use <head> for metadata
+Tables use <tr> and <td>
+Tables use <tr> and <td>
 Use the <div> tag for containers
+Tables use <tr> and <td>
+Add <img> for images
+Add <img> for images
+Add <img> for images
 Create links with <a> tag
-Use the <div> tag for containers
-The <span> is inline
 Forms need <input> fields
 Create links with <a> tag
-Add <img> for images
-Lists: <ul> and <ol>
+Forms need <input> fields
+Use <head> for metadata
+Create links with <a> tag
+Use <head> for metadata
 Use <head> for metadata
+The <span> is inline
 Create links with <a> tag
+Use <head> for metadata
 Forms need <input> fields
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Add <img> for images
+The <body> contains content
 Forms need <input> fields
-The <span> is inline
+Add <img> for images
+Add <img> for images
 The <body> contains content
-The <p> element for paragraphs
 Use the <div> tag for containers
+Add <img> for images
 Create links with <a> tag
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Lists: <ul> and <ol>
 The <body> contains content
-Create links with <a> tag
-Use <head> for metadata
+Use the <div> tag for containers
 Forms need <input> fields
-Use <head> for metadata
-Use <head> for metadata
+The <p> element for paragraphs
+The <body> contains content
+Add <img> for images
+Forms need <input> fields
 The <span> is inline
-Create links with <a> tag
 Use the <div> tag for containers
-The <body> contains content
+Forms need <input> fields
 Use <head> for metadata
-The <body> contains content
-Add <img> for images
+The <span> is inline
+Use the <div> tag for containers
 The <p> element for paragraphs
+Tables use <tr> and <td>
 Lists: <ul> and <ol>
-Add <img> for images
 Lists: <ul> and <ol>
 Create links with <a> tag
 The <p> element for paragraphs
+Use the <div> tag for containers
+The <span> is inline
+Create links with <a> tag
+Lists: <ul> and <ol>
+The <span> is inline
 Tables use <tr> and <td>
+Lists: <ul> and <ol>
 Forms need <input> fields
+Use the <div> tag for containers
+The <p> element for paragraphs
+Tables use <tr> and <td>
 Create links with <a> tag
-Lists: <ul> and <ol>
+Tables use <tr> and <td>
 The <p> element for paragraphs
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
 Use <head> for metadata
+Forms need <input> fields
+Use the <div> tag for containers
 Use <head> for metadata
-Add <img> for images
-The <span> is inline
 Lists: <ul> and <ol>
-The <p> element for paragraphs
 Add <img> for images
 The <span> is inline
-Use <head> for metadata
-Add <img> for images
-Create links with <a> tag
-Use <head> for metadata
-Use <head> for metadata
 The <body> contains content
-Create links with <a> tag
-Use <head> for metadata
-Add <img> for images
-Forms need <input> fields
-Create links with <a> tag
-Forms need <input> fields
-Use the <div> tag for containers
 Forms need <input> fields
-The <body> contains content
 The <p> element for paragraphs
-The <p> element for paragraphs
-Use <head> for metadata
-Use <head> for metadata
-The <p> element for paragraphs
-The <span> is inline
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-Add <img> for images
 Use the <div> tag for containers
-Create links with <a> tag
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
-The <span> is inline
-Use <head> for metadata
+Use the <div> tag for containers
 Use <head> for metadata
-The <p> element for paragraphs
+The <body> contains content
 Add <img> for images
-Lists: <ul> and <ol>
-The <p> element for paragraphs
 The <body> contains content
-Forms need <input> fields
 Tables use <tr> and <td>
 The <span> is inline
-Use <head> for metadata
-Tables use <tr> and <td>
 Lists: <ul> and <ol>
-Use the <div> tag for containers
-Create links with <a> tag
+Lists: <ul> and <ol>
+The <body> contains content
 Create links with <a> tag
 The <span> is inline
 Forms need <input> fields
 Create links with <a> tag
 The <span> is inline
+The <p> element for paragraphs
+The <p> element for paragraphs
+The <body> contains content
+The <p> element for paragraphs
 Tables use <tr> and <td>
-Create links with <a> tag
+The <p> element for paragraphs
 Forms need <input> fields
-Use <head> for metadata
-Add <img> for images
-Create links with <a> tag
-Lists: <ul> and <ol>
-Lists: <ul> and <ol>
+The <p> element for paragraphs
+The <body> contains content
 The <body> contains content
+Use <head> for metadata
+The <span> is inline
 Create links with <a> tag
-Tables use <tr> and <td>
 The <p> element for paragraphs
-Use <head> for metadata
-Add <img> for images
-Tables use <tr> and <td>
 The <p> element for paragraphs
-Tables use <tr> and <td>
-Use <head> for metadata
-Use the <div> tag for containers
 The <p> element for paragraphs
+Tables use <tr> and <td>
 Tables use <tr> and <td>
+The <span> is inline
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
 Use the <div> tag for containers
+Forms need <input> fields
 The <p> element for paragraphs
-Use the <div> tag for containers
+The <span> is inline
+The <p> element for paragraphs
+Add <img> for images
+Use <head> for metadata
+Add <img> for images
+Create links with <a> tag
+Add <img> for images
 Add <img> for images
+Use <head> for metadata
+Use the <div> tag for containers
 Forms need <input> fields
-The <body> contains content
+Create links with <a> tag
+Create links with <a> tag
+Create links with <a> tag
 Lists: <ul> and <ol>
 Create links with <a> tag
+Use <head> for metadata
+The <p> element for paragraphs
 Lists: <ul> and <ol>
+Use <head> for metadata
+Forms need <input> fields
+The <body> contains content
 Lists: <ul> and <ol>
 Add <img> for images
-The <body> contains content
 Tables use <tr> and <td>
+The <span> is inline
 Add <img> for images
-The <p> element for paragraphs
-Lists: <ul> and <ol>
-Use <head> for metadata
 The <p> element for paragraphs
 Use the <div> tag for containers
-Lists: <ul> and <ol>
-The <p> element for paragraphs
-Create links with <a> tag
+The <body> contains content
+The <body> contains content
 Use the <div> tag for containers
 Use the <div> tag for containers
 Use the <div> tag for containers
-The <span> is inline
-Create links with <a> tag
-Create links with <a> tag
 Add <img> for images
-Forms need <input> fields
-Use <head> for metadata
-Lists: <ul> and <ol>
-Use the <div> tag for containers
-The <body> contains content
-Use <head> for metadata
-The <span> is inline
-Use <head> for metadata
 Add <img> for images
+Tables use <tr> and <td>
 Add <img> for images
-Forms need <input> fields
+The <body> contains content
 Lists: <ul> and <ol>
-Use <head> for metadata
-Use <head> for metadata
+Forms need <input> fields
+The <span> is inline
 Use <head> for metadata
 Tables use <tr> and <td>
-Use the <div> tag for containers
 The <span> is inline
-The <body> contains content
-The <p> element for paragraphs
-Use <head> for metadata
-Lists: <ul> and <ol>
+Create links with <a> tag
 Create links with <a> tag
+Create links with <a> tag
 Use the <div> tag for containers
+Create links with <a> tag
+The <p> element for paragraphs
+The <body> contains content
 Lists: <ul> and <ol>
-Use <head> for metadata
-Use <head> for metadata
 Lists: <ul> and <ol>
 Create links with <a> tag
+Create links with <a> tag
 The <p> element for paragraphs
 Forms need <input> fields
-Create links with <a> tag
-Use <head> for metadata
-Use <head> for metadata
-Tables use <tr> and <td>
+Add <img> for images
+The <span> is inline
 Create links with <a> tag
 The <span> is inline
+The <p> element for paragraphs
 Use the <div> tag for containers
-Lists: <ul> and <ol>
-Forms need <input> fields
+The <p> element for paragraphs
 Tables use <tr> and <td>
-The <span> is inline
-The <span> is inline
+Use the <div> tag for containers
 Forms need <input> fields
-The <p> element for paragraphs
-Create links with <a> tag
-Use <head> for metadata
-Create links with <a> tag
 The <body> contains content
-Create links with <a> tag
-Use the <div> tag for containers
-Use the <div> tag for containers
-Create links with <a> tag
+Add <img> for images
+Use <head> for metadata
+Add <img> for images
+Forms need <input> fields
 Lists: <ul> and <ol>
 Lists: <ul> and <ol>
-Create links with <a> tag
-The <span> is inline
+The <p> element for paragraphs
+Add <img> for images
 The <body> contains content
-Use <head> for metadata
+The <body> contains content
+Forms need <input> fields
+Forms need <input> fields
+Add <img> for images
+The <body> contains content
+Use the <div> tag for containers
+Add <img> for images
+The <span> is inline
 Forms need <input> fields
 Create links with <a> tag
 Create links with <a> tag
-Lists: <ul> and <ol>
+The <span> is inline
+Forms need <input> fields
+The <p> element for paragraphs
 Use the <div> tag for containers
-Lists: <ul> and <ol>
-The <body> contains content
+Add <img> for images
+The <span> is inline
 Use <head> for metadata
+The <span> is inline
+Add <img> for images
 The <p> element for paragraphs
+The <body> contains content
+The <body> contains content
+Forms need <input> fields
 Use <head> for metadata
 Add <img> for images
-Lists: <ul> and <ol>
 Tables use <tr> and <td>
-Tables use <tr> and <td>
+Use the <div> tag for containers
 Add <img> for images
+The <body> contains content
+The <span> is inline
+The <body> contains content
+Forms need <input> fields
+Use the <div> tag for containers
 Add <img> for images
+Use the <div> tag for containers
+Use the <div> tag for containers
 Lists: <ul> and <ol>
-Forms need <input> fields
-Forms need <input> fields
 The <body> contains content
 Tables use <tr> and <td>
+Use the <div> tag for containers
+Add <img> for images
 Create links with <a> tag
-Lists: <ul> and <ol>
+The <body> contains content
+Tables use <tr> and <td>
+The <body> contains content
+Tables use <tr> and <td>
+The <p> element for paragraphs
 Create links with <a> tag
-Forms need <input> fields
+The <body> contains content
+The <body> contains content
+The <body> contains content
+Add <img> for images
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Lists: <ul> and <ol>
 Use the <div> tag for containers
-The <span> is inline
+Tables use <tr> and <td>
+The <body> contains content
 The <body> contains content
 The <p> element for paragraphs
+Use the <div> tag for containers
+Tables use <tr> and <td>
+Use <head> for metadata
+Tables use <tr> and <td>
+Create links with <a> tag
+Tables use <tr> and <td>
+Use <head> for metadata
+Forms need <input> fields
+Use <head> for metadata
 The <span> is inline
-The <p> element for paragraphs
-The <body> contains content
+Tables use <tr> and <td>
 Add <img> for images
+The <body> contains content
 The <span> is inline
+Lists: <ul> and <ol>
 Use <head> for metadata
+Add <img> for images
+Forms need <input> fields
 The <p> element for paragraphs
-Use the <div> tag for containers
 Use <head> for metadata
-The <p> element for paragraphs
-The <p> element for paragraphs
-The <body> contains content
-The <body> contains content
-The <p> element for paragraphs
 The <body> contains content
-Lists: <ul> and <ol>
+The <span> is inline
 Forms need <input> fields
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
+Use the <div> tag for containers
+The <body> contains content
+Forms need <input> fields
 Use <head> for metadata
+The <body> contains content
 Lists: <ul> and <ol>
-Use <head> for metadata
+The <span> is inline
+The <body> contains content
 The <body> contains content
 Use the <div> tag for containers
-Tables use <tr> and <td>
+Use the <div> tag for containers
+The <body> contains content
+The <body> contains content
+Add <img> for images
+Use the <div> tag for containers
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
+Forms need <input> fields
+Lists: <ul> and <ol>
+The <body> contains content
+The <body> contains content
+Forms need <input> fields
 Add <img> for images
+The <p> element for paragraphs
 The <span> is inline
-Tables use <tr> and <td>
-Tables use <tr> and <td>
-Create links with <a> tag
-Add <img> for images
 The <span> is inline
-Use <head> for metadata
+Add <img> for images
 Lists: <ul> and <ol>
 The <span> is inline
-Tables use <tr> and <td>
+The <p> element for paragraphs
+The <body> contains content
+The <p> element for paragraphs
 Lists: <ul> and <ol>
+Use <head> for metadata
+The <span> is inline
+Forms need <input> fields
+The <body> contains content
+The <span> is inline
 Create links with <a> tag
 Use the <div> tag for containers
-The <span> is inline
-The <p> element for paragraphs
-Tables use <tr> and <td>
 Use <head> for metadata
-The <body> contains content
-Add <img> for images
+Tables use <tr> and <td>
+Use the <div> tag for containers
 Lists: <ul> and <ol>
+Use <head> for metadata
+Use the <div> tag for containers
+Use <head> for metadata
 Lists: <ul> and <ol>
-Tables use <tr> and <td>
+The <span> is inline
+Use the <div> tag for containers
 The <p> element for paragraphs
+Lists: <ul> and <ol>
+Create links with <a> tag
 The <p> element for paragraphs
-The <body> contains content
 Forms need <input> fields
-The <body> contains content
-The <body> contains content
-Add <img> for images
-The <body> contains content
 Use the <div> tag for containers
-Lists: <ul> and <ol>
+Use the <div> tag for containers
+Use the <div> tag for containers
 Forms need <input> fields
-Add <img> for images
+Forms need <input> fields
+Forms need <input> fields
 Use <head> for metadata
-Add <img> for images
+Use <head> for metadata
+Tables use <tr> and <td>
+The <span> is inline
 The <span> is inline
 Add <img> for images
+Use the <div> tag for containers
+Add <img> for images
+Use the <div> tag for containers
+Forms need <input> fields
+The <span> is inline
+Tables use <tr> and <td>
 The <p> element for paragraphs
 Lists: <ul> and <ol>
 Lists: <ul> and <ol>
-Create links with <a> tag
 Add <img> for images
-Lists: <ul> and <ol>
-Tables use <tr> and <td>
+Add <img> for images
 Use the <div> tag for containers
 The <body> contains content
-The <p> element for paragraphs
-Add <img> for images
-Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Forms need <input> fields
 Use <head> for metadata
-The <span> is inline
+The <body> contains content
+Use <head> for metadata
+The <body> contains content
+Use <head> for metadata
 Lists: <ul> and <ol>
 Use the <div> tag for containers
-Create links with <a> tag
+The <span> is inline
+Add <img> for images
+Tables use <tr> and <td>
+Tables use <tr> and <td>
 Create links with <a> tag
+Use the <div> tag for containers
+Add <img> for images
 Tables use <tr> and <td>
 Use the <div> tag for containers
+Create links with <a> tag
+Add <img> for images
 Use <head> for metadata
-Forms need <input> fields
+Tables use <tr> and <td>
+Add <img> for images
 Lists: <ul> and <ol>
+Use <head> for metadata
+Add <img> for images
+Forms need <input> fields
+Use the <div> tag for containers
+Forms need <input> fields
+Use the <div> tag for containers
+Use the <div> tag for containers
 The <p> element for paragraphs
-The <body> contains content
+Lists: <ul> and <ol>
+Use the <div> tag for containers
+The <span> is inline
+Tables use <tr> and <td>
 Lists: <ul> and <ol>
+The <p> element for paragraphs
 Lists: <ul> and <ol>
+The <p> element for paragraphs
 Add <img> for images
+The <p> element for paragraphs
 The <p> element for paragraphs
+Tables use <tr> and <td>
+Use the <div> tag for containers
+Tables use <tr> and <td>
+The <p> element for paragraphs
+Forms need <input> fields
+Use the <div> tag for containers
 Add <img> for images
+Use the <div> tag for containers
+Lists: <ul> and <ol>
+Tables use <tr> and <td>
+Use the <div> tag for containers
+Tables use <tr> and <td>
+The <p> element for paragraphs
 Add <img> for images
-Forms need <input> fields
-The <body> contains content
+The <p> element for paragraphs
+The <span> is inline
+The <p> element for paragraphs
 Use the <div> tag for containers
 Use <head> for metadata
 Forms need <input> fields
-The <body> contains content
-Add <img> for images
+Use the <div> tag for containers
 Use the <div> tag for containers
 Use <head> for metadata
+The <span> is inline
+The <p> element for paragraphs
 The <body> contains content
-Create links with <a> tag
 Use the <div> tag for containers
-Use the <div> tag for containers
+The <body> contains content
 The <p> element for paragraphs
 Lists: <ul> and <ol>
 Create links with <a> tag
+Use the <div> tag for containers
 Use the <div> tag for containers
+Add <img> for images
+The <span> is inline
+Tables use <tr> and <td>
 Create links with <a> tag
+Add <img> for images
+Lists: <ul> and <ol>
+Forms need <input> fields
 Create links with <a> tag
+The <body> contains content
+The <body> contains content
 Use the <div> tag for containers
+The <p> element for paragraphs
 Use <head> for metadata
+Tables use <tr> and <td>
 Use the <div> tag for containers
-Add <img> for images
+Tables use <tr> and <td>
 Use <head> for metadata
+The <p> element for paragraphs
+The <body> contains content
+Lists: <ul> and <ol>
+The <p> element for paragraphs
 Create links with <a> tag
+Lists: <ul> and <ol>
+Use <head> for metadata
+Add <img> for images
 Tables use <tr> and <td>
-Create links with <a> tag
 Use the <div> tag for containers
-Tables use <tr> and <td>
 Use the <div> tag for containers
 Lists: <ul> and <ol>
 Add <img> for images
-Lists: <ul> and <ol>
+Forms need <input> fields
+The <span> is inline
+Forms need <input> fields
 Use the <div> tag for containers
+Tables use <tr> and <td>
+The <body> contains content
+Use <head> for metadata
+Lists: <ul> and <ol>
 Forms need <input> fields
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+Lists: <ul> and <ol>
 The <p> element for paragraphs
-The <body> contains content
-Add <img> for images
+The <p> element for paragraphs
 Add <img> for images
 Tables use <tr> and <td>
+Tables use <tr> and <td>
+Use the <div> tag for containers
+Lists: <ul> and <ol>
+Add <img> for images
 Create links with <a> tag
+Add <img> for images
 Forms need <input> fields
+Use the <div> tag for containers
+The <span> is inline
+Use <head> for metadata
+Lists: <ul> and <ol>
+Create links with <a> tag
+Lists: <ul> and <ol>
+Use the <div> tag for containers
+Lists: <ul> and <ol>
+The <span> is inline
+Lists: <ul> and <ol>
 Use <head> for metadata
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+The <span> is inline
 Create links with <a> tag
+Lists: <ul> and <ol>
+Lists: <ul> and <ol>
+Create links with <a> tag
+The <span> is inline
+The <span> is inline
+The <span> is inline
 Use <head> for metadata
+The <body> contains content
+Tables use <tr> and <td>
 Add <img> for images
-Forms need <input> fields
-Use the <div> tag for containers
+The <body> contains content
 Forms need <input> fields
 The <p> element for paragraphs
+Create links with <a> tag
+Use the <div> tag for containers
+The <span> is inline
+Use the <div> tag for containers
+The <body> contains content
 Add <img> for images
+Tables use <tr> and <td>
+Tables use <tr> and <td>
+The <body> contains content
+The <body> contains content
 Use the <div> tag for containers
+The <span> is inline
 The <p> element for paragraphs
+Add <img> for images
+The <body> contains content
+Tables use <tr> and <td>
+Lists: <ul> and <ol>
+Add <img> for images
+Use the <div> tag for containers
+The <span> is inline
+Tables use <tr> and <td>
 Create links with <a> tag
+The <p> element for paragraphs
+Forms need <input> fields
 The <span> is inline
 The <p> element for paragraphs
 Tables use <tr> and <td>
-The <body> contains content
-Lists: <ul> and <ol>
-Create links with <a> tag
 Tables use <tr> and <td>
-Use <head> for metadata
 Forms need <input> fields
+Forms need <input> fields
+Tables use <tr> and <td>
 The <span> is inline
-Use <head> for metadata
-Add <img> for images
-Use <head> for metadata
+Lists: <ul> and <ol>
+Forms need <input> fields
 The <span> is inline
-Tables use <tr> and <td>
+Forms need <input> fields
+Forms need <input> fields
 Create links with <a> tag
 Create links with <a> tag
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
-Use <head> for metadata
-The <p> element for paragraphs
+The <body> contains content
 The <span> is inline
 The <p> element for paragraphs
-The <span> is inline
-Use <head> for metadata
+Create links with <a> tag
+Add <img> for images
 Lists: <ul> and <ol>
 The <body> contains content
-Forms need <input> fields
+Lists: <ul> and <ol>
+Add <img> for images
 Use the <div> tag for containers
-Tables use <tr> and <td>
+Forms need <input> fields
+Add <img> for images
 Tables use <tr> and <td>
-The <p> element for paragraphs
+Forms need <input> fields
 Use <head> for metadata
 Use <head> for metadata
+Tables use <tr> and <td>
+Forms need <input> fields
+The <span> is inline
+Tables use <tr> and <td>
+The <p> element for paragraphs
 The <body> contains content
+Add <img> for images
+Use <head> for metadata
+Create links with <a> tag
+The <span> is inline
+Add <img> for images
 The <p> element for paragraphs
 Use the <div> tag for containers
 Add <img> for images
-The <body> contains content
-The <span> is inline
-The <span> is inline
-Tables use <tr> and <td>
-Lists: <ul> and <ol>
-Forms need <input> fields
+The <p> element for paragraphs
 Lists: <ul> and <ol>
+Add <img> for images
 The <body> contains content
-Create links with <a> tag
-Lists: <ul> and <ol>
-Forms need <input> fields
-Use <head> for metadata
-Lists: <ul> and <ol>
 Lists: <ul> and <ol>
+The <p> element for paragraphs
+Tables use <tr> and <td>
+Add <img> for images
+The <span> is inline
+Add <img> for images
 Forms need <input> fields
 The <p> element for paragraphs
 The <p> element for paragraphs
-Use <head> for metadata
+Forms need <input> fields
 Create links with <a> tag
+Use the <div> tag for containers
+The <p> element for paragraphs
+Use the <div> tag for containers
 The <span> is inline
+The <p> element for paragraphs
+Tables use <tr> and <td>
+Add <img> for images
 Use <head> for metadata
 Use <head> for metadata
+The <p> element for paragraphs
 Use <head> for metadata
-The <body> contains content
 Forms need <input> fields
-The <p> element for paragraphs
+Tables use <tr> and <td>
+Create links with <a> tag
+Lists: <ul> and <ol>
+Use <head> for metadata
 Add <img> for images
 Create links with <a> tag
-The <p> element for paragraphs
+Use <head> for metadata
+The <span> is inline
 Create links with <a> tag
+The <body> contains content
 Forms need <input> fields
-Add <img> for images
+Lists: <ul> and <ol>
 Add <img> for images
+The <body> contains content
+Forms need <input> fields
 Lists: <ul> and <ol>
-The <p> element for paragraphs
 Forms need <input> fields
 The <p> element for paragraphs
-Add <img> for images
-Use <head> for metadata
-Create links with <a> tag
+Forms need <input> fields
 Lists: <ul> and <ol>
-Use the <div> tag for containers
-The <span> is inline
 Create links with <a> tag
-Use <head> for metadata
+The <body> contains content
+Tables use <tr> and <td>
 Lists: <ul> and <ol>
-The <span> is inline
-The <p> element for paragraphs
-Create links with <a> tag
 Use the <div> tag for containers
-Tables use <tr> and <td>
-Create links with <a> tag
+Forms need <input> fields
 The <body> contains content
 Create links with <a> tag
-Create links with <a> tag
-Use the <div> tag for containers
+Tables use <tr> and <td>
 Use the <div> tag for containers
 The <p> element for paragraphs
-Forms need <input> fields
+Create links with <a> tag
+Tables use <tr> and <td>
+The <span> is inline
+Tables use <tr> and <td>
 Forms need <input> fields
 The <p> element for paragraphs
-Use <head> for metadata
-Use <head> for metadata
-Add <img> for images
-Use the <div> tag for containers
-Lists: <ul> and <ol>
+Create links with <a> tag
 Use the <div> tag for containers
 Add <img> for images
-Tables use <tr> and <td>
 Lists: <ul> and <ol>
-Use the <div> tag for containers
-Add <img> for images
-Use <head> for metadata
-Add <img> for images
-Add <img> for images
-Add <img> for images
 Use the <div> tag for containers
-Use <head> for metadata
-Forms need <input> fields
+The <p> element for paragraphs
+The <body> contains content
 Forms need <input> fields
+Use the <div> tag for containers
+Add <img> for images
 Lists: <ul> and <ol>
-The <p> element for paragraphs
 Forms need <input> fields
 Forms need <input> fields
-Add <img> for images
+The <body> contains content
+The <span> is inline
 Use the <div> tag for containers
-Lists: <ul> and <ol>
 Use <head> for metadata
-Lists: <ul> and <ol>
 The <p> element for paragraphs
-Tables use <tr> and <td>
-Use the <div> tag for containers
-Tables use <tr> and <td>
-Add <img> for images
-Tables use <tr> and <td>
-Add <img> for images
-Add <img> for images
-Add <img> for images
 The <span> is inline
-Use <head> for metadata
-Use the <div> tag for containers
-The <p> element for paragraphs
-Lists: <ul> and <ol>
-The <body> contains content
 The <p> element for paragraphs
+Use the <div> tag for containers
+Use <head> for metadata
 Add <img> for images
-The <p> element for paragraphs
 The <body> contains content
-The <span> is inline
-Tables use <tr> and <td>
 Lists: <ul> and <ol>
-Create links with <a> tag
-The <span> is inline
-Forms need <input> fields
-Use <head> for metadata
-Use the <div> tag for containers
 Tables use <tr> and <td>
-Add <img> for images
-Forms need <input> fields
-The <p> element for paragraphs
 Use the <div> tag for containers
-Create links with <a> tag
+The <body> contains content
+Tables use <tr> and <td>
 Create links with <a> tag
-Use <head> for metadata
 Use the <div> tag for containers
-The <body> contains content
 The <p> element for paragraphs
-Lists: <ul> and <ol>
-Forms need <input> fields
-Create links with <a> tag
+Tables use <tr> and <td>
+Tables use <tr> and <td>
 The <body> contains content
 Tables use <tr> and <td>
+Use the <div> tag for containers
 The <p> element for paragraphs
-Lists: <ul> and <ol>
 Use <head> for metadata
-Add <img> for images
 Use <head> for metadata
-Create links with <a> tag
-The <p> element for paragraphs
-The <p> element for paragraphs
 Add <img> for images
 Tables use <tr> and <td>
-The <p> element for paragraphs
-Lists: <ul> and <ol>
-Create links with <a> tag
-Create links with <a> tag
-Create links with <a> tag
-Forms need <input> fields
-The <span> is inline
-Create links with <a> tag
+Use the <div> tag for containers
 The <p> element for paragraphs
-Create links with <a> tag
-Create links with <a> tag
 Use the <div> tag for containers
-Tables use <tr> and <td>
 Use <head> for metadata
-Create links with <a> tag
-Tables use <tr> and <td>
-The <span> is inline
-Create links with <a> tag
-Tables use <tr> and <td>
 Tables use <tr> and <td>
-Lists: <ul> and <ol>
 The <body> contains content
+Add <img> for images
 The <p> element for paragraphs
 The <p> element for paragraphs
-Tables use <tr> and <td>
-Forms need <input> fields
-Tables use <tr> and <td>
 The <p> element for paragraphs
-Tables use <tr> and <td>
-Create links with <a> tag
+Use the <div> tag for containers
 Tables use <tr> and <td>
 Forms need <input> fields
 Lists: <ul> and <ol>
+The <body> contains content
+Create links with <a> tag
 Add <img> for images
-Lists: <ul> and <ol>
-The <span> is inline
-The <p> element for paragraphs
+The <body> contains content
 Lists: <ul> and <ol>
-Use the <div> tag for containers
 Add <img> for images
-Tables use <tr> and <td>
+Lists: <ul> and <ol>
 Use <head> for metadata
-The <p> element for paragraphs
+Forms need <input> fields
+Create links with <a> tag
 The <span> is inline
-Tables use <tr> and <td>
-Use the <div> tag for containers
 Add <img> for images
+Use the <div> tag for containers
 The <p> element for paragraphs
-Create links with <a> tag
-Lists: <ul> and <ol>
+The <body> contains content
+The <span> is inline
 The <body> contains content
 Tables use <tr> and <td>
-Use <head> for metadata
-Create links with <a> tag
+Use the <div> tag for containers
+Tables use <tr> and <td>
+The <body> contains content
+Lists: <ul> and <ol>
 Use <head> for metadata
-The <p> element for paragraphs
-Add <img> for images
 Lists: <ul> and <ol>
+Use <head> for metadata
 Add <img> for images
 Use the <div> tag for containers
-Create links with <a> tag
-Add <img> for images
-Create links with <a> tag
-Create links with <a> tag
-Forms need <input> fields
 The <span> is inline
-Tables use <tr> and <td>
-Create links with <a> tag
 Tables use <tr> and <td>
-The <body> contains content
+Use <head> for metadata
 The <p> element for paragraphs
-Use the <div> tag for containers
-The <span> is inline
 Use the <div> tag for containers
+Use <head> for metadata
+The <body> contains content
+The <body> contains content
+Use <head> for metadata
+Use <head> for metadata
+The <p> element for paragraphs
+The <body> contains content
+The <body> contains content
 Lists: <ul> and <ol>
 Lists: <ul> and <ol>
-Use the <div> tag for containers
+The <body> contains content
+The <span> is inline
+The <p> element for paragraphs
+The <span> is inline
+Forms need <input> fields
+Lists: <ul> and <ol>
+The <span> is inline
+The <p> element for paragraphs
+Tables use <tr> and <td>
