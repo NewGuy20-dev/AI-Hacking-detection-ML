@@ -85,3 +85,9 @@ datasets/security_payloads/
 .env
 .env.local
 .env.*.local
+datasets/**/*.jsonl
+datasets/**/*.csv
+datasets/**/*.txt
+datasets/**/*.gz
+datasets/**/*.dump
+datasets/**/*.tar.gz
