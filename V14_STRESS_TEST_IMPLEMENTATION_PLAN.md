@@ -924,7 +924,7 @@ All models loaded successfully!
 ```
 
 ---
-### Task 5: Build JSON Logger
+### Task 5: Build JSON Logger ✅ COMPLETED
 
 **Objective:** Log every scenario result to per-model JSONL files with real-time stats.
 
