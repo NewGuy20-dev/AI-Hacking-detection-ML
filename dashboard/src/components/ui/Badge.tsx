@@ -1,26 +1,22 @@
 import { cn } from '@/lib/utils'
 
 interface BadgeProps {
-  variant: 'critical' | 'high' | 'medium' | 'low' | 'info'
   children: React.ReactNode
+  variant?: 'default' | 'success' | 'destructive' | 'warning'
   className?: string
 }
 
-const variants = {
-  critical: 'bg-clay-danger text-red-900',
-  high: 'bg-clay-warning text-orange-900',
-  medium: 'bg-yellow-100 text-yellow-900',
-  low: 'bg-clay-success text-green-900',
-  info: 'bg-clay-info text-blue-900',
-}
-
-export function Badge({ variant, children, className }: BadgeProps) {
+export function Badge({ children, variant = 'default', className }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold',
-        'shadow-clay dark:shadow-clay-dark',
-        variants[variant],
+        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+        {
+          'bg-primary/10 text-primary': variant === 'default',
+          'bg-success/10 text-success': variant === 'success',
+          'bg-destructive/10 text-destructive': variant === 'destructive',
+          'bg-warning/10 text-warning': variant === 'warning',
+        },
         className
       )}
     >

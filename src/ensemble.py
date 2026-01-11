@@ -1,18 +1,33 @@
-"""Ensemble model combining Network, URL, and Content detectors."""
+"""Ensemble model combining Network, URL, and Content detectors with calibration."""
 import joblib
 import numpy as np
 from pathlib import Path
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score, f1_score
+from typing import Dict, Optional, List
+
+try:
+    from confidence import EnsembleCalibrator, ConfidenceCalibrator
+    from threshold_optimizer import load_optimal_thresholds
+except ImportError:
+    EnsembleCalibrator = None
+    load_optimal_thresholds = None
+
+try:
+    from context_classifier import ContextAwareClassifier, quick_adjust
+    HAS_CONTEXT = True
+except ImportError:
+    HAS_CONTEXT = False
+    quick_adjust = None
 
 
 class EnsembleDetector:
-    """Ensemble detector combining multiple specialized models."""
+    """Ensemble detector combining multiple specialized models with calibration."""
     
-    # Default weights per DEVELOPMENT_PLAN.md
     DEFAULT_WEIGHTS = {'network': 0.5, 'url': 0.3, 'content': 0.2}
     
-    def __init__(self, models_dir: str = None, use_meta_classifier: bool = False):
+    def __init__(self, models_dir: str = None, use_meta_classifier: bool = False,
+                 use_context_aware: bool = True):
         self.models_dir = Path(models_dir) if models_dir else None
         self.network_model = None
         self.url_model = None
@@ -20,6 +35,11 @@ class EnsembleDetector:
         self.meta_classifier = None
         self.use_meta_classifier = use_meta_classifier
         self.weights = self.DEFAULT_WEIGHTS.copy()
+        self.calibrator = EnsembleCalibrator() if EnsembleCalibrator else None
+        self.thresholds = {"default": 0.5}
+        self.use_calibration = False
+        self.use_context_aware = use_context_aware and HAS_CONTEXT
+        self.context_classifier = ContextAwareClassifier() if self.use_context_aware else None
     
     def load_models(self):
         """Load all detector models."""
@@ -37,25 +57,45 @@ class EnsembleDetector:
         if content_path.exists():
             self.content_model = joblib.load(content_path)
         
+        # Load calibration if available
+        cal_dir = self.models_dir / 'calibration'
+        if cal_dir.exists() and self.calibrator:
+            self.calibrator.load(cal_dir)
+            self.use_calibration = True
+        
+        # Load optimal thresholds if available
+        thresh_path = self.models_dir.parent / 'configs' / 'optimal_thresholds.json'
+        if thresh_path.exists() and load_optimal_thresholds:
+            self.thresholds = load_optimal_thresholds(thresh_path)
+        
         return self
     
     def predict_proba_network(self, X: np.ndarray) -> np.ndarray:
         """Get attack probability from network detector."""
         if self.network_model is None:
             return np.full(len(X), 0.5)
-        return self.network_model.predict_proba(X)[:, 1]
+        probs = self.network_model.predict_proba(X)[:, 1]
+        if self.use_calibration and self.calibrator:
+            probs = self.calibrator.calibrate_model('network', probs)
+        return probs
     
     def predict_proba_url(self, X: np.ndarray) -> np.ndarray:
         """Get malicious probability from URL detector."""
         if self.url_model is None:
             return np.full(len(X), 0.5)
-        return self.url_model.predict_proba(X)[:, 1]
+        probs = self.url_model.predict_proba(X)[:, 1]
+        if self.use_calibration and self.calibrator:
+            probs = self.calibrator.calibrate_model('url', probs)
+        return probs
     
     def predict_proba_content(self, X: np.ndarray) -> np.ndarray:
         """Get phishing/spam probability from content detector."""
         if self.content_model is None:
             return np.full(len(X), 0.5)
-        return self.content_model.predict_proba(X)[:, 1]
+        probs = self.content_model.predict_proba(X)[:, 1]
+        if self.use_calibration and self.calibrator:
+            probs = self.calibrator.calibrate_model('content', probs)
+        return probs
     
     def weighted_average(self, probs: dict) -> np.ndarray:
         """Combine probabilities using weighted average."""
@@ -63,22 +103,58 @@ class EnsembleDetector:
         combined = sum(probs[k] * self.weights[k] for k in probs.keys())
         return combined / total_weight
     
+    def stacking_predict(self, probs: dict) -> np.ndarray:
+        """Use stacking meta-classifier for final prediction."""
+        if not self.meta_classifier:
+            return self.weighted_average(probs)
+        
+        X = np.column_stack([probs.get('network', np.zeros(1)), 
+                            probs.get('url', np.zeros(1)), 
+                            probs.get('content', np.zeros(1))])
+        return self.meta_classifier.predict_proba(X)[:, 1]
+    
     def fit_meta_classifier(self, X_network: np.ndarray, X_url: np.ndarray, 
                            X_content: np.ndarray, y: np.ndarray):
-        """Train meta-classifier on detector outputs."""
+        """Train meta-classifier on detector outputs (stacking)."""
         probs = np.column_stack([
             self.predict_proba_network(X_network),
             self.predict_proba_url(X_url),
             self.predict_proba_content(X_content)
         ])
         
-        self.meta_classifier = LogisticRegression(random_state=42)
+        self.meta_classifier = LogisticRegression(random_state=42, C=1.0)
         self.meta_classifier.fit(probs, y)
         self.use_meta_classifier = True
         return self
     
+    def fit_calibration(self, y_true: np.ndarray, predictions: Dict[str, np.ndarray]):
+        """Fit calibration for each model."""
+        if not self.calibrator:
+            return
+        
+        for model_name, y_prob in predictions.items():
+            self.calibrator.fit_model(model_name, y_true, y_prob, method="platt")
+        
+        self.use_calibration = True
+    
+    def get_threshold(self, model_type: str = "default") -> float:
+        """Get optimal threshold for model type."""
+        return self.thresholds.get(model_type, self.thresholds.get("default", 0.5))
+    
+    def apply_context_adjustment(self, texts: List[str], scores: np.ndarray) -> np.ndarray:
+        """Apply context-aware adjustment to scores."""
+        if not self.use_context_aware or not self.context_classifier:
+            return scores
+        
+        adjusted = []
+        for text, score in zip(texts, scores):
+            result = self.context_classifier.adjust_score(text, float(score))
+            adjusted.append(result.adjusted_score)
+        return np.array(adjusted)
+    
     def predict(self, network_probs: np.ndarray = None, url_probs: np.ndarray = None,
-                content_probs: np.ndarray = None, threshold: float = 0.5) -> dict:
+                content_probs: np.ndarray = None, threshold: float = None,
+                return_breakdown: bool = False, texts: List[str] = None) -> dict:
         """Make final prediction combining available detector outputs."""
         probs = {}
         if network_probs is not None:
@@ -91,20 +167,41 @@ class EnsembleDetector:
         if not probs:
             raise ValueError("At least one detector output required")
         
+        # Use threshold from config if not specified
+        if threshold is None:
+            threshold = self.get_threshold("ensemble")
+        
+        # Combine predictions
         if self.use_meta_classifier and self.meta_classifier and len(probs) == 3:
-            X = np.column_stack([probs['network'], probs['url'], probs['content']])
-            confidence = self.meta_classifier.predict_proba(X)[:, 1]
+            confidence = self.stacking_predict(probs)
         else:
             confidence = self.weighted_average(probs)
         
-        return {
+        # Apply context-aware adjustment if texts provided
+        if texts is not None and self.use_context_aware:
+            confidence = self.apply_context_adjustment(texts, confidence)
+        
+        result = {
             'is_attack': (confidence >= threshold).astype(int),
             'confidence': confidence,
+            'threshold_used': threshold,
+            'context_aware': texts is not None and self.use_context_aware,
         }
+        
+        if return_breakdown:
+            result['model_scores'] = probs
+            result['weights'] = self.weights
+        
+        return result
     
     def save(self, path: str):
         """Save ensemble model."""
         joblib.dump(self, path)
+        
+        # Save calibration separately
+        if self.calibrator and self.models_dir:
+            cal_dir = self.models_dir / 'calibration'
+            self.calibrator.save(cal_dir)
     
     @classmethod
     def load(cls, path: str) -> 'EnsembleDetector':

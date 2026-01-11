@@ -1,5 +1,6 @@
 """Train Meta-Classifier that combines all model outputs."""
 import sys
+import argparse
 from pathlib import Path
 import numpy as np
 
@@ -13,6 +14,7 @@ from tqdm import tqdm
 
 from torch_models.meta_classifier import MetaClassifier
 from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from training.checkpoint import CheckpointManager
 
 
 def generate_model_outputs(n_samples=20000):
@@ -65,14 +67,78 @@ def generate_model_outputs(n_samples=20000):
     return np.array(outputs, dtype=np.float32), labels
 
 
+def load_hybrid_data(base_path: Path, n_synthetic: int = 10000):
+    """
+    Load hybrid training data: 70% real model outputs + 30% synthetic.
+    
+    Args:
+        base_path: Project root path
+        n_synthetic: Number of synthetic samples to generate
+    
+    Returns:
+        outputs: (N, num_models) array of model probabilities
+        labels: (N,) array of ground truth labels
+    """
+    real_path = base_path / 'checkpoints' / 'meta' / 'model_outputs.npz'
+    
+    # Generate synthetic data
+    syn_outputs, syn_labels = generate_model_outputs(n_synthetic)
+    
+    if real_path.exists():
+        print(f"Loading real model outputs from {real_path}")
+        data = np.load(real_path)
+        real_outputs = data['outputs']
+        real_labels = data['labels']
+        
+        # Pad real outputs to 5 columns if needed (we may only have 2 models)
+        if real_outputs.shape[1] < 5:
+            n_pad = 5 - real_outputs.shape[1]
+            # Fill missing model outputs with 0.5 (neutral)
+            padding = np.full((real_outputs.shape[0], n_pad), 0.5, dtype=np.float32)
+            real_outputs = np.hstack([real_outputs, padding])
+        
+        # Combine: use all real + 30% synthetic
+        n_real = len(real_labels)
+        n_use_syn = max(n_real // 2, 5000)  # At least 5k synthetic
+        
+        # Random sample from synthetic
+        idx = np.random.choice(len(syn_labels), min(n_use_syn, len(syn_labels)), replace=False)
+        
+        outputs = np.vstack([real_outputs, syn_outputs[idx]])
+        labels = np.concatenate([real_labels, syn_labels[idx]])
+        
+        print(f"Hybrid data: {n_real} real + {len(idx)} synthetic = {len(labels)} total")
+        print(f"Real/Synthetic ratio: {n_real / len(labels) * 100:.1f}% / {len(idx) / len(labels) * 100:.1f}%")
+    else:
+        print(f"No real outputs found at {real_path}")
+        print("Using synthetic data only. Run collect_model_outputs.py first for hybrid training.")
+        outputs, labels = syn_outputs, syn_labels
+    
+    return outputs.astype(np.float32), labels.astype(np.float32)
+
+
 def train():
     """Main training function."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    parser.add_argument('--checkpoint-every', type=int, default=500, help='Save checkpoint every N batches')
+    parser.add_argument('--hybrid', action='store_true', default=True, help='Use hybrid real+synthetic data')
+    args = parser.parse_args()
+    
     device = setup_gpu()
     base_path = Path(__file__).parent.parent.parent
     
-    # Generate simulated model outputs
-    print("\n--- Generating Model Outputs ---")
-    model_outputs, labels = generate_model_outputs(30000)
+    # Checkpoint manager
+    ckpt_dir = base_path / 'checkpoints' / 'meta'
+    ckpt_mgr = CheckpointManager(str(ckpt_dir), 'meta_classifier', args.checkpoint_every)
+    
+    # Load hybrid data (real + synthetic) or synthetic only
+    print("\n--- Loading Training Data ---")
+    if args.hybrid:
+        model_outputs, labels = load_hybrid_data(base_path, n_synthetic=15000)
+    else:
+        model_outputs, labels = generate_model_outputs(30000)
+    
     print(f"Total: {len(labels)} samples ({sum(labels==0):.0f} normal, {sum(labels==1):.0f} attack)")
     print(f"Input shape: {model_outputs.shape} (samples, 5 model scores)")
     
@@ -85,8 +151,12 @@ def train():
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
     
-    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=0, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=128, shuffle=False, num_workers=0, pin_memory=True)
+    # Use num_workers=0 on Windows to avoid issues
+    import platform
+    num_workers = 0 if platform.system() == 'Windows' else 4
+    
+    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=128, shuffle=False, num_workers=num_workers, pin_memory=True)
     
     print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
     
@@ -103,16 +173,37 @@ def train():
     scaler = GradScaler()
     early_stop = EarlyStopping(patience=7)
     
+    # Resume from checkpoint if requested
+    start_epoch, start_batch, global_step = 0, 0, 0
+    if args.resume or ckpt_mgr.find_latest():
+        resume_info = ckpt_mgr.load(model, optimizer, scheduler, scaler, device)
+        start_epoch = resume_info['epoch']
+        start_batch = resume_info['batch_idx']
+        global_step = resume_info['global_step']
+        if start_batch >= len(train_loader):
+            start_epoch += 1
+            start_batch = 0
+    
     # Training loop
     print("\n--- Training ---")
     best_val_acc = 0
     best_state = None
     
-    for epoch in range(50):
+    for epoch in range(start_epoch, 50):
         # Train
         model.train()
         train_loss = 0
-        for inputs, targets in tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False):
+        batches_processed = 0
+        
+        epoch_start_batch = start_batch if epoch == start_epoch else 0
+        
+        pbar = tqdm(enumerate(train_loader), total=len(train_loader),
+                    initial=epoch_start_batch, desc=f"Epoch {epoch+1}")
+        
+        for batch_idx, (inputs, targets) in pbar:
+            if batch_idx < epoch_start_batch:
+                continue
+                
             inputs = inputs.to(device)
             targets = targets.to(device)
             
@@ -127,8 +218,17 @@ def train():
             scaler.step(optimizer)
             scaler.update()
             train_loss += loss.item()
+            batches_processed += 1
+            global_step += 1
+            
+            pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+            
+            if ckpt_mgr.should_save(batch_idx):
+                ckpt_mgr.save(epoch, batch_idx, model, optimizer, scheduler, scaler, global_step)
         
-        train_loss /= len(train_loader)
+        ckpt_mgr.save(epoch, len(train_loader), model, optimizer, scheduler, scaler, global_step)
+        
+        train_loss /= max(batches_processed, 1)
         
         # Validate
         model.eval()

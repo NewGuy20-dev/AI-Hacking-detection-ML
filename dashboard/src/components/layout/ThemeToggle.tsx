@@ -13,28 +13,30 @@ export function ThemeToggle() {
   if (!mounted) return null
 
   return (
-    <div className="flex gap-1 p-1 rounded-full bg-clay-card dark:bg-clay-card-dark shadow-clay dark:shadow-clay-dark">
+    <div className="flex gap-1 p-1 clay-card" role="group" aria-label="Theme selection">
       <button
         onClick={() => setTheme('light')}
-        className={`p-2 rounded-full transition-all ${
+        className={`p-2 rounded-lg transition-all duration-200 ${
           theme === 'light'
-            ? 'bg-clay-bg dark:bg-clay-bg-dark shadow-clay-inset'
-            : 'hover:bg-clay-bg/50'
+            ? 'bg-primary text-white shadow-clay-inset'
+            : 'hover:bg-clay-border dark:hover:bg-clay-dark-border'
         }`}
-        aria-label="Light mode"
+        aria-label="Switch to light mode"
+        aria-pressed={theme === 'light'}
       >
-        <Sun className="w-4 h-4" />
+        <Sun className="w-4 h-4" aria-hidden="true" />
       </button>
       <button
         onClick={() => setTheme('dark')}
-        className={`p-2 rounded-full transition-all ${
+        className={`p-2 rounded-lg transition-all duration-200 ${
           theme === 'dark'
-            ? 'bg-clay-bg dark:bg-clay-bg-dark shadow-clay-inset dark:shadow-clay-dark-inset'
-            : 'hover:bg-clay-bg/50'
+            ? 'bg-primary text-white shadow-clay-inset'
+            : 'hover:bg-clay-border dark:hover:bg-clay-dark-border'
         }`}
-        aria-label="Dark mode"
+        aria-label="Switch to dark mode"
+        aria-pressed={theme === 'dark'}
       >
-        <Moon className="w-4 h-4" />
+        <Moon className="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   )

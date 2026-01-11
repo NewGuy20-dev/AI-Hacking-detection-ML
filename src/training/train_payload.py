@@ -1,6 +1,9 @@
-"""Train PayloadCNN model for malicious payload detection."""
+"""Train PayloadCNN model with robust fault-tolerant pipeline."""
 import sys
+import time
+import argparse
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -12,210 +15,396 @@ from torch.amp import GradScaler
 from tqdm import tqdm
 
 from torch_models.payload_cnn import PayloadCNN
-from torch_models.datasets import PayloadDataset
 from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from data.streaming_dataset import BalancedStreamingDataset
+
+# Robust training imports
+from training.robust import (
+    RobustTrainingConfig,
+    RobustCheckpointManager,
+    TrainingMonitor,
+)
+
+# Discord notifications
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
+DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1452715933398466782/Ajftu5_fHelFqifTRcZN3S7fCDddXPs89p9w8dTHX8pF1xUO59ckac_DyCTQsRKC1H8O"
 
 
-def load_payload_data(base_path):
-    """Load malicious and benign payloads from dataset folders."""
+class DiscordNotifier:
+    """Send training notifications to Discord."""
+    
+    COLORS = {'info': 0x3498db, 'success': 0x2ecc71, 'warning': 0xf39c12, 'error': 0xe74c3c}
+    
+    def __init__(self, webhook_url: str = DISCORD_WEBHOOK):
+        self.webhook_url = webhook_url
+        self.enabled = HAS_REQUESTS and webhook_url
+    
+    def _send(self, embed: dict) -> bool:
+        if not self.enabled:
+            return False
+        try:
+            requests.post(self.webhook_url, json={"embeds": [embed]}, timeout=10)
+            return True
+        except:
+            return False
+    
+    def training_started(self, model_type: str, epochs: int, train_size: int, gpu_name: str = None):
+        embed = {
+            "title": "🚀 Training Started",
+            "color": self.COLORS['info'],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "fields": [
+                {"name": "Model", "value": model_type.upper(), "inline": True},
+                {"name": "Epochs", "value": str(epochs), "inline": True},
+                {"name": "Train Size", "value": f"{train_size:,}", "inline": True},
+                {"name": "GPU", "value": gpu_name or "CPU", "inline": True},
+                {"name": "Mode", "value": "🛡️ Robust Training", "inline": True},
+            ]
+        }
+        return self._send(embed)
+    
+    def epoch_completed(self, model_type: str, epoch: int, total_epochs: int,
+                        train_loss: float, val_acc: float, elapsed: float, eta: float, bad_samples: int = 0):
+        embed = {
+            "title": f"📊 Epoch {epoch}/{total_epochs} Complete",
+            "color": self.COLORS['info'],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "fields": [
+                {"name": "Model", "value": model_type.upper(), "inline": True},
+                {"name": "Train Loss", "value": f"{train_loss:.4f}", "inline": True},
+                {"name": "Val Acc", "value": f"{val_acc:.2%}", "inline": True},
+                {"name": "Elapsed", "value": str(timedelta(seconds=int(elapsed))), "inline": True},
+                {"name": "ETA", "value": str(timedelta(seconds=int(eta))), "inline": True},
+                {"name": "Bad Samples", "value": str(bad_samples), "inline": True},
+            ]
+        }
+        return self._send(embed)
+    
+    def training_finished(self, model_type: str, total_time: float, best_acc: float, epochs: int):
+        embed = {
+            "title": "✅ Training Complete!",
+            "color": self.COLORS['success'],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "fields": [
+                {"name": "Model", "value": model_type.upper(), "inline": True},
+                {"name": "Best Val Acc", "value": f"{best_acc:.2%}", "inline": True},
+                {"name": "Total Time", "value": str(timedelta(seconds=int(total_time))), "inline": True},
+                {"name": "Epochs", "value": str(epochs), "inline": True},
+            ]
+        }
+        return self._send(embed)
+    
+    def training_error(self, model_type: str, error: str, epoch: int = None):
+        embed = {
+            "title": "❌ Training Error!",
+            "color": self.COLORS['error'],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "fields": [
+                {"name": "Model", "value": model_type.upper(), "inline": True},
+                {"name": "Epoch", "value": str(epoch) if epoch else "N/A", "inline": True},
+                {"name": "Error", "value": f"```{error[:500]}```", "inline": False},
+            ]
+        }
+        return self._send(embed)
+
+
+discord = DiscordNotifier()
+
+
+def get_all_data_files(base_path):
+    """Get all malicious and benign data files."""
     base = Path(base_path)
+    
+    # === MALICIOUS FILES ===
+    malicious_files = []
+    
+    # security_payloads directory (txt files - need to convert)
     payloads_dir = base / 'datasets' / 'security_payloads'
+    if payloads_dir.exists():
+        for folder in ['injection', 'fuzzing', 'misc', 'PayloadsAllTheThings', 'SecLists']:
+            folder_path = payloads_dir / folder
+            if folder_path.exists():
+                malicious_files.extend(folder_path.rglob('*.txt'))
+                malicious_files.extend(folder_path.rglob('*.lst'))
+                malicious_files.extend(folder_path.rglob('*.list'))
+    
+    # === BENIGN FILES ===
+    benign_files = []
+    
+    # benign_60m directory (JSONL - ~60M samples)
+    benign_60m = base / 'datasets' / 'benign_60m'
+    if benign_60m.exists():
+        benign_files.extend(benign_60m.glob('*.jsonl'))
+    
+    # live_benign directory (NEW - ~190M samples from live sources)
+    live_benign = base / 'datasets' / 'live_benign'
+    if live_benign.exists():
+        benign_files.extend(live_benign.glob('*.jsonl'))
+    
+    # benign_5m.jsonl (~5M samples)
+    benign_5m = base / 'datasets' / 'benign_5m.jsonl'
+    if benign_5m.exists():
+        benign_files.append(benign_5m)
+    
+    # fp_test_500k.jsonl (500K samples)
+    fp_test = base / 'datasets' / 'fp_test_500k.jsonl'
+    if fp_test.exists():
+        benign_files.append(fp_test)
+    
+    # curated_benign directory
     curated_dir = base / 'datasets' / 'curated_benign'
-    adversarial_dir = curated_dir / 'adversarial'
-    
-    texts, labels = [], []
-    
-    # Malicious payloads (label=1)
-    for folder in ['injection', 'fuzzing', 'misc']:
-        folder_path = payloads_dir / folder
-        if not folder_path.exists():
-            continue
-        for f in folder_path.rglob('*'):
-            try:
-                if not f.is_file() or f.suffix not in ('', '.txt', '.lst', '.list'):
-                    continue
-                for line in f.read_text(errors='ignore').splitlines()[:1000]:
-                    line = line.strip()
-                    if line and len(line) > 3:
-                        texts.append(line)
-                        labels.append(1)
-            except (OSError, PermissionError):
-                continue
-    
-    mal_count = len(texts)
-    print(f"Loaded {mal_count} malicious payloads")
-    
-    # Load CURATED benign data first (priority)
     if curated_dir.exists():
-        for f in curated_dir.glob('*.txt'):
-            try:
-                for line in f.read_text(encoding='utf-8', errors='ignore').splitlines():
-                    line = line.strip()
-                    if line and len(line) > 2:
-                        texts.append(line)
-                        labels.append(0)
-            except: pass
-        print(f"Loaded {len(texts) - mal_count} curated benign samples")
+        benign_files.extend(curated_dir.glob('*.txt'))
+        benign_files.extend(curated_dir.glob('*.jsonl'))
+        # adversarial subdirectory
+        adv_dir = curated_dir / 'adversarial'
+        if adv_dir.exists():
+            benign_files.extend(adv_dir.glob('*.txt'))
     
-    # Load ADVERSARIAL benign data (critical for reducing false positives)
-    adv_count_before = len(texts)
-    if adversarial_dir.exists():
-        for f in adversarial_dir.glob('*.txt'):
-            try:
-                for line in f.read_text(encoding='utf-8', errors='ignore').splitlines():
-                    line = line.strip()
-                    if line and len(line) > 2:
-                        texts.append(line)
-                        labels.append(0)
-            except: pass
-        print(f"Loaded {len(texts) - adv_count_before} adversarial benign samples")
-    
-    # Fallback: wordlists if not enough benign
-    if len(texts) - mal_count < mal_count // 2:
-        wordlists = payloads_dir / 'wordlists'
-        if wordlists.exists():
-            for f in wordlists.rglob('*'):
-                try:
-                    if not f.is_file():
-                        continue
-                    for line in f.read_text(errors='ignore').splitlines()[:2000]:
-                        line = line.strip()
-                        if line and len(line) > 2 and len(line) < 100:
-                            texts.append(line)
-                            labels.append(0)
-                except: pass
-    
-    ben_count = len(texts) - mal_count
-    print(f"Loaded {ben_count} total benign samples")
-    
-    # Balance classes
-    if mal_count < ben_count:
-        # Undersample benign
-        mal_texts = [t for t, l in zip(texts, labels) if l == 1]
-        ben_texts = [t for t, l in zip(texts, labels) if l == 0][:mal_count]
-        texts = mal_texts + ben_texts
-        labels = [1] * len(mal_texts) + [0] * len(ben_texts)
-    
-    print(f"Final dataset: {len(texts)} samples (balanced)")
-    return texts, labels
+    return malicious_files, benign_files
+
+
+def count_file_lines(files):
+    """Estimate total lines in files."""
+    total = 0
+    for f in files[:5]:  # Sample first 5 files
+        try:
+            with open(f, 'r', errors='ignore') as fp:
+                total += sum(1 for _ in fp)
+        except:
+            pass
+    if len(files) > 5:
+        total = total * len(files) // 5
+    return total
+
+
+def worker_init_fn(worker_id):
+    """Initialize worker with unique random seed."""
+    import random
+    import numpy as np
+    worker_seed = torch.initial_seed() % 2**32 + worker_id
+    random.seed(worker_seed)
+    np.random.seed(worker_seed)
 
 
 def train():
-    """Main training function."""
+    """Main training function with streaming dataset and robust pipeline."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    parser.add_argument('--checkpoint-every', type=int, default=500, help='Save checkpoint every N batches')
+    parser.add_argument('--debug', action='store_true', help='Debug mode (num_workers=0)')
+    parser.add_argument('--epochs', type=int, default=5, help='Number of epochs')
+    parser.add_argument('--batch-size', type=int, default=1024, help='Batch size')
+    parser.add_argument('--samples-per-epoch', type=int, default=20_000_000, help='Samples per epoch')
+    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
+    args = parser.parse_args()
+    
     # Setup
     base_path = Path(__file__).parent.parent.parent
     device = setup_gpu()
+    gpu_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
+    start_time = time.time()
+    epoch = 0
     
-    # Load data
-    print("\n--- Loading Data ---")
-    texts, labels = load_payload_data(base_path)
+    # Config
+    config = RobustTrainingConfig(
+        debug_mode=args.debug,
+        checkpoint_dir=str(base_path / 'checkpoints' / 'payload'),
+        checkpoint_every_n_batches=args.checkpoint_every,
+        log_dir=str(base_path / 'logs'),
+    )
     
-    if len(texts) < 100:
-        print("ERROR: Not enough data. Check datasets/security_payloads/ folder.")
-        return
+    ckpt_mgr = RobustCheckpointManager.from_config(config, 'payload_cnn')
     
-    # Create dataset and split
-    dataset = PayloadDataset(texts, labels, max_len=500)
-    train_size = int(0.8 * len(dataset))
-    val_size = len(dataset) - train_size
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
-    
-    train_loader = DataLoader(train_ds, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=64, shuffle=False, num_workers=0, pin_memory=True)
-    
-    print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
-    
-    # Model
-    print("\n--- Creating Model ---")
-    model = PayloadCNN().to(device)
-    param_count = sum(p.numel() for p in model.parameters())
-    print(f"Parameters: {param_count:,}")
-    
-    # Training setup - with label smoothing to reduce overconfidence
-    criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0]).to(device))
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, factor=0.5)
-    scaler = GradScaler()
-    early_stop = EarlyStopping(patience=5)
-    
-    # Label smoothing factor
-    label_smoothing = 0.1
-    
-    # Training loop
-    print("\n--- Training ---")
-    best_val_acc = 0
-    best_state = None
-    
-    for epoch in range(60):  # Increased from 50
-        # Train
-        model.train()
-        train_loss = 0
-        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False):
-            inputs = batch['input'].to(device)
-            targets = batch['target'].to(device)
-            
-            optimizer.zero_grad()
-            with torch.amp.autocast('cuda'):
-                outputs = model(inputs)
-                # Apply label smoothing: targets become 0.1 or 0.9 instead of 0 or 1
-                smoothed_targets = targets * (1 - label_smoothing) + 0.5 * label_smoothing
-                loss = criterion(outputs, smoothed_targets)
-            
-            scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            scaler.step(optimizer)
-            scaler.update()
-            train_loss += loss.item()
+    try:
+        # Get all data files
+        print("\n--- Loading Data Files ---")
+        malicious_files, benign_files = get_all_data_files(base_path)
         
-        train_loss /= len(train_loader)
+        print(f"Malicious sources: {len(malicious_files)} files")
+        print(f"Benign sources: {len(benign_files)} files")
         
-        # Validate
-        model.eval()
-        val_loss, correct, total = 0, 0, 0
-        with torch.no_grad():
-            for batch in val_loader:
-                inputs = batch['input'].to(device)
-                targets = batch['target'].to(device)
+        if not malicious_files:
+            print("ERROR: No malicious data files found!")
+            return
+        if not benign_files:
+            print("ERROR: No benign data files found!")
+            return
+        
+        # Print file details
+        print("\nBenign files:")
+        for f in benign_files:
+            size_mb = f.stat().st_size / 1024 / 1024
+            print(f"  - {f.name}: {size_mb:.1f} MB")
+        
+        # Model
+        print("\n--- Creating Model ---")
+        model = PayloadCNN(vocab_size=256, embed_dim=128, num_filters=256, max_len=500).to(device)
+        param_count = sum(p.numel() for p in model.parameters())
+        print(f"Parameters: {param_count:,}")
+        
+        # Training setup
+        criterion = nn.BCEWithLogitsLoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-5)
+        scaler = GradScaler()
+        
+        batches_per_epoch = args.samples_per_epoch // args.batch_size
+        total_steps = batches_per_epoch * args.epochs + 1  # +1 buffer for edge case
+        
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer, max_lr=args.lr, total_steps=total_steps,
+            pct_start=0.1, anneal_strategy='cos'
+        )
+        
+        # Resume
+        start_epoch, start_batch, global_step = 0, 0, 0
+        if args.resume:
+            resume_info = ckpt_mgr.load(model, optimizer, scheduler, scaler, device)
+            start_epoch = resume_info['epoch']
+            start_batch = resume_info['batch_idx']
+            global_step = resume_info['global_step']
+            if start_batch >= batches_per_epoch:
+                start_epoch += 1
+                start_batch = 0
+            print(f"Resuming from epoch {start_epoch}, batch {start_batch}")
+        
+        # Monitor
+        monitor = TrainingMonitor(config)
+        monitor.start()
+        
+        # 🚀 Discord notification
+        discord.training_started('payload', args.epochs, args.samples_per_epoch, gpu_name)
+        
+        print(f"\n--- Training (Streaming Mode) ---")
+        print(f"Epochs: {args.epochs}, Batch size: {args.batch_size}")
+        print(f"Samples/epoch: {args.samples_per_epoch:,}, Batches/epoch: {batches_per_epoch:,}")
+        
+        best_loss = float('inf')
+        best_state = None
+        
+        for epoch in range(start_epoch, args.epochs):
+            model.train()
+            monitor.set_training_active(True)
+            
+            # Create streaming dataset (fresh each epoch for different shuffle)
+            dataset = BalancedStreamingDataset(
+                malicious_files, benign_files,
+                max_len=500,
+                samples_per_epoch=args.samples_per_epoch
+            )
+            
+            num_workers = 0 if args.debug else min(4, 6)
+            loader = DataLoader(
+                dataset,
+                batch_size=args.batch_size,
+                num_workers=num_workers,
+                pin_memory=True,
+                persistent_workers=num_workers > 0,
+                worker_init_fn=worker_init_fn,
+                prefetch_factor=4 if num_workers > 0 else None,
+            )
+            
+            epoch_start_batch = start_batch if epoch == start_epoch else 0
+            total_loss = 0
+            batches_processed = 0
+            
+            pbar = tqdm(
+                enumerate(loader),
+                total=batches_per_epoch,
+                initial=epoch_start_batch,
+                desc=f"Epoch {epoch+1}/{args.epochs}"
+            )
+            
+            for batch_idx, (inputs, targets) in pbar:
+                if batch_idx < epoch_start_batch:
+                    continue
+                
+                global_step += 1
+                inputs = inputs.to(device, non_blocking=True)
+                targets = targets.to(device, non_blocking=True)
+                
+                optimizer.zero_grad(set_to_none=True)
+                
                 with torch.amp.autocast('cuda'):
                     outputs = model(inputs)
-                    loss = criterion(outputs, targets)
-                val_loss += loss.item()
-                preds = (torch.sigmoid(outputs) > 0.5).float()  # Apply sigmoid for predictions
-                correct += (preds == targets).sum().item()
-                total += targets.size(0)
+                    loss = criterion(outputs.squeeze(), targets)
+                
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                scaler.step(optimizer)
+                scaler.update()
+                if scheduler._step_count < scheduler.total_steps:
+                    scheduler.step()
+                
+                total_loss += loss.item()
+                batches_processed += 1
+                
+                pbar.set_postfix({
+                    'loss': f'{loss.item():.4f}',
+                    'lr': f'{scheduler.get_last_lr()[0]:.2e}'
+                })
+                
+                # Checkpoint
+                if ckpt_mgr.should_save(batch_idx):
+                    ckpt_mgr.save(epoch, batch_idx, model, optimizer, scheduler, scaler, global_step)
+            
+            pbar.close()
+            del loader
+            torch.cuda.empty_cache()
+            
+            monitor.set_training_active(False)
+            
+            # End of epoch
+            avg_loss = total_loss / max(batches_processed, 1)
+            ckpt_mgr.save(epoch, batches_per_epoch, model, optimizer, scheduler, scaler, global_step)
+            
+            elapsed = time.time() - start_time
+            eta = elapsed / (epoch - start_epoch + 1) * (args.epochs - epoch - 1) if epoch >= start_epoch else 0
+            
+            print(f"\nEpoch {epoch+1}: loss={avg_loss:.4f}, lr={scheduler.get_last_lr()[0]:.2e}")
+            print(f"Elapsed: {timedelta(seconds=int(elapsed))}, ETA: {timedelta(seconds=int(eta))}")
+            
+            # 📊 Discord
+            discord.epoch_completed('payload', epoch+1, args.epochs, avg_loss, 0, elapsed, eta, 0)
+            
+            if avg_loss < best_loss:
+                best_loss = avg_loss
+                best_state = model.state_dict().copy()
+            
+            start_batch = 0  # Reset for next epoch
         
-        val_loss /= len(val_loader)
-        val_acc = correct / total
+        monitor.stop()
         
-        scheduler.step(val_loss)
+        # Save model
+        print("\n--- Saving Model ---")
+        if best_state:
+            model.load_state_dict(best_state)
         
-        print(f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, val_acc={val_acc:.2%}")
+        models_dir = base_path / 'models'
+        models_dir.mkdir(exist_ok=True)
         
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
-            best_state = model.state_dict().copy()
+        model.eval()
+        example = torch.zeros(1, 500, dtype=torch.long).to(device)
+        save_model(model, models_dir / 'payload_cnn', example)
+        torch.save(best_state or model.state_dict(), models_dir / 'payload_cnn.pth')
         
-        if early_stop(val_loss):
-            print("Early stopping triggered")
-            break
-    
-    # Save best model
-    print("\n--- Saving Model ---")
-    model.load_state_dict(best_state)
-    models_dir = base_path / 'models'
-    models_dir.mkdir(exist_ok=True)
-    
-    # Save as TorchScript
-    model.eval()
-    example = torch.zeros(1, 500, dtype=torch.long).to(device)
-    save_model(model, models_dir / 'payload_cnn', example)
-    
-    # Also save state dict
-    torch.save(best_state, models_dir / 'payload_cnn.pth')
-    
-    print(f"✓ Model saved to models/payload_cnn.pt")
-    print(f"✓ Best validation accuracy: {best_val_acc:.2%}")
+        total_time = time.time() - start_time
+        print(f"✓ Model saved to models/payload_cnn.pt")
+        print(f"✓ Best loss: {best_loss:.4f}")
+        print(f"✓ Total time: {timedelta(seconds=int(total_time))}")
+        
+        # ✅ Discord
+        discord.training_finished('payload', total_time, best_loss, args.epochs)
+        
+    except Exception as e:
+        discord.training_error('payload', f"{type(e).__name__}: {str(e)}", epoch)
+        raise
 
 
 if __name__ == "__main__":

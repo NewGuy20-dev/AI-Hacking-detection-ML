@@ -1,0 +1,65 @@
+# Training Pipeline Configuration
+
+# Data paths (relative to project root)
+data:
+  benign_paths:
+    - datasets/benign_5m.jsonl
+    - datasets/curated_benign/all_benign.txt
+    - datasets/curated_benign/adversarial/
+    - datasets/fp_test_500k.jsonl
+  malicious_paths:
+    - datasets/security_payloads/
+
+# Training parameters
+training:
+  batch_size: 256
+  epochs: 10
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  accumulation_steps: 1
+  max_grad_norm: 1.0
+  num_workers: 4
+  val_split: 0.1
+
+# Mixed precision
+amp:
+  enabled: true
+  opt_level: O1  # O1 for mixed precision, O2 for more aggressive
+
+# Model
+model:
+  architecture: PayloadCNN
+  max_length: 512
+  embedding_dim: 128
+  num_filters: 256
+  filter_sizes: [3, 4, 5]
+  dropout: 0.5
+  save_path: models/payload_cnn.pt
+  checkpoint_path: models/checkpoint.pt
+
+# Hash registry for data isolation
+hash_registry:
+  enabled: true
+  path: models/training_hashes.pkl
+  expected_items: 100000000  # 100M
+  fp_rate: 0.001
+
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 3
+  min_delta: 0.001
+  monitor: val_loss
+
+# Logging
+logging:
+  level: INFO
+  save_metrics: true
+  metrics_path: evaluation/training_metrics.jsonl
+
+# Scheduler
+scheduler:
+  type: OneCycleLR
+  max_lr_multiplier: 10
+  pct_start: 0.1
+  anneal_strategy: cos

@@ -1,0 +1,93 @@
+# Alert Thresholds Configuration
+
+# Metric thresholds
+thresholds:
+  accuracy:
+    target: 0.99        # Must be >= 99%
+    warning: 0.995      # Warn if < 99.5%
+    critical: 0.98      # Critical if < 98%
+  
+  fp_rate:
+    target: 0.03        # Must be <= 3%
+    warning: 0.025      # Warn if > 2.5%
+    critical: 0.05      # Critical if > 5%
+  
+  fn_rate:
+    target: 0.02        # Must be <= 2%
+    warning: 0.015      # Warn if > 1.5%
+    critical: 0.03      # Critical if > 3%
+  
+  latency_p95_ms:
+    target: 100         # Must be <= 100ms
+    warning: 80         # Warn if > 80ms
+    critical: 200       # Critical if > 200ms
+  
+  calibration_error:
+    target: 0.1         # Must be <= 0.1
+    warning: 0.08       # Warn if > 0.08
+    critical: 0.15      # Critical if > 0.15
+  
+  memory_peak_mb:
+    target: 1000        # Must be <= 1GB
+    warning: 800        # Warn if > 800MB
+    critical: 2000      # Critical if > 2GB
+
+# Alert levels
+levels:
+  info:
+    color: 0x3498db     # Blue
+    notify: false
+  
+  warning:
+    color: 0xf39c12     # Orange
+    notify: true
+    mention: false
+  
+  error:
+    color: 0xe74c3c     # Red
+    notify: true
+    mention: true
+  
+  success:
+    color: 0x2ecc71     # Green
+    notify: true
+    mention: false
+
+# Discord configuration
+discord:
+  webhook_url: ${DISCORD_WEBHOOK_URL}  # From environment variable
+  
+  # What to include in messages
+  include:
+    metrics_table: true
+    category_breakdown: true
+    trend_chart: true
+    failed_samples: true
+    recommendations: true
+  
+  # Rate limiting
+  rate_limit:
+    max_per_hour: 10
+    cooldown_minutes: 5
+
+# Actions on failure
+actions:
+  on_failure:
+    - do_not_deploy
+    - save_failed_samples
+    - notify_team
+    - create_issue
+  
+  on_warning:
+    - log_warning
+    - notify_team
+  
+  on_success:
+    - log_success
+    - update_dashboard
+
+# Trend analysis
+trends:
+  window_days: 7
+  alert_on_regression: true
+  regression_threshold: 0.005  # Alert if FP increases by 0.5%

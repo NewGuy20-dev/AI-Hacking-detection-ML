@@ -1,51 +1,115 @@
 'use client'
 
-import { Card } from '@/components/ui'
+import { useEffect, useState, useMemo } from 'react'
+import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { useStatsStore } from '@/stores/statsStore'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { TrendingUp, TrendingDown, Calendar } from 'lucide-react'
+import { ChartSkeleton } from '@/components/ui/Skeleton'
 
-const COLORS = ['#fc8181', '#fbd38d', '#90cdf4', '#9ae6b4', '#d6bcfa']
+type TimeRange = '7d' | '30d' | 'all'
 
 export function AttackChart() {
-  const { byType } = useStatsStore()
+  const [mounted, setMounted] = useState(false)
+  const [timeRange, setTimeRange] = useState<TimeRange>('7d')
+  const dailyStats = useStatsStore((s) => s.dailyStats)
   
-  const data = Object.entries(byType).map(([name, value]) => ({
-    name: name.replace('_', ' '),
-    value,
-  }))
+  useEffect(() => {
+    useStatsStore.persist.rehydrate()
+    setMounted(true)
+  }, [])
 
-  if (data.length === 0) {
-    return (
-      <Card className="h-64 flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">No attack data yet</p>
-      </Card>
-    )
-  }
+  const { chartData, trend } = useMemo(() => {
+    if (!dailyStats.length) {
+      // Generate sample data if no real data
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      return {
+        chartData: days.map(name => ({ name, threats: 0, clean: 0 })),
+        trend: 0
+      }
+    }
+
+    const limit = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : dailyStats.length
+    const data = dailyStats.slice(-limit).map(d => ({
+      name: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+      threats: d.threats,
+      clean: d.clean
+    }))
+
+    // Calculate trend
+    const recent = dailyStats.slice(-3)
+    const older = dailyStats.slice(-6, -3)
+    const recentThreats = recent.reduce((a, b) => a + b.threats, 0)
+    const olderThreats = older.reduce((a, b) => a + b.threats, 0) || 1
+    const trendValue = ((recentThreats - olderThreats) / olderThreats) * 100
+
+    return { chartData: data, trend: trendValue }
+  }, [dailyStats, timeRange])
+
+  if (!mounted) return <ChartSkeleton />
+
+  const trendUp = trend > 0
+  const trendText = trend === 0 ? 'No change' : `${trendUp ? '+' : ''}${trend.toFixed(0)}% threats`
 
   return (
-    <Card>
-      <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Attack Distribution</h3>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-            >
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+    <Card className="hover-lift glass border-0 animate-in">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold">Threat Analysis</h3>
+            <p className="text-sm text-muted-foreground">Detection trends over time</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+              {(['7d', '30d', 'all'] as TimeRange[]).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    timeRange === range ? 'bg-primary text-primary-foreground' : 'hover:bg-muted-foreground/10'
+                  }`}
+                >
+                  {range === 'all' ? 'All' : range}
+                </button>
               ))}
-            </Pie>
-            <Tooltip />
+            </div>
+            <div className={`flex items-center gap-1 px-3 py-1 rounded-lg ${trendUp ? 'bg-destructive/10' : 'bg-success/10'}`}>
+              {trendUp ? <TrendingUp className="w-4 h-4 text-destructive" /> : <TrendingDown className="w-4 h-4 text-success" />}
+              <span className={`text-sm font-medium ${trendUp ? 'text-destructive' : 'text-success'}`}>{trendText}</span>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="threats" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="clean" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'hsl(var(--card))', 
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+            />
             <Legend />
-          </PieChart>
+            <Area type="monotone" dataKey="threats" stroke="hsl(var(--destructive))" fillOpacity={1} fill="url(#threats)" strokeWidth={2} />
+            <Area type="monotone" dataKey="clean" stroke="hsl(var(--success))" fillOpacity={1} fill="url(#clean)" strokeWidth={2} />
+          </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </CardContent>
     </Card>
   )
 }

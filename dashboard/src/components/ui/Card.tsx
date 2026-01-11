@@ -1,26 +1,65 @@
 import { cn } from '@/lib/utils'
-import { ReactNode } from 'react'
+import { ReactNode, HTMLAttributes } from 'react'
 
-interface CardProps {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
   className?: string
-  variant?: 'default' | 'danger' | 'success'
+  variant?: 'default' | 'elevated' | 'inset'
 }
 
-export function Card({ children, className, variant = 'default' }: CardProps) {
+export function Card({ children, className, variant = 'default', ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-clay p-6 transition-all duration-200',
-        'bg-clay-card dark:bg-clay-card-dark',
-        'shadow-clay dark:shadow-clay-dark',
-        'hover:shadow-clay-hover hover:-translate-y-0.5',
-        variant === 'danger' && 'border-l-4 border-clay-danger-dark',
-        variant === 'success' && 'border-l-4 border-clay-success',
+        'clay-card',
+        {
+          'shadow-lg': variant === 'elevated',
+          'shadow-clay-inset dark:shadow-clay-dark-inset': variant === 'inset',
+        },
         className
       )}
+      {...props}
     >
       {children}
     </div>
+  )
+}
+
+interface CardHeaderProps {
+  children: ReactNode
+  className?: string
+}
+
+export function CardHeader({ children, className }: CardHeaderProps) {
+  return (
+    <div className={cn('p-6 pb-4', className)}>
+      {children}
+    </div>
+  )
+}
+
+interface CardContentProps {
+  children: ReactNode
+  className?: string
+}
+
+export function CardContent({ children, className }: CardContentProps) {
+  return (
+    <div className={cn('p-6 pt-0', className)}>
+      {children}
+    </div>
+  )
+}
+
+interface CardTitleProps {
+  children: ReactNode
+  className?: string
+}
+
+export function CardTitle({ children, className }: CardTitleProps) {
+  return (
+    <h3 className={cn('text-lg font-semibold', className)}>
+      {children}
+    </h3>
   )
 }

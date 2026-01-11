@@ -6,12 +6,22 @@ A comprehensive machine learning system for real-time cybersecurity threat detec
 
 This system implements a hybrid ML/DL approach for detecting cyber attacks including network intrusions, malicious URLs, payload injections, and fraud using both traditional ML (scikit-learn, XGBoost, LightGBM) and deep learning (PyTorch CNN/LSTM) models.
 
+## 🎯 Target Performance Metrics
+
+| Metric | Target | Description |
+|--------|--------|-------------|
+| Accuracy | 98.9%+ | Overall classification accuracy |
+| Recall | 98%+ | Attack detection rate |
+| FP Rate | 2-3% | False positive rate |
+| Explainability | Full | Detailed indicators + analyst checklists |
+
 ## 📊 Current Dataset Status
 
 - **Total Dataset Size**: 2.32 GB (95.2M+ samples)
+- **FP Test Dataset**: 500k diverse benign samples
 - **Validation Samples**: 7,100
 - **Data Categories**: 6 core + curated benign data
-- **Latest Addition**: Benign data generation (11 categories: sentences, names, emails, phones, addresses, dates, usernames, products, search queries, comments, JSON)
+- **Latest Addition**: 500k benign FP test dataset (Wikipedia, real-world text, edge cases, code, structured data)
 
 ## 🏗️ Architecture
 
@@ -22,12 +32,31 @@ This system implements a hybrid ML/DL approach for detecting cyber attacks inclu
 - **Payload Classifier**: PyTorch CNN for injection attack detection (character-level)
 - **Fraud Detection Model**: XGBoost classifier for financial fraud
 - **Timeseries Detector**: LSTM for temporal anomaly detection
-- **Ensemble Detector**: Weighted voting system (Network: 0.5, URL: 0.3, Content: 0.2)
+- **Ensemble Detector**: Calibrated weighted voting with stacking meta-classifier
 
 ### Model Pipeline
 ```
-Input Data → Feature Engineering → Specialized Models → Ensemble Voting → Alert Generation
+Input Data → Feature Engineering → Specialized Models → Calibration → Ensemble Voting → Explainability → Triage → Alert
 ```
+
+## 🆕 New Features (v2.0)
+
+### High-Performance Detection
+- **Threshold Optimization**: Grid search for optimal recall/FP tradeoff
+- **Confidence Calibration**: Platt scaling and isotonic regression
+- **Ensemble Stacking**: Meta-classifier for improved accuracy
+- **Context-Aware Classification**: Reduces FPs by detecting input context (email, code, chat, etc.)
+
+### Full Explainability
+- **Indicators**: Human-readable detection indicators (SQL keywords, XSS patterns, etc.)
+- **Explanations**: Verdict, confidence breakdown, attack type classification
+- **Analyst Checklists**: Auto-generated verification steps per attack type
+
+### Fast Triage
+- **Priority Scoring**: P1-P5 priority levels with SLA hours
+- **Quick Verdicts**: MALICIOUS, SUSPICIOUS, LIKELY_BENIGN, BENIGN
+- **Auto-Actions**: Automatic blocking for high-confidence critical alerts
+- **Batch Processing**: Efficient multi-alert triage
 
 ## 📊 Datasets (6 Core Categories)
 
@@ -203,28 +232,43 @@ These are acceptable trade-offs for security - the model errs on the side of cau
 ├── src/                           # Source code
 │   ├── train_*.py                # Model training scripts
 │   ├── predict.py                # Prediction engine
-│   ├── ensemble.py               # Ensemble methods
+│   ├── ensemble.py               # Ensemble methods (with calibration)
 │   ├── hybrid_predictor.py       # ML + DL hybrid
 │   ├── batch_predictor.py        # Batch processing
-│   ├── alert_manager.py          # Alert generation
+│   ├── alert_manager.py          # Alert generation (with explainability)
 │   ├── threat_intel.py           # Threat intelligence
 │   ├── monitoring.py             # Model monitoring
-│   ├── explainability_v2.py      # SHAP explanations
+│   ├── metrics_tracker.py        # [NEW] Accuracy/recall/FP tracking
+│   ├── threshold_optimizer.py    # [NEW] Threshold optimization
+│   ├── confidence.py             # [NEW] Probability calibration
+│   ├── context_classifier.py     # [NEW] Context-aware FP reduction
+│   ├── indicators.py             # [NEW] Human-readable indicators
+│   ├── explainer.py              # [NEW] Unified explanation engine
+│   ├── checklist.py              # [NEW] Analyst checklist generator
+│   ├── triage.py                 # [NEW] Fast triage system
 │   ├── torch_models/             # PyTorch architectures
 │   └── training/                 # Training utilities
 ├── scripts/                       # Utility scripts
 │   ├── generate_benign_data.py   # Benign data generation
 │   ├── generate_adversarial_benign.py
+│   ├── generate_500k_benign_test.py  # [NEW] 500k FP test data
+│   ├── establish_baseline.py     # [NEW] Baseline metrics
+│   ├── create_holdout_set.py     # [NEW] Holdout test set
+│   ├── validate_metrics.py       # [NEW] Final validation
 │   ├── download_url_datasets.py  # URL dataset download
 │   ├── evaluate_models.py        # Model evaluation
 │   ├── validate_realworld.py     # Real-world validation
 │   └── retrain_all.py            # Batch retraining
+├── configs/                       # [NEW] Configuration files
+│   └── optimal_thresholds.json   # Per-model thresholds
 ├── models/                        # Trained models (.pkl, .pt, .pth)
 ├── datasets/                      # Training datasets (2.32GB)
 │   ├── network_intrusion/        # NSL-KDD, CICIDS2017, etc.
 │   ├── url_analysis/             # Malicious URLs, Tranco
 │   ├── security_payloads/        # Wordlists, payloads
 │   ├── curated_benign/           # Generated benign data
+│   ├── fp_test_500k.jsonl        # [NEW] 500k FP test samples
+│   ├── holdout_test/             # [NEW] Holdout test set
 │   ├── fraud_detection/          # Credit card data
 │   ├── email_spam/               # Spam corpus
 │   └── timeseries/               # Temporal data

@@ -9,7 +9,7 @@ from train_unified import load_nsl_unified, load_cicids_unified, UNIFIED_FEATURE
 
 
 def validate():
-    base = Path('/workspaces/AI-Hacking-detection-ML')
+    base = Path(__file__).resolve().parent.parent
     
     model = joblib.load(base / 'models/network_detector.pkl')
     scaler = joblib.load(base / 'models/network_scaler.pkl')

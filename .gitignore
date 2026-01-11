@@ -80,3 +80,8 @@ datasets/security_payloads/
 /dashboard/.env
 /dashboard/.env.local
 /dashboard/.next
+
+# Environment variables
+.env
+.env.local
+.env.*.local

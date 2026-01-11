@@ -1,0 +1,50 @@
+# Stress Test Configuration
+# Target: 30-60 minutes total
+
+phases:
+  quick_validation:
+    enabled: true
+    samples: 10000
+    timeout_minutes: 10
+  
+  adversarial_testing:
+    enabled: true
+    timeout_minutes: 15
+  
+  performance_benchmark:
+    enabled: true
+    iterations: 100
+    batch_size: 512
+    timeout_minutes: 10
+  
+  fp_analysis:
+    enabled: true
+    samples: 50000
+    timeout_minutes: 15
+  
+  report_generation:
+    enabled: true
+    timeout_minutes: 10
+
+thresholds:
+  accuracy: 0.98
+  precision: 0.98
+  recall: 0.98
+  f1: 0.98
+  fp_rate: 0.03
+  fn_rate: 0.02
+  latency_ms: 100
+  throughput_per_sec: 5000
+
+paths:
+  model_dir: models
+  data_dir: datasets
+  output_dir: reports
+  holdout_test: datasets/holdout_test
+  benign_data: datasets/benign_60m
+
+output:
+  save_fp_samples: true
+  save_fn_samples: true
+  max_samples_to_save: 100
+  generate_html_report: true
