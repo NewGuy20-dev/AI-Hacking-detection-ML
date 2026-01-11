@@ -2,6 +2,7 @@
 
 import { Tabs } from '@/components/ui'
 import { PayloadScanner, URLScanner } from '@/components/scanner'
+import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { FileCode, Globe } from 'lucide-react'
 
 const tabs = [
@@ -11,10 +12,15 @@ const tabs = [
 
 export default function ScannerPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        🔍 Scanner
-      </h1>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-primary">
+            🔍 Scanner
+          </CardTitle>
+        </CardHeader>
+      </Card>
+      
       <Tabs tabs={tabs} defaultTab="payload">
         {(activeTab) => (
           <>

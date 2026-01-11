@@ -26,15 +26,23 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-clay-sm transition-all duration-200',
-                'hover:shadow-clay-hover hover:-translate-y-0.5',
+                'flex items-center gap-3 px-4 py-3 rounded-clay transition-all duration-200 relative',
                 isActive
-                  ? 'bg-clay-card dark:bg-clay-card-dark shadow-clay dark:shadow-clay-dark text-blue-600 dark:text-blue-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? 'clay-card bg-primary/10 text-primary border-primary/20'
+                  : 'clay-card hover:bg-clay-border/50 dark:hover:bg-clay-dark-border/50'
               )}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
+              <item.icon className={cn(
+                "w-5 h-5 transition-transform duration-200",
+                isActive ? "text-primary" : "text-clay-muted dark:text-clay-dark-muted"
+              )} />
+              <span className={cn(
+                "font-medium transition-colors",
+                isActive ? "text-primary" : ""
+              )}>{item.label}</span>
+              {isActive && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full" />
+              )}
             </Link>
           )
         })}

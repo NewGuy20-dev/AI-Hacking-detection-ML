@@ -1,0 +1,3 @@
+{"accuracy": 0.982387, "precision": 0.973445, "recall": 1.0, "f1_score": 0.986544, "fp_rate": 0.049706, "fn_rate": 0.0, "tp": 61951, "tn": 32310, "fp": 1690, "fn": 0, "total": 95951, "threshold": 0.5, "timestamp": "2025-12-22T17:46:05.386204"}
+{"accuracy": 0.982439, "precision": 0.973521, "recall": 1.0, "f1_score": 0.986583, "fp_rate": 0.049559, "fn_rate": 0.0, "tp": 61951, "tn": 32315, "fp": 1685, "fn": 0, "total": 95951, "threshold": 0.5, "timestamp": "2025-12-22T17:50:23.537880"}
+{"accuracy": 0.982387, "precision": 0.973445, "recall": 1.0, "f1_score": 0.986544, "fp_rate": 0.049706, "fn_rate": 0.0, "tp": 61951, "tn": 32310, "fp": 1690, "fn": 0, "total": 95951, "threshold": 0.5, "timestamp": "2025-12-22T18:52:51.130013"}

@@ -1,5 +1,6 @@
 """Train Time-Series LSTM for network traffic anomaly detection."""
 import sys
+import argparse
 from pathlib import Path
 import numpy as np
 
@@ -14,6 +15,7 @@ from tqdm import tqdm
 from torch_models.timeseries_lstm import TimeSeriesLSTM
 from torch_models.datasets import TimeSeriesDataset
 from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from training.checkpoint import CheckpointManager
 
 
 def generate_normal_traffic(n_samples=10000, seq_len=60, n_features=8):
@@ -144,19 +146,48 @@ def normalize_data(data):
 
 def train():
     """Main training function."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    parser.add_argument('--checkpoint-every', type=int, default=500, help='Save checkpoint every N batches')
+    args = parser.parse_args()
+    
     device = setup_gpu()
     base_path = Path(__file__).parent.parent.parent
     
-    # Generate data
-    print("\n--- Generating Data ---")
-    normal = generate_normal_traffic(15000)
-    attack = generate_attack_traffic(15000)
+    # Checkpoint manager
+    ckpt_dir = base_path / 'checkpoints' / 'timeseries'
+    ckpt_mgr = CheckpointManager(str(ckpt_dir), 'timeseries_lstm', args.checkpoint_every)
+    
+    # Load or generate data
+    print("\n--- Loading/Generating Data ---")
+    
+    # Try to load live_benign timeseries first
+    live_benign_path = base_path / 'datasets' / 'live_benign' / 'timeseries_benign.npy'
+    synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_500k.npy'
+    synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_500k.npy'
+    
+    if live_benign_path.exists():
+        print(f"Loading live benign from {live_benign_path}")
+        normal = np.load(live_benign_path)[:50000]  # Use 50k for balance
+    elif synth_normal_path.exists():
+        print(f"Loading synthetic normal from {synth_normal_path}")
+        normal = np.load(synth_normal_path)[:50000]
+    else:
+        print("Generating normal traffic...")
+        normal = generate_normal_traffic(15000)
+    
+    if synth_attack_path.exists():
+        print(f"Loading synthetic attack from {synth_attack_path}")
+        attack = np.load(synth_attack_path)[:len(normal)]  # Balance with normal
+    else:
+        print("Generating attack traffic...")
+        attack = generate_attack_traffic(len(normal))
     
     # Normalize
     all_data = np.concatenate([normal, attack], axis=0)
     all_data = normalize_data(all_data)
-    normal = all_data[:15000]
-    attack = all_data[15000:]
+    normal = all_data[:len(normal)]
+    attack = all_data[len(normal):]
     
     # Create labels
     sequences = np.concatenate([normal, attack], axis=0)
@@ -174,8 +205,8 @@ def train():
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
     
-    train_loader = DataLoader(train_ds, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=64, shuffle=False, num_workers=0, pin_memory=True)
+    train_loader = DataLoader(train_ds, batch_size=64, shuffle=True, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
+    val_loader = DataLoader(val_ds, batch_size=64, shuffle=False, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
     
     print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
     
@@ -192,16 +223,37 @@ def train():
     scaler = GradScaler()
     early_stop = EarlyStopping(patience=7)
     
+    # Resume from checkpoint if requested
+    start_epoch, start_batch, global_step = 0, 0, 0
+    if args.resume or ckpt_mgr.find_latest():
+        resume_info = ckpt_mgr.load(model, optimizer, scheduler, scaler, device)
+        start_epoch = resume_info['epoch']
+        start_batch = resume_info['batch_idx']
+        global_step = resume_info['global_step']
+        if start_batch >= len(train_loader):
+            start_epoch += 1
+            start_batch = 0
+    
     # Training loop
     print("\n--- Training ---")
     best_val_acc = 0
     best_state = None
     
-    for epoch in range(60):  # Increased from 50
+    for epoch in range(start_epoch, 60):
         # Train
         model.train()
         train_loss = 0
-        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False):
+        batches_processed = 0
+        
+        epoch_start_batch = start_batch if epoch == start_epoch else 0
+        
+        pbar = tqdm(enumerate(train_loader), total=len(train_loader),
+                    initial=epoch_start_batch, desc=f"Epoch {epoch+1}")
+        
+        for batch_idx, batch in pbar:
+            if batch_idx < epoch_start_batch:
+                continue
+                
             inputs = batch['input'].to(device)
             targets = batch['target'].to(device)
             
@@ -216,8 +268,17 @@ def train():
             scaler.step(optimizer)
             scaler.update()
             train_loss += loss.item()
+            batches_processed += 1
+            global_step += 1
+            
+            pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+            
+            if ckpt_mgr.should_save(batch_idx):
+                ckpt_mgr.save(epoch, batch_idx, model, optimizer, scheduler, scaler, global_step)
         
-        train_loss /= len(train_loader)
+        ckpt_mgr.save(epoch, len(train_loader), model, optimizer, scheduler, scaler, global_step)
+        
+        train_loss /= max(batches_processed, 1)
         
         # Validate
         model.eval()

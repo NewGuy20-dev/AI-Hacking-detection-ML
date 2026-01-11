@@ -20,27 +20,31 @@ def main():
     print("="*60)
     
     # Step 1: Generate fresh benign data
-    print("\n[1/6] Generating curated benign data...")
+    print("\n[1/7] Generating curated benign data...")
     run_script(scripts_dir / 'generate_benign_data.py', "Benign Data Generation")
     
     # Step 2: Generate ADVERSARIAL benign data (critical for reducing false positives)
-    print("\n[2/6] Generating adversarial benign data...")
+    print("\n[2/7] Generating adversarial benign data...")
     run_script(scripts_dir / 'generate_adversarial_benign.py', "Adversarial Benign Data Generation")
     
-    # Step 3: Generate improved synthetic URLs  
-    print("\n[3/6] Generating improved URL data...")
+    # Step 3: Generate 500k FP test dataset
+    print("\n[3/7] Generating 500k FP test dataset...")
+    run_script(scripts_dir / 'generate_500k_benign_test.py', "500k Benign FP Test Generation")
+    
+    # Step 4: Generate improved synthetic URLs  
+    print("\n[4/7] Generating improved URL data...")
     run_script(scripts_dir / 'generate_improved_urls.py', "Improved URL Generation")
     
-    # Step 4: Retrain Payload CNN
-    print("\n[4/6] Retraining Payload CNN...")
+    # Step 5: Retrain Payload CNN
+    print("\n[5/7] Retraining Payload CNN...")
     run_script(training_dir / 'train_payload.py', "Payload CNN Training")
     
-    # Step 5: Retrain URL CNN
-    print("\n[5/6] Retraining URL CNN...")
+    # Step 6: Retrain URL CNN
+    print("\n[6/7] Retraining URL CNN...")
     run_script(training_dir / 'train_url.py', "URL CNN Training")
     
-    # Step 6: Retrain Time-Series LSTM
-    print("\n[6/6] Retraining Time-Series LSTM...")
+    # Step 7: Retrain Time-Series LSTM
+    print("\n[7/7] Retraining Time-Series LSTM...")
     run_script(training_dir / 'train_timeseries.py', "Time-Series LSTM Training")
     
     # Validation

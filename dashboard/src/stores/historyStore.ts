@@ -27,6 +27,9 @@ export const useHistoryStore = create<HistoryStore>()(
         })),
       clearHistory: () => set({ history: [] }),
     }),
-    { name: 'scan-history' }
+    { 
+      name: 'scan-history',
+      skipHydration: true,
+    }
   )
 )

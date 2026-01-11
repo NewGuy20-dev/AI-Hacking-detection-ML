@@ -1,0 +1,117 @@
+FP Test Results - 2025-12-26T18:21:21.754233
+Total: 5,000,000 samples
+FP: 1,647,195 (32.9439%)
+
+Sentences: 263294/500000 (52.659%)
+Emails: 319301/500000 (63.860%)
+File Paths: 0/500000 (0.000%)
+Products: 499857/500000 (99.971%)
+Log Entries: 0/500000 (0.000%)
+JSON: 0/500000 (0.000%)
+URLs: 0/500000 (0.000%)
+Code Snippets: 121210/500000 (24.242%)
+Names: 217931/500000 (43.586%)
+Math/Addresses: 2833/250000 (1.133%)
+Addresses: 222769/250000 (89.108%)
+
+FP Examples:
+[Sentences] (0.891) The manager has completed your account #0000009
+[Sentences] (0.999) The manager needs to update this transaction #0000019
+[Sentences] (0.986) The manager needs to update this transaction #0000059
+[Sentences] (0.905) This product successfully handled the document #0030004
+[Sentences] (0.995) The manager has completed your account #0030009
+[Sentences] (0.994) The manager needs to update this transaction #0030019
+[Sentences] (0.625) The manager requires the data #0030039
+[Sentences] (0.944) The manager needs to update this transaction #0030059
+[Sentences] (0.805) The manager requires the data #0030079
+[Sentences] (0.616) The manager requires the data #0031119
+[Sentences] (0.961) The manager has completed your account #0040009
+[Sentences] (0.950) The manager needs to update this transaction #0040019
+[Sentences] (0.540) The manager needs to update this transaction #0040059
+[Sentences] (0.833) The manager requires the data #0041119
+[Sentences] (0.568) The manager needs to update this transaction #0041139
+[Sentences] (0.703) The manager requires the data #0041159
+[Sentences] (0.715) The manager needs to update this transaction #0041179
+[Sentences] (0.662) The manager has completed your account #0050009
+[Sentences] (0.557) The manager needs to update this transaction #0050019
+[Sentences] (0.685) A customer has completed your account #0060001
+[Sentences] (0.983) This product successfully handled the document #0060004
+[Sentences] (0.998) The manager has completed your account #0060009
+[Sentences] (0.541) This product has been approved the application #0060014
+[Sentences] (0.999) The manager needs to update this transaction #0060019
+[Sentences] (0.869) The manager is waiting for your submission #0060029
+[Sentences] (0.918) The manager requires the data #0060039
+[Sentences] (0.995) The manager needs to update this transaction #0060059
+[Sentences] (0.951) The manager requires the data #0060079
+[Sentences] (0.836) The manager needs to update this transaction #0060099
+[Sentences] (0.832) The manager requires the data #0061119
+[Sentences] (0.670) The manager requires the data #0061159
+[Sentences] (0.678) The manager needs to update this transaction #0061179
+[Sentences] (0.934) The manager has completed your account #0070009
+[Sentences] (0.954) The manager needs to update this transaction #0070019
+[Sentences] (0.655) The manager requires the data #0071119
+[Sentences] (0.580) This product successfully handled the document #0080004
+[Sentences] (0.978) The manager has completed your account #0080009
+[Sentences] (0.955) The manager needs to update this transaction #0080019
+[Sentences] (0.527) The manager needs to update this transaction #0080059
+[Sentences] (0.891) The manager requires the data #0081119
+[Sentences] (0.748) The manager needs to update this transaction #0081139
+[Sentences] (0.802) The manager requires the data #0081159
+[Sentences] (0.829) The manager needs to update this transaction #0081179
+[Sentences] (0.946) The manager has completed your account #0090009
+[Sentences] (0.942) The manager needs to update this transaction #0090019
+[Sentences] (0.988) The user is processing the request #0100000
+[Sentences] (1.000) A customer has completed your account #0100001
+[Sentences] (1.000) The system needs to update this transaction #0100003
+[Sentences] (1.000) This product successfully handled the document #0100004
+[Sentences] (1.000) The service is waiting for your submission #0100005
+[Sentences] (1.000) Your order has been approved the application #0100006
+[Sentences] (1.000) The report requires the data #0100007
+[Sentences] (0.984) Our company is processing the request #0100008
+[Sentences] (1.000) The manager has completed your account #0100009
+[Sentences] (1.000) A customer needs to update this transaction #0100011
+[Sentences] (0.994) Our team successfully handled the document #0100012
+[Sentences] (0.991) The system is waiting for your submission #0100013
+[Sentences] (1.000) This product has been approved the application #0100014
+[Sentences] (1.000) The service requires the data #0100015
+[Sentences] (0.960) Your order is processing the request #0100016
+[Sentences] (0.998) The report has completed your account #0100017
+[Sentences] (0.926) Our company will review the payment #0100018
+[Sentences] (1.000) The manager needs to update this transaction #0100019
+[Sentences] (0.999) The user successfully handled the document #0100020
+[Sentences] (1.000) A customer is waiting for your submission #0100021
+[Sentences] (1.000) Our team has been approved the application #0100022
+[Sentences] (1.000) The system requires the data #0100023
+[Sentences] (1.000) This product is processing the request #0100024
+[Sentences] (1.000) The service has completed your account #0100025
+[Sentences] (1.000) The report needs to update this transaction #0100027
+[Sentences] (1.000) Our company successfully handled the document #0100028
+[Sentences] (1.000) The manager is waiting for your submission #0100029
+[Sentences] (1.000) The user has been approved the application #0100030
+[Sentences] (1.000) A customer requires the data #0100031
+[Sentences] (0.998) The system has completed your account #0100033
+[Sentences] (0.987) This product will review the payment #0100034
+[Sentences] (1.000) The service needs to update this transaction #0100035
+[Sentences] (0.996) Your order successfully handled the document #0100036
+[Sentences] (0.753) The report is waiting for your submission #0100037
+[Sentences] (1.000) Our company has been approved the application #0100038
+[Sentences] (1.000) The manager requires the data #0100039
+[Sentences] (1.000) A customer has completed your account #0100041
+[Sentences] (0.999) The system needs to update this transaction #0100043
+[Sentences] (1.000) This product successfully handled the document #0100044
+[Sentences] (1.000) The service is waiting for your submission #0100045
+[Sentences] (1.000) Your order has been approved the application #0100046
+[Sentences] (0.993) The report requires the data #0100047
+[Sentences] (0.625) Our company is processing the request #0100048
+[Sentences] (1.000) The manager has completed your account #0100049
+[Sentences] (1.000) A customer needs to update this transaction #0100051
+[Sentences] (0.985) Our team successfully handled the document #0100052
+[Sentences] (0.980) The system is waiting for your submission #0100053
+[Sentences] (1.000) This product has been approved the application #0100054
+[Sentences] (1.000) The service requires the data #0100055
+[Sentences] (0.772) Your order is processing the request #0100056
+[Sentences] (0.994) The report has completed your account #0100057
+[Sentences] (0.705) Our company will review the payment #0100058
+[Sentences] (1.000) The manager needs to update this transaction #0100059
+[Sentences] (0.989) The user successfully handled the document #0100060
+[Sentences] (0.999) A customer is waiting for your submission #0100061

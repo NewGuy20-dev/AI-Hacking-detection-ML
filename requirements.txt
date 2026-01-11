@@ -28,3 +28,6 @@ gradio>=4.44.0
 
 # Config
 pyyaml>=6.0
+
+# Stress Test Pipeline
+mmh3>=4.0.0  # MurmurHash3 for bloom filter

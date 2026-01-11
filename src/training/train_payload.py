@@ -70,6 +70,26 @@ def load_payload_data(base_path):
             except: pass
         print(f"Loaded {len(texts) - adv_count_before} adversarial benign samples")
     
+    # Load 500k FP test dataset (JSONL format)
+    fp_test_file = base / 'datasets' / 'fp_test_500k.jsonl'
+    fp_count_before = len(texts)
+    if fp_test_file.exists():
+        import json
+        try:
+            with open(fp_test_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    try:
+                        obj = json.loads(line.strip())
+                        text = obj.get('text', '').strip()
+                        if text and len(text) > 2:
+                            texts.append(text)
+                            labels.append(0)
+                    except json.JSONDecodeError:
+                        continue
+            print(f"Loaded {len(texts) - fp_count_before} samples from fp_test_500k.jsonl")
+        except Exception as e:
+            print(f"Warning: Could not load fp_test_500k.jsonl: {e}")
+    
     # Fallback: wordlists if not enough benign
     if len(texts) - mal_count < mal_count // 2:
         wordlists = payloads_dir / 'wordlists'
@@ -88,11 +108,13 @@ def load_payload_data(base_path):
     ben_count = len(texts) - mal_count
     print(f"Loaded {ben_count} total benign samples")
     
-    # Balance classes
+    # Balance classes with SHUFFLED benign samples (critical for including fp_test data)
     if mal_count < ben_count:
-        # Undersample benign
+        import random
         mal_texts = [t for t, l in zip(texts, labels) if l == 1]
-        ben_texts = [t for t, l in zip(texts, labels) if l == 0][:mal_count]
+        ben_texts = [t for t, l in zip(texts, labels) if l == 0]
+        random.shuffle(ben_texts)  # Shuffle to get mix of all sources
+        ben_texts = ben_texts[:mal_count]
         texts = mal_texts + ben_texts
         labels = [1] * len(mal_texts) + [0] * len(ben_texts)
     

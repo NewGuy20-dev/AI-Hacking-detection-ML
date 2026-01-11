@@ -1,5 +1,6 @@
 """Train URL CNN model for malicious URL detection."""
 import sys
+import argparse
 from pathlib import Path
 import random
 
@@ -14,6 +15,7 @@ from tqdm import tqdm
 from torch_models.url_cnn import URLCNN
 from torch_models.datasets import URLDataset
 from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from training.checkpoint import CheckpointManager
 
 
 def generate_malicious_urls(n=50000):
@@ -133,6 +135,24 @@ def load_url_data(base_path):
     
     # === REAL BENIGN URLs ===
     
+    # Load Common Crawl URLs from live_benign (NEW - up to 50M)
+    live_benign_dir = Path(base_path) / 'datasets' / 'live_benign'
+    cc_urls = live_benign_dir / 'common_crawl_urls.jsonl'
+    if cc_urls.exists():
+        ben_before = len(urls) - mal_count
+        import json
+        with open(cc_urls, 'r', encoding='utf-8') as f:
+            for i, line in enumerate(f):
+                if i >= 100000:  # Limit to 100K for balance
+                    break
+                try:
+                    data = json.loads(line)
+                    urls.append(data.get('text', ''))
+                    labels.append(0)
+                except:
+                    pass
+        print(f"Loaded {len(urls) - mal_count - ben_before} Common Crawl URLs (live_benign)")
+    
     # Load Tranco top domains (REAL benign)
     tranco_file = url_dir / 'top-1m.csv'
     if tranco_file.exists():
@@ -173,8 +193,17 @@ def load_url_data(base_path):
 
 def train():
     """Main training function."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    parser.add_argument('--checkpoint-every', type=int, default=500, help='Save checkpoint every N batches')
+    args = parser.parse_args()
+    
     base_path = Path(__file__).parent.parent.parent
     device = setup_gpu()
+    
+    # Checkpoint manager
+    ckpt_dir = base_path / 'checkpoints' / 'url'
+    ckpt_mgr = CheckpointManager(str(ckpt_dir), 'url_cnn', args.checkpoint_every)
     
     # Load data
     print("\n--- Loading Data ---")
@@ -186,8 +215,8 @@ def train():
     val_size = len(dataset) - train_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
     
-    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=0, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=128, shuffle=False, num_workers=0, pin_memory=True)
+    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
+    val_loader = DataLoader(val_ds, batch_size=128, shuffle=False, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
     
     print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
     
@@ -204,16 +233,37 @@ def train():
     scaler = GradScaler()
     early_stop = EarlyStopping(patience=5)
     
+    # Resume from checkpoint if requested
+    start_epoch, start_batch, global_step = 0, 0, 0
+    if args.resume or ckpt_mgr.find_latest():
+        resume_info = ckpt_mgr.load(model, optimizer, scheduler, scaler, device)
+        start_epoch = resume_info['epoch']
+        start_batch = resume_info['batch_idx']
+        global_step = resume_info['global_step']
+        if start_batch >= len(train_loader):
+            start_epoch += 1
+            start_batch = 0
+    
     # Training loop
     print("\n--- Training ---")
     best_val_acc = 0
     best_state = None
     
-    for epoch in range(60):  # Increased from 50
+    for epoch in range(start_epoch, 60):
         # Train
         model.train()
         train_loss = 0
-        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}", leave=False):
+        batches_processed = 0
+        
+        epoch_start_batch = start_batch if epoch == start_epoch else 0
+        
+        pbar = tqdm(enumerate(train_loader), total=len(train_loader),
+                    initial=epoch_start_batch, desc=f"Epoch {epoch+1}")
+        
+        for batch_idx, batch in pbar:
+            if batch_idx < epoch_start_batch:
+                continue
+                
             inputs = batch['input'].to(device)
             targets = batch['target'].to(device)
             
@@ -228,8 +278,17 @@ def train():
             scaler.step(optimizer)
             scaler.update()
             train_loss += loss.item()
+            batches_processed += 1
+            global_step += 1
+            
+            pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+            
+            if ckpt_mgr.should_save(batch_idx):
+                ckpt_mgr.save(epoch, batch_idx, model, optimizer, scheduler, scaler, global_step)
         
-        train_loss /= len(train_loader)
+        ckpt_mgr.save(epoch, len(train_loader), model, optimizer, scheduler, scaler, global_step)
+        
+        train_loss /= max(batches_processed, 1)
         
         # Validate
         model.eval()

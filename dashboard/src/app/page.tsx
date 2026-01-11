@@ -1,7 +1,8 @@
 'use client'
 
 import { StatsGrid, AttackChart, RecentActivity } from '@/components/dashboard'
-import { Button } from '@/components/ui'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader } from '@/components/ui/Card'
 import { useStatsStore } from '@/stores/statsStore'
 import { RotateCcw } from 'lucide-react'
 
@@ -10,15 +11,19 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          📊 Dashboard
-        </h1>
-        <Button onClick={reset}>
-          <RotateCcw className="w-4 h-4 mr-2" />
-          Reset Stats
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-primary">
+              📊 Dashboard
+            </h1>
+            <Button onClick={reset} variant="ghost">
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset Stats
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <StatsGrid />
 

@@ -18,18 +18,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-clay-bg dark:bg-clay-bg-dark`}>
+      <body className={inter.className}>
         <Providers>
           <a href="#main-content" className="skip-link">
             Skip to main content
           </a>
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <Header />
-            <div className="flex gap-6">
-              <Sidebar />
-              <main id="main-content" className="flex-1 min-w-0">
-                {children}
-              </main>
+          <div className="min-h-screen">
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <Header />
+              <div className="flex gap-6">
+                <Sidebar />
+                <main id="main-content" className="flex-1 min-w-0">
+                  {children}
+                </main>
+              </div>
             </div>
           </div>
         </Providers>

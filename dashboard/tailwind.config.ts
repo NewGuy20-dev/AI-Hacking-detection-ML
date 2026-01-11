@@ -5,36 +5,57 @@ const config: Config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
+      colors: {
+        // Light theme colors
+        clay: {
+          bg: '#f1f5f9',
+          card: '#ffffff',
+          border: '#e2e8f0',
+          text: '#1e293b',
+          muted: '#64748b',
+        },
+        // Dark theme colors  
+        'clay-dark': {
+          bg: '#0f172a',
+          card: '#1e293b',
+          border: '#334155',
+          text: '#f8fafc',
+          muted: '#94a3b8',
+        },
+        primary: '#3b82f6',
+        secondary: '#8b5cf6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+        info: '#06b6d4',
+      },
       boxShadow: {
-        'clay': '6px 6px 12px rgba(0,0,0,0.08), -4px -4px 10px rgba(255,255,255,0.9), inset 1px 1px 2px rgba(255,255,255,0.5)',
-        'clay-inset': 'inset 3px 3px 6px rgba(0,0,0,0.08), inset -2px -2px 5px rgba(255,255,255,0.9)',
-        'clay-hover': '8px 8px 16px rgba(0,0,0,0.1), -6px -6px 14px rgba(255,255,255,0.95)',
-        'clay-pressed': 'inset 4px 4px 8px rgba(0,0,0,0.1), inset -2px -2px 6px rgba(255,255,255,0.7)',
-        'clay-dark': '6px 6px 12px rgba(0,0,0,0.4), -4px -4px 10px rgba(255,255,255,0.05), inset 1px 1px 2px rgba(255,255,255,0.05)',
-        'clay-dark-inset': 'inset 3px 3px 6px rgba(0,0,0,0.4), inset -2px -2px 5px rgba(255,255,255,0.05)',
+        'clay': '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+        'clay-dark': '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        'clay-inset': 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+        'clay-dark-inset': 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
       },
       borderRadius: {
-        'clay': '20px',
-        'clay-sm': '12px',
-        'clay-lg': '28px',
+        'clay': '12px',
       },
-      colors: {
-        clay: {
-          bg: '#e8eef5',
-          card: '#f0f4f8',
-          'bg-dark': '#1a202c',
-          'card-dark': '#2d3748',
-          danger: '#feb2b2',
-          'danger-dark': '#fc8181',
-          success: '#9ae6b4',
-          warning: '#fbd38d',
-          info: '#90cdf4',
-          critical: '#e53e3e',
-        },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'cyber-grid': 'linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['Fira Code', 'monospace'],
       },
+      animation: {
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
     },
   },
   plugins: [],
