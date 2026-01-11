@@ -1,0 +1,25 @@
+# Host behavior scenarios - primarily generated dynamically
+scenarios:
+  - id: host_001
+    category: ransomware
+    subcategory: file_encryption
+    input: "DYNAMIC"  # Will be generated as 37-element feature vector
+    expected: 1
+    difficulty: hard
+    description: "Ransomware behavior pattern"
+  
+  - id: host_002
+    category: spyware
+    subcategory: keylogger
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: medium
+    description: "Spyware behavior pattern"
+  
+  - id: host_003
+    category: normal
+    subcategory: benign
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Normal host behavior"

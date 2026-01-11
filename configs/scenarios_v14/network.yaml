@@ -1,0 +1,25 @@
+# Network intrusion scenarios - primarily generated dynamically
+scenarios:
+  - id: net_001
+    category: dos
+    subcategory: syn_flood
+    input: "DYNAMIC"  # Will be generated as 35-element feature vector
+    expected: 1
+    difficulty: medium
+    description: "DoS attack pattern"
+  
+  - id: net_002
+    category: probe
+    subcategory: port_scan
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: medium
+    description: "Network probe pattern"
+  
+  - id: net_003
+    category: normal
+    subcategory: benign
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Normal network traffic"

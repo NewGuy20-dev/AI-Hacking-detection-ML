@@ -1,0 +1,25 @@
+# Fraud detection scenarios - primarily generated dynamically
+scenarios:
+  - id: fraud_001
+    category: card_not_present
+    subcategory: online_fraud
+    input: "DYNAMIC"  # Will be generated as 30-element feature vector
+    expected: 1
+    difficulty: medium
+    description: "Card-not-present fraud"
+  
+  - id: fraud_002
+    category: account_takeover
+    subcategory: credential_stuffing
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: hard
+    description: "Account takeover fraud"
+  
+  - id: fraud_003
+    category: normal
+    subcategory: legitimate
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Legitimate transaction"

