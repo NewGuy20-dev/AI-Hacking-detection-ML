@@ -85,3 +85,19 @@ datasets/security_payloads/
 .env
 .env.local
 .env.*.local
+datasets/*.jsonl
+datasets/benign_60m/
+datasets/cic_malmem/
+datasets/darpa/
+datasets/holdout_test/
+datasets/host_behavior/
+datasets/live_benign/
+datasets/malicious_urls/
+*.tar.gz
+
+# Large dataset files
+datasets/cic_malmem_full/MalMem2022.csv
+datasets/fraud_detection/synthetic_500k.jsonl
+datasets/network_intrusion/synthetic_500k.jsonl
+datasets/url_analysis/malicious_urls_5m.jsonl
+datasets/cic_malmem_full/.gitattributes
