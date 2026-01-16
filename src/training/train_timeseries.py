@@ -163,8 +163,8 @@ def train():
     
     # Try to load live_benign timeseries first
     live_benign_path = base_path / 'datasets' / 'live_benign' / 'timeseries_benign.npy'
-    synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_500k.npy'
-    synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_500k.npy'
+    synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_10m.npy'
+    synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_10m.npy'
     
     if live_benign_path.exists():
         print(f"Loading live benign from {live_benign_path}")

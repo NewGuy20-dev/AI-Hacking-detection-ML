@@ -1,10 +1,19 @@
 # AI Hacking Detection ML System
 
-A comprehensive machine learning system for real-time cybersecurity threat detection using ensemble models, PyTorch neural networks, and multi-agent architecture.
+A production-grade machine learning system for real-time cybersecurity threat detection using ensemble models, PyTorch neural networks, and multi-agent architecture with web dashboard and REST API.
 
 ## 🎯 Overview
 
-This system implements a hybrid ML/DL approach for detecting cyber attacks including network intrusions, malicious URLs, payload injections, and fraud using both traditional ML (scikit-learn, XGBoost, LightGBM) and deep learning (PyTorch CNN/LSTM) models.
+This system implements a hybrid ML/DL approach for detecting cyber attacks including network intrusions, malicious URLs, payload injections, fraud, host behavior anomalies, and timeseries attacks using both traditional ML (scikit-learn, XGBoost, LightGBM) and deep learning (PyTorch CNN/LSTM) models.
+
+**Key Features:**
+- 7 specialized detection models (4 PyTorch + 3 sklearn)
+- Real-time REST API with FastAPI
+- Interactive Next.js dashboard with dark mode
+- Comprehensive stress testing framework (v1.4)
+- Transfer learning with progressive unfreezing
+- Thermal guardian for GPU safety
+- Hybrid meta-learner ensemble
 
 ## 🎯 Target Performance Metrics
 
@@ -17,29 +26,73 @@ This system implements a hybrid ML/DL approach for detecting cyber attacks inclu
 
 ## 📊 Current Dataset Status
 
-- **Total Dataset Size**: 2.32 GB (95.2M+ samples)
+- **Total Dataset Size**: ~40GB+ (100M+ samples across all categories)
+- **Live Benign Data**: 35GB+ (Wikipedia, GitHub, StackOverflow, Reddit, Enron emails, MAWI network)
+- **Synthetic Data**: 5M+ malicious URLs, 500k network/fraud/host samples
 - **FP Test Dataset**: 500k diverse benign samples
 - **Validation Samples**: 7,100
-- **Data Categories**: 6 core + curated benign data
-- **Latest Addition**: 500k benign FP test dataset (Wikipedia, real-world text, edge cases, code, structured data)
+- **Data Categories**: 7 core detection types + curated benign data
+- **Latest Addition**: V1.4 stress test framework with 60 scenarios per model
 
 ## 🏗️ Architecture
 
 ### Core Detection Models
 
-- **Network Intrusion Model**: RandomForest classifier for network traffic analysis
-- **URL Analysis Model**: LightGBM + PyTorch CNN for malicious URL detection  
-- **Payload Classifier**: PyTorch CNN for injection attack detection (character-level)
-- **Fraud Detection Model**: XGBoost classifier for financial fraud
-- **Timeseries Detector**: LSTM for temporal anomaly detection
-- **Ensemble Detector**: Calibrated weighted voting with stacking meta-classifier
+1. **Network Intrusion Model** (sklearn RandomForest)
+   - 35 features: duration, bytes, connection stats, error rates
+   - Detects: DoS, Probe, R2L, U2R attacks
+   - Model: `network_intrusion_model.pkl` (368KB)
+
+2. **URL Analysis Model** (PyTorch CNN)
+   - Character-level CNN (200 char max)
+   - Detects: Phishing, typosquatting, DGA, malware URLs
+   - Model: `url_cnn.pt` (344KB)
+
+3. **Payload Classifier** (PyTorch CNN)
+   - Character-level CNN (500 char max)
+   - Detects: SQLi, XSS, CMDi, path traversal, SSTI, XXE, LDAP
+   - Model: `payload_cnn.pt` (2.9MB)
+
+4. **Fraud Detection Model** (sklearn XGBoost)
+   - 30 features: time, PCA components, amount
+   - Detects: Card-not-present, account takeover, synthetic fraud
+   - Model: `fraud_detection_model.pkl` (275KB)
+
+5. **Host Behavior Model** (sklearn RandomForest)
+   - 37 features: process lists, DLLs, handles, memory artifacts
+   - Detects: Spyware, ransomware, trojans, rootkits, backdoors
+   - Model: `host_behavior_model.pkl` (223KB)
+
+6. **Timeseries Detector** (PyTorch LSTM)
+   - 60 timesteps × 8 features
+   - Detects: DDoS, port scans, exfiltration, C2, brute force
+   - Model: `timeseries_lstm.pt` (564KB)
+
+7. **Meta-Classifier** (PyTorch Ensemble)
+   - Combines outputs from all 6 models
+   - 5-input neural network for final verdict
+   - Model: `meta_classifier.pt` (16KB)
 
 ### Model Pipeline
 ```
 Input Data → Feature Engineering → Specialized Models → Calibration → Ensemble Voting → Explainability → Triage → Alert
 ```
 
-## 🆕 New Features (v2.0)
+## 🆕 Latest Features (v2.1 - January 2026)
+
+### V1.4 Stress Test Framework
+- **Comprehensive Testing**: 60 domain-specific scenarios per model
+- **Hybrid Distribution**: 70% risk-weighted + 30% adaptive testing
+- **Interactive Dashboard**: HTML dashboard with Chart.js visualizations
+- **Performance Tracking**: P50/P95/P99 latency metrics per model
+- **CLI Interface**: `python scripts/stress_test_v14.py --model <name>`
+
+### Transfer Learning & Training
+- **Progressive Unfreezing**: 3-stage gradual layer unfreezing (FC → Conv → Embed)
+- **Thermal Guardian**: Background GPU temperature monitor (kills at ≥90°C)
+- **Real URL Dataset**: URLhaus, Kaggle, Tranco CSVs for training
+- **Validation Monitoring**: EarlyStopping with patience=3, separate validation files
+- **Graceful Shutdown**: SIGTERM handler for clean checkpoint saves
 
 ### High-Performance Detection
 - **Threshold Optimization**: Grid search for optimal recall/FP tradeoff
@@ -58,17 +111,25 @@ Input Data → Feature Engineering → Specialized Models → Calibration → En
 - **Auto-Actions**: Automatic blocking for high-confidence critical alerts
 - **Batch Processing**: Efficient multi-alert triage
 
-## 📊 Datasets (6 Core Categories)
+### Web Dashboard & API
+- **Next.js Dashboard**: Interactive dark mode UI with real-time scanning
+- **FastAPI Backend**: RESTful API for model predictions
+- **Multi-Model Support**: URL, Payload, Batch, and History views
+- **Zustand State Management**: Client-side state with persistence
+
+## 📊 Datasets (7 Core Categories)
 
 ### 1. Network Intrusion
 - NSL-KDD, CICIDS2017, UNSW-NB15, KDD99
 - Attack types: DoS, Probe, R2L, U2R
+- 500k+ synthetic samples
 
 ### 2. URL Analysis
 - Kaggle malicious URLs (194,798 samples)
 - URLhaus dataset (25,454 samples)
 - Tranco top-1m (999,999 legitimate domains)
 - Synthetic benign/malicious hard samples (50k each)
+- 5M+ malicious URLs for training
 
 ### 3. Security Payloads
 - Wordlists: 1.8GB+ (passwords, usernames, fuzzing payloads)
@@ -78,12 +139,29 @@ Input Data → Feature Engineering → Specialized Models → Calibration → En
 ### 4. Curated Benign Data
 - 11 categories: sentences, names, emails, phones, addresses, dates, usernames, products, search queries, comments, JSON
 - Adversarial benign samples (code snippets, SQL benign, math expressions, etc.)
+- 60M+ generated benign samples
 
-### 5. Email Spam
-- Spam corpus with ham/spam classification
+### 5. Live Benign Data (35GB+)
+- Wikipedia text (8GB+)
+- GitHub code snippets (26GB+)
+- StackOverflow posts (107MB)
+- Reddit comments (7MB)
+- Enron emails (380MB)
+- MAWI network traffic (994MB)
+- Common Crawl URLs (882MB)
 
 ### 6. Fraud Detection
-- Credit card transaction data
+- Credit card transaction data (150MB)
+- 500k+ synthetic fraud samples
+
+### 7. Host Behavior
+- CIC-MalMem-2022 dataset
+- 500k+ synthetic host behavior samples
+- 5GB+ live benign host data
+
+### 8. Timeseries
+- 500k+ attack/normal traffic samples
+- 60 timesteps × 8 features per sample
 
 ## 🚀 Quick Start
 
@@ -110,14 +188,18 @@ python scripts/generate_adversarial_benign.py
 python src/train_all_models.py
 
 # Train specific models
-python src/train_network.py
-python src/train_url.py
-python src/train_content.py
+python src/train_network_intrusion.py
+python src/train_fraud_detection.py
+python src/train_host_behavior.py
 
 # Train PyTorch models
 python src/training/train_payload.py
-python src/training/train_url_cnn.py
-python src/training/train_timeseries_lstm.py
+python src/training/train_url.py
+python src/training/train_timeseries.py
+python src/training/train_meta.py
+
+# RTX 3050 optimized training with transfer learning
+python scripts/train_rtx3050.py
 
 # Retrain all models
 python scripts/retrain_all.py
@@ -238,43 +320,123 @@ These are acceptable trade-offs for security - the model errs on the side of cau
 │   ├── alert_manager.py          # Alert generation (with explainability)
 │   ├── threat_intel.py           # Threat intelligence
 │   ├── monitoring.py             # Model monitoring
-│   ├── metrics_tracker.py        # [NEW] Accuracy/recall/FP tracking
-│   ├── threshold_optimizer.py    # [NEW] Threshold optimization
-│   ├── confidence.py             # [NEW] Probability calibration
-│   ├── context_classifier.py     # [NEW] Context-aware FP reduction
-│   ├── indicators.py             # [NEW] Human-readable indicators
-│   ├── explainer.py              # [NEW] Unified explanation engine
-│   ├── checklist.py              # [NEW] Analyst checklist generator
-│   ├── triage.py                 # [NEW] Fast triage system
+│   ├── metrics_tracker.py        # Accuracy/recall/FP tracking
+│   ├── threshold_optimizer.py    # Threshold optimization
+│   ├── confidence.py             # Probability calibration
+│   ├── context_classifier.py     # Context-aware FP reduction
+│   ├── indicators.py             # Human-readable indicators
+│   ├── explainer.py              # Unified explanation engine
+│   ├── checklist.py              # Analyst checklist generator
+│   ├── triage.py                 # Fast triage system
 │   ├── torch_models/             # PyTorch architectures
-│   └── training/                 # Training utilities
+│   ├── training/                 # Training utilities
+│   │   ├── train_payload.py     # Payload CNN training
+│   │   ├── train_url.py         # URL CNN training
+│   │   ├── train_timeseries.py  # LSTM training
+│   │   ├── train_meta.py        # Meta-classifier training
+│   │   ├── transfer_learning.py # Progressive unfreezing
+│   │   └── checkpoint.py        # Checkpoint management
+│   ├── data/                     # Data loaders
+│   │   ├── url_dataset.py       # Real URL dataset loader
+│   │   ├── streaming_dataset.py # Memory-efficient streaming
+│   │   └── benign_generators.py # Benign data generation
+│   ├── stress_test/              # Stress testing framework
+│   │   ├── v14/                 # V1.4 implementation
+│   │   │   ├── runner.py        # Test runner
+│   │   │   ├── scenarios.py     # Scenario management
+│   │   │   ├── models.py        # Model wrappers
+│   │   │   ├── dashboard.py     # HTML dashboard generator
+│   │   │   └── logger.py        # Logging utilities
+│   │   ├── runner.py            # Legacy runner
+│   │   ├── metrics.py           # Performance metrics
+│   │   └── reporter.py          # Report generation
+│   ├── api/                      # FastAPI backend
+│   │   ├── server.py            # API server
+│   │   ├── routes/              # API routes
+│   │   └── schemas.py           # Pydantic schemas
+│   ├── alerts/                   # Alert system
+│   │   ├── dispatcher.py        # Alert dispatcher
+│   │   └── channels/            # Alert channels
+│   └── agents/                   # Agent implementations
+│       └── host_behavior_detector.py
 ├── scripts/                       # Utility scripts
 │   ├── generate_benign_data.py   # Benign data generation
 │   ├── generate_adversarial_benign.py
-│   ├── generate_500k_benign_test.py  # [NEW] 500k FP test data
-│   ├── establish_baseline.py     # [NEW] Baseline metrics
-│   ├── create_holdout_set.py     # [NEW] Holdout test set
-│   ├── validate_metrics.py       # [NEW] Final validation
+│   ├── generate_500k_benign_test.py  # 500k FP test data
+│   ├── establish_baseline.py     # Baseline metrics
+│   ├── create_holdout_set.py     # Holdout test set
+│   ├── validate_metrics.py       # Final validation
 │   ├── download_url_datasets.py  # URL dataset download
 │   ├── evaluate_models.py        # Model evaluation
 │   ├── validate_realworld.py     # Real-world validation
-│   └── retrain_all.py            # Batch retraining
-├── configs/                       # [NEW] Configuration files
-│   └── optimal_thresholds.json   # Per-model thresholds
+│   ├── retrain_all.py            # Batch retraining
+│   ├── train_rtx3050.py          # RTX 3050 optimized training
+│   ├── thermal_guardian.py       # GPU temperature monitor
+│   ├── collect_model_outputs.py  # Meta-learner data collection
+│   ├── stress_test_v14.py        # V1.4 stress test CLI
+│   └── collect_live_data/        # Live data collection scripts
+├── configs/                       # Configuration files
+│   ├── optimal_thresholds.json   # Per-model thresholds
+│   ├── training_rtx3050.yaml     # RTX 3050 training config
+│   ├── alert_thresholds.yaml     # Alert thresholds
+│   ├── training_config.yaml      # General training config
+│   └── scenarios_v14/            # V1.4 stress test scenarios
+│       ├── payload.yaml
+│       ├── url.yaml
+│       ├── timeseries.yaml
+│       ├── meta.yaml
+│       ├── network.yaml
+│       ├── host.yaml
+│       └── fraud.yaml
+├── dashboard/                     # Next.js dashboard
+│   ├── src/
+│   │   ├── app/                  # Next.js app router
+│   │   │   ├── scanner/         # Scanner page
+│   │   │   ├── batch/           # Batch processing page
+│   │   │   ├── history/         # History page
+│   │   │   └── models/          # Model info page
+│   │   ├── components/          # React components
+│   │   │   ├── dashboard/       # Dashboard components
+│   │   │   ├── scanner/         # Scanner components
+│   │   │   ├── layout/          # Layout components
+│   │   │   └── ui/              # UI components
+│   │   ├── stores/              # Zustand stores
+│   │   ├── hooks/               # Custom hooks
+│   │   ├── lib/                 # Utilities
+│   │   └── types/               # TypeScript types
+│   ├── package.json
+│   └── tailwind.config.ts
 ├── models/                        # Trained models (.pkl, .pt, .pth)
-├── datasets/                      # Training datasets (2.32GB)
+│   ├── network_intrusion_model.pkl (368KB)
+│   ├── url_cnn.pt (344KB)
+│   ├── payload_cnn.pt (2.9MB)
+│   ├── fraud_detection_model.pkl (275KB)
+│   ├── host_behavior_model.pkl (223KB)
+│   ├── timeseries_lstm.pt (564KB)
+│   └── meta_classifier.pt (16KB)
+├── datasets/                      # Training datasets (40GB+)
 │   ├── network_intrusion/        # NSL-KDD, CICIDS2017, etc.
 │   ├── url_analysis/             # Malicious URLs, Tranco
 │   ├── security_payloads/        # Wordlists, payloads
 │   ├── curated_benign/           # Generated benign data
-│   ├── fp_test_500k.jsonl        # [NEW] 500k FP test samples
-│   ├── holdout_test/             # [NEW] Holdout test set
+│   ├── live_benign/              # 35GB+ live benign data
+│   ├── fp_test_500k.jsonl        # 500k FP test samples
+│   ├── holdout_test/             # Holdout test set
 │   ├── fraud_detection/          # Credit card data
-│   ├── email_spam/               # Spam corpus
+│   ├── host_behavior/            # Host behavior data
 │   └── timeseries/               # Temporal data
+├── checkpoints/                   # Training checkpoints
+│   ├── payload/
+│   ├── url/
+│   ├── timeseries/
+│   └── meta/
 ├── evaluation/                    # Evaluation reports
+│   ├── validation_report.json
+│   ├── baseline_report.json
+│   └── metrics_logs/
 ├── alerts/                        # Generated alerts
-└── forensics/                     # Incident logs
+├── forensics/                     # Incident logs
+└── tests/                         # Unit tests
 ```
 
 ## 🔒 Security Features
@@ -368,5 +530,7 @@ For issues and questions:
 ---
 
 **Built for cybersecurity professionals by cybersecurity professionals** 🛡️
+
+Last Updated: January 13, 2026
 
 Last Updated: December 21, 2025

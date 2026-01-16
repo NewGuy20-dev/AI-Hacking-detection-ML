@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 500k synthetic timeseries sequences for LSTM training."""
+"""Generate 10m synthetic timeseries sequences for LSTM training."""
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
@@ -219,9 +219,9 @@ def main():
     output_dir = Path(__file__).parent.parent / "datasets" / "timeseries"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    total = 500_000
-    normal_count = 250_000
-    attack_count = 250_000  # Split among attack types
+    total = 10_000_000
+    normal_count = 5_000_000
+    attack_count = 5_000_000  # Split among attack types
     
     print(f"Generating {total:,} timeseries sequences...")
     print(f"Sequence length: {SEQ_LEN}, Features: {N_FEATURES}")
@@ -238,10 +238,10 @@ def main():
     
     # Generate attack sequences
     attack_generators = [
-        ("DDoS", generate_ddos_batch, 80_000),
-        ("Portscan", generate_portscan_batch, 60_000),
-        ("Exfiltration", generate_exfiltration_batch, 60_000),
-        ("Bruteforce", generate_bruteforce_batch, 50_000),
+        ("DDoS", generate_ddos_batch, 1_600_000),
+        ("Portscan", generate_portscan_batch, 1_200_000),
+        ("Exfiltration", generate_exfiltration_batch, 1_200_000),
+        ("Bruteforce", generate_bruteforce_batch, 1_000_000),
     ]
     
     attack_sequences = []
@@ -254,8 +254,8 @@ def main():
     attack_data = np.concatenate(attack_sequences, axis=0)
     
     # Save
-    normal_path = output_dir / "normal_traffic_500k.npy"
-    attack_path = output_dir / "attack_traffic_500k.npy"
+    normal_path = output_dir / "normal_traffic_10m.npy"
+    attack_path = output_dir / "attack_traffic_10m.npy"
     
     np.save(normal_path, normal_data)
     np.save(attack_path, attack_data)

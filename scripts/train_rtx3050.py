@@ -820,6 +820,12 @@ def main():
     parser.add_argument('--freeze-epochs', type=int, default=2)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    # Validation flags
+    parser.add_argument('--validate', action='store_true', help='Run validation after training (Tier 1-2)')
+    parser.add_argument('--full', action='store_true', help='Run full validation (Tier 1-4)')
+    parser.add_argument('--stress-test', action='store_true', help='Include stress testing')
+    parser.add_argument('--fp-test', action='store_true', help='Include FP testing')
+    parser.add_argument('--validate-only', action='store_true', help='Skip training, only validate')
     args = parser.parse_args()
     
     # Update config
@@ -852,58 +858,173 @@ def main():
         print("\nWARNING: No GPU, using CPU")
     
     start = time.time()
-    
-    # Determine which models to train
-    pytorch_models = ['payload', 'url']  # Skip timeseries - needs different data format
-    sklearn_models = ['network', 'fraud', 'host']
-    
-    if args.model == 'all':
-        models_to_train = pytorch_models + sklearn_models
-    elif args.model == 'pytorch':
-        models_to_train = pytorch_models
-    elif args.model == 'sklearn':
-        models_to_train = sklearn_models
-    else:
-        models_to_train = [args.model]
-    
-    # Train models
-    models_trained = []
     results = {}
+    models_trained = []
+    successful = 0
+    total = 0
     
-    for model_type in models_to_train:
-        try:
-            if model_type in pytorch_models:
-                print_data_mapping(model_type)
-                train_model(model_type, config)
-                results[model_type] = True
-            else:
-                success = train_sklearn_model(model_type, config)
-                results[model_type] = success if success is not None else False
-            models_trained.append(model_type)
-        except Exception as e:
-            print(f"\n✗ {model_type.upper()} training failed: {e}")
-            results[model_type] = False
+    # Skip training if --validate-only
+    if not args.validate_only:
+        # Determine which models to train
+        pytorch_models = ['payload', 'url', 'timeseries']
+        sklearn_models = ['network', 'fraud', 'host']
+        
+        if args.model == 'all':
+            models_to_train = pytorch_models + sklearn_models
+        elif args.model == 'pytorch':
+            models_to_train = pytorch_models
+        elif args.model == 'sklearn':
+            models_to_train = sklearn_models
+        else:
+            models_to_train = [args.model]
+        
+        # Train models
+        for model_type in models_to_train:
+            try:
+                if model_type == "timeseries":
+                    # Timeseries uses numpy arrays - call dedicated script
+                    print_data_mapping(model_type)
+                    import subprocess
+                    script_path = Path(__file__).parent.parent / "src" / "training" / "train_timeseries.py"
+                    result = subprocess.run([sys.executable, str(script_path)])
+                    results[model_type] = result.returncode == 0
+                    
+                elif model_type in pytorch_models:
+                    print_data_mapping(model_type)
+                    train_model(model_type, config)
+                    results[model_type] = True
+                else:
+                    success = train_sklearn_model(model_type, config)
+                    results[model_type] = success if success is not None else False
+                models_trained.append(model_type)
+            except Exception as e:
+                print(f"\n✗ {model_type.upper()} training failed: {e}")
+                results[model_type] = False
+        
+        total = time.time() - start
+        successful = sum(1 for v in results.values() if v)
+        failed = len(results) - successful
+        
+        print(f"\n{'='*80}")
+        print(f"TRAINING SUMMARY")
+        print(f"{'='*80}")
+        print(f"Total time: {timedelta(seconds=int(total))}")
+        print(f"Successful: {successful}/{len(results)}")
+        print(f"Failed: {failed}/{len(results)}")
+        print("\nModel Status:")
+        for model_type, success in results.items():
+            status = "✓ SUCCESS" if success else "✗ FAILED"
+            name = DATA_MAPPING.get(model_type, {}).get('name', model_type.upper())
+            print(f"  {name:30s}: {status}")
+        print(f"{'='*80}")
+        
+        # Train meta-classifier if at least 5 base models succeeded
+        if successful >= 5:
+            print(f"\n{'='*80}")
+            print("META-CLASSIFIER TRAINING")
+            print(f"{'='*80}")
+            
+            try:
+                # Step 1: Collect model outputs
+                print("\n[1/2] Collecting model outputs...")
+                import subprocess
+                collect_script = Path(__file__).parent / 'collect_model_outputs.py'
+                result = subprocess.run([sys.executable, str(collect_script)])
+                
+                if result.returncode == 0:
+                    print("✓ Model outputs collected")
+                    
+                    # Step 2: Train meta-classifier
+                    print("\n[2/2] Training meta-classifier...")
+                    meta_script = Path(__file__).parent.parent / 'src' / 'training' / 'train_meta.py'
+                    result = subprocess.run([sys.executable, str(meta_script), '--hybrid'])
+                    
+                    if result.returncode == 0:
+                        print("✓ Meta-classifier trained")
+                        results['meta'] = True
+                    else:
+                        print("✗ Meta-classifier training failed")
+                        results['meta'] = False
+                else:
+                    print("✗ Model output collection failed")
+                    results['meta'] = False
+                    
+            except Exception as e:
+                print(f"✗ Meta-classifier pipeline failed: {e}")
+                results['meta'] = False
+            
+            print(f"{'='*80}")
+        
+        # 🎉 Discord: All training complete
+        if len(models_trained) > 1:
+            discord.all_training_complete(total, models_trained)
     
-    total = time.time() - start
-    successful = sum(1 for v in results.values() if v)
-    failed = len(results) - successful
+    # ============================================================
+    # VALIDATION PIPELINE
+    # ============================================================
+    if args.validate or args.validate_only or args.full or args.stress_test or args.fp_test:
+        run_validation_pipeline(args, config)
+
+
+def run_validation_pipeline(args, config):
+    """Run validation pipeline on trained models."""
+    from scripts.validation import run_sanity_check, run_holdout_evaluation, run_fp_test, generate_report
     
     print(f"\n{'='*80}")
-    print(f"TRAINING SUMMARY")
-    print(f"{'='*80}")
-    print(f"Total time: {timedelta(seconds=int(total))}")
-    print(f"Successful: {successful}/{len(results)}")
-    print(f"Failed: {failed}/{len(results)}")
-    print("\nModel Status:")
-    for model_type, success in results.items():
-        status = "✓ SUCCESS" if success else "✗ FAILED"
-        name = DATA_MAPPING.get(model_type, {}).get('name', model_type.upper())
-        print(f"  {name:30s}: {status}")
+    print(" VALIDATION PIPELINE")
     print(f"{'='*80}")
     
-    # 🎉 Discord: All training complete
-    if len(models_trained) > 1:
-        discord.all_training_complete(total, models_trained)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    models_dir = config.model_dir
+    data_dir = config.data_dir
+    eval_dir = Path(__file__).parent.parent / 'evaluation'
+    
+    training_results = {'completed': not args.validate_only}
+    
+    # Tier 1: Sanity Check (always)
+    sanity_results = run_sanity_check(models_dir, device)
+    
+    if not sanity_results['passed']:
+        print("\n❌ SANITY CHECK FAILED - Models are broken!")
+        generate_report(training_results, sanity_results, output_dir=eval_dir)
+        sys.exit(2)
+    
+    # Tier 2: Holdout Evaluation (always with --validate)
+    holdout_results = run_holdout_evaluation(models_dir, data_dir, device)
+    
+    # Tier 3: Stress Testing (with --stress-test or --full)
+    stress_results = None
+    if args.stress_test or args.full:
+        print("\n" + "="*60)
+        print("TIER 3: STRESS TESTING")
+        print("="*60)
+        import subprocess
+        stress_script = Path(__file__).parent / 'stress_test_v14.py'
+        if stress_script.exists():
+            result = subprocess.run([sys.executable, str(stress_script)])
+            stress_results = {'ran': True, 'success': result.returncode == 0}
+        else:
+            print("  ⚠ Stress test script not found")
+            stress_results = {'ran': False}
+    
+    # Tier 4: FP Testing (with --fp-test or --full)
+    fp_results = None
+    if args.fp_test or args.full:
+        fp_results = run_fp_test(models_dir, data_dir, device)
+    
+    # Generate report
+    generate_report(
+        training_results, sanity_results, holdout_results,
+        stress_results, fp_results, output_dir=eval_dir
+    )
+    
+    # Exit code
+    if not sanity_results['passed']:
+        sys.exit(2)
+    elif holdout_results and not holdout_results['passed']:
+        sys.exit(3)
+    else:
+        sys.exit(0)
 
 
 if __name__ == '__main__':

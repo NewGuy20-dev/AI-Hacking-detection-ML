@@ -101,3 +101,6 @@ datasets/fraud_detection/synthetic_500k.jsonl
 datasets/network_intrusion/synthetic_500k.jsonl
 datasets/url_analysis/malicious_urls_5m.jsonl
 datasets/cic_malmem_full/.gitattributes
+
+# Zip files directory
+.zipfiles/

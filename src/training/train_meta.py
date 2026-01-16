@@ -87,7 +87,10 @@ def load_hybrid_data(base_path: Path, n_synthetic: int = 10000):
     if real_path.exists():
         print(f"Loading real model outputs from {real_path}")
         data = np.load(real_path)
-        real_outputs = data['outputs']
+        # Extract individual model outputs
+        model_names = ['payload', 'url', 'network', 'fraud', 'host']
+        outputs_list = [data[name] for name in model_names if name in data]
+        real_outputs = np.column_stack(outputs_list).astype(np.float32)
         real_labels = data['labels']
         
         # Pad real outputs to 5 columns if needed (we may only have 2 models)
