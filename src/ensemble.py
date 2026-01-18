@@ -64,7 +64,7 @@ class EnsembleDetector:
             self.use_calibration = True
         
         # Load optimal thresholds if available
-        thresh_path = self.models_dir.parent / 'configs' / 'optimal_thresholds.json'
+        thresh_path = self.models_dir.parent / 'configs' / 'inference' / 'optimal_thresholds.json'
         if thresh_path.exists() and load_optimal_thresholds:
             self.thresholds = load_optimal_thresholds(thresh_path)
         

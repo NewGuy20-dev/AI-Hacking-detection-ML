@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from scenarios import Scenario, ScenarioResult, ScenarioRegistry, PayloadGenerator, URLGenerator, TimeSeriesGenerator, TabularGenerator
+from scenarios import Scenario, ScenarioResult, ScenarioRegistry, PayloadGenerator, URLGenerator, TimeSeriesGenerator, TabularGenerator, MetaGenerator
 from models import ModelWrapper
 from logger import JSONLogger
 
@@ -81,7 +81,7 @@ class StressTestRunner:
         self.target_duration_min = config.get('target_duration_min', 45)
         self.checkpoint_interval = config.get('checkpoint_interval', 500)
         self.models_dir = Path(config.get('models_dir', 'models'))
-        self.scenarios_dir = Path(config.get('scenarios_dir', 'configs/scenarios_v14'))
+        self.scenarios_dir = Path(config.get('scenarios_dir', 'configs/stress_test/scenarios_v14'))
         self.output_dir = Path(config.get('output_dir', 'evaluation/stress_test_v14'))
         
     def run(self) -> Dict:
@@ -165,6 +165,15 @@ class StressTestRunner:
             print(f"  Accuracy: {summary['accuracy']*100:.1f}%")
             print(f"  Passed: {summary['passed']}/{summary['total_scenarios']}")
             
+            # Display per-difficulty accuracy
+            if summary.get('accuracy_by_difficulty'):
+                print(f"\n  Accuracy by Difficulty:")
+                for diff in ['easy', 'medium', 'hard', 'adversarial']:
+                    if diff in summary['accuracy_by_difficulty']:
+                        acc = summary['accuracy_by_difficulty'][diff] * 100
+                        stats = summary['difficulty_breakdown'][diff]
+                        print(f"    {diff.capitalize():12s}: {acc:5.1f}% ({stats['passed']}/{stats['total']})")
+            
             return {
                 'model': self.model_name,
                 'static_count': len(static_scenarios),
@@ -172,6 +181,8 @@ class StressTestRunner:
                 'total_scenarios': summary['total_scenarios'],
                 'total_duration_min': total_duration,
                 'accuracy': summary['accuracy'],
+                'accuracy_by_difficulty': summary.get('accuracy_by_difficulty', {}),
+                'difficulty_breakdown': summary.get('difficulty_breakdown', {}),
                 'final_stats': summary['categories']
             }
     
@@ -186,7 +197,7 @@ class StressTestRunner:
         elif self.model_name in ['fraud', 'host', 'network']:
             return TabularGenerator()
         elif self.model_name == 'meta':
-            return None  # Meta uses combined scenarios
+            return MetaGenerator()
         else:
             return None
     

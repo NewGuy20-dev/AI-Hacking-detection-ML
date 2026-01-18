@@ -1,0 +1,53 @@
+# RTX 3050 Training Configuration
+# Target: 5-6 hours total training time
+
+hardware:
+  device: cuda
+  batch_size: 512
+  num_workers: 4
+  pin_memory: true
+  use_amp: true  # Mixed precision
+
+training:
+  epochs: 5
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  gradient_clip: 1.0
+  freeze_epochs: 2  # Epochs with frozen embeddings
+
+sampling:
+  samples_per_epoch: 20000000  # 20M per epoch
+  balance_classes: true
+
+checkpointing:
+  save_every_batches: 10000
+  keep_last: 3
+  delete_after_training: true  # Auto-delete checkpoints
+
+validation:
+  validate_every_batches: 5000
+  quick_val_samples: 100000
+
+paths:
+  data_dir: datasets
+  model_dir: models
+  checkpoint_dir: checkpoints
+  log_dir: logs
+
+models:
+  payload_cnn:
+    vocab_size: 256
+    embed_dim: 128
+    num_filters: 256
+    max_len: 500
+  
+  url_cnn:
+    vocab_size: 128
+    embed_dim: 64
+    num_filters: 128
+    max_len: 200
+  
+  timeseries_lstm:
+    input_size: 10
+    hidden_size: 128
+    num_layers: 2

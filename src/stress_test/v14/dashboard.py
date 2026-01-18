@@ -28,7 +28,7 @@ class DashboardGenerator:
         html = self._render_html(stats, run_date)
         
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        self.output_path.write_text(html)
+        self.output_path.write_text(html, encoding='utf-8')
         
         return self.output_path
     
@@ -41,7 +41,7 @@ class DashboardGenerator:
             log_path = self.logs_dir / f"{model}_{run_date}.jsonl"
             if log_path.exists():
                 results = []
-                with open(log_path) as f:
+                with open(log_path, encoding='utf-8') as f:
                     for line in f:
                         results.append(json.loads(line))
                 all_results[model] = results
@@ -70,6 +70,14 @@ class DashboardGenerator:
                 if r['passed']:
                     categories[cat]['passed'] += 1
             
+            # Per-difficulty stats
+            difficulties = defaultdict(lambda: {'total': 0, 'passed': 0})
+            for r in results:
+                diff = r.get('difficulty', 'medium')
+                difficulties[diff]['total'] += 1
+                if r['passed']:
+                    difficulties[diff]['passed'] += 1
+            
             # Failed samples
             failed_samples = [r for r in results if not r['passed']][:20]
             
@@ -79,6 +87,7 @@ class DashboardGenerator:
                 'failed': failed,
                 'accuracy': passed / total if total > 0 else 0,
                 'categories': dict(categories),
+                'difficulties': dict(difficulties),
                 'failed_samples': failed_samples
             }
             
@@ -102,6 +111,14 @@ class DashboardGenerator:
                 cat_acc = (cat_data['passed'] / cat_data['total'] * 100) if cat_data['total'] > 0 else 0
                 cat_rows += f"<tr><td>{cat}</td><td>{cat_acc:.1f}%</td><td>{cat_data['passed']}/{cat_data['total']}</td></tr>"
             
+            # Difficulty breakdown
+            diff_rows = ""
+            for diff in ['easy', 'medium', 'hard', 'adversarial']:
+                if diff in data.get('difficulties', {}):
+                    diff_data = data['difficulties'][diff]
+                    diff_acc = (diff_data['passed'] / diff_data['total'] * 100) if diff_data['total'] > 0 else 0
+                    diff_rows += f"<tr><td>{diff.capitalize()}</td><td>{diff_acc:.1f}%</td><td>{diff_data['passed']}/{diff_data['total']}</td></tr>"
+            
             # Failed samples
             failed_rows = ""
             for sample in data['failed_samples'][:10]:
@@ -116,6 +133,11 @@ class DashboardGenerator:
                     <div class="stat"><span class="label">Passed:</span> <span class="value pass">{data['passed']:,}</span></div>
                     <div class="stat"><span class="label">Failed:</span> <span class="value fail">{data['failed']:,}</span></div>
                 </div>
+                <h3>Difficulty Breakdown</h3>
+                <table>
+                    <tr><th>Difficulty</th><th>Accuracy</th><th>Passed/Total</th></tr>
+                    {diff_rows}
+                </table>
                 <h3>Category Breakdown</h3>
                 <table>
                     <tr><th>Category</th><th>Accuracy</th><th>Passed/Total</th></tr>

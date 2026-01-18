@@ -41,22 +41,19 @@ class ModelWrapper:
     def _load_pytorch(self):
         """Load PyTorch model."""
         if self.model_name == 'payload':
-            self.model = PayloadCNN().to(self.device)
             model_path = self.models_dir / 'payload_cnn.pt'
         elif self.model_name == 'url':
-            self.model = URLCNN().to(self.device)
             model_path = self.models_dir / 'url_cnn.pt'
         elif self.model_name == 'timeseries':
-            self.model = TimeSeriesLSTM().to(self.device)
             model_path = self.models_dir / 'timeseries_lstm.pt'
         elif self.model_name == 'meta':
-            self.model = MetaClassifier().to(self.device)
             model_path = self.models_dir / 'meta_classifier.pt'
         
         if not model_path.exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
         
-        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        # Load TorchScript model directly
+        self.model = torch.jit.load(model_path, map_location=self.device)
         self.model.eval()
     
     def _load_sklearn(self):
@@ -76,8 +73,11 @@ class ModelWrapper:
         if not scaler_path.exists():
             raise FileNotFoundError(f"Scaler file not found: {scaler_path}")
         
-        self.model = joblib.load(model_path)
-        self.scaler = joblib.load(scaler_path)
+        # Fix sklearn parallelism warning by using single-threaded backend
+        from joblib import parallel_backend
+        with parallel_backend('loky', n_jobs=1):
+            self.model = joblib.load(model_path)
+            self.scaler = joblib.load(scaler_path)
     
     def preprocess(self, input_data: Any) -> Any:
         """Convert scenario input to model-ready format."""

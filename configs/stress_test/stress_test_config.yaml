@@ -1,0 +1,94 @@
+# Stress Test Configuration
+
+# Test data generation
+data:
+  # 50/50 split between adversarial and scraped
+  adversarial:
+    benign_count: 7500
+    malicious_count: 2500
+    edge_case_count: 2500
+  scraped:
+    benign_count: 7500
+    malicious_count: 500  # CVE descriptions for context
+
+# Data sources for scraping
+scrapers:
+  wikipedia:
+    enabled: true
+    count: 2000
+  reddit:
+    enabled: true
+    count: 2000
+  hackernews:
+    enabled: true
+    count: 1500
+  github:
+    enabled: true
+    count: 1500
+  news:
+    enabled: true
+    count: 500
+  cve:
+    enabled: true
+    count: 500
+
+# Adversarial generation
+adversarial:
+  char_substitution:
+    enabled: true
+    intensity: 0.3
+  encoding_variations:
+    enabled: true
+    types: [url, double_url, base64, hex, unicode, html_entity]
+  case_variations:
+    enabled: true
+    types: [upper, lower, alternating, random]
+  obfuscation:
+    enabled: true
+    types: [comments, whitespace, concat, char_func]
+
+# Edge cases
+edge_cases:
+  long_inputs:
+    enabled: true
+    lengths: [10000, 15000, 20000]
+  unicode:
+    enabled: true
+    types: [emoji, multi_script, combining, rtl, zero_width]
+  polyglots:
+    enabled: true
+  special_chars:
+    enabled: true
+    types: [null_bytes, newlines, control_chars, quotes]
+
+# Performance tests
+performance:
+  enabled: true
+  latency:
+    sample_count: 500
+    warmup: 10
+  throughput:
+    sample_count: 1000
+    batch_sizes: [32, 64, 128, 256]
+  memory:
+    enabled: true
+    sample_count: 100
+
+# Model
+model:
+  path: models/payload_cnn.pt
+
+# Hash registry for overlap verification
+hash_registry:
+  enabled: true
+  path: models/training_hashes.pkl
+
+# Reports
+reports:
+  dir: reports
+  json: true
+  human_readable: true
+  keep_days: 30
+
+# Seed (auto-generated from date if not specified)
+seed: null  # Will use hash(date) for daily uniqueness

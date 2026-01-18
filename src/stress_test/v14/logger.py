@@ -17,11 +17,12 @@ class JSONLogger:
         self.model_name = model_name
         self.file = None
         self.stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
+        self.difficulty_stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.total_logged = 0
         
     def __enter__(self):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-        self.file = open(self.output_path, 'w')
+        self.file = open(self.output_path, 'w', encoding='utf-8')
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -50,10 +51,16 @@ class JSONLogger:
         self.file.write(json.dumps(record) + '\n')
         self.file.flush()
         
-        # Update stats
+        # Update category stats
         cat = result.scenario.category
         self.stats[cat]['total'] += 1
         self.stats[cat]['passed' if result.passed else 'failed'] += 1
+        
+        # Update difficulty stats
+        diff = result.scenario.difficulty
+        self.difficulty_stats[diff]['total'] += 1
+        self.difficulty_stats[diff]['passed' if result.passed else 'failed'] += 1
+        
         self.total_logged += 1
         
     def _preview_input(self, input_data) -> str:
@@ -80,12 +87,20 @@ class JSONLogger:
         total = sum(s['total'] for s in self.stats.values())
         passed = sum(s['passed'] for s in self.stats.values())
         
+        # Calculate per-difficulty accuracy
+        accuracy_by_difficulty = {}
+        for diff, stats in self.difficulty_stats.items():
+            if stats['total'] > 0:
+                accuracy_by_difficulty[diff] = stats['passed'] / stats['total']
+        
         return {
             'model': self.model_name,
             'total_scenarios': total,
             'passed': passed,
             'failed': total - passed,
             'accuracy': passed / total if total > 0 else 0,
-            'categories': dict(self.stats)
+            'categories': dict(self.stats),
+            'accuracy_by_difficulty': accuracy_by_difficulty,
+            'difficulty_breakdown': dict(self.difficulty_stats)
         }
 

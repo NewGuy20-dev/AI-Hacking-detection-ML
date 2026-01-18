@@ -104,3 +104,8 @@ datasets/cic_malmem_full/.gitattributes
 
 # Zip files directory
 .zipfiles/
+
+/datasets
+
+# Stress test logs (large JSONL files)
+evaluation/stress_test_v14/*.jsonl

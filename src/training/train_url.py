@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import random
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import torch
 import torch.nn as nn
@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader, random_split
 from torch.amp import GradScaler
 from tqdm import tqdm
 
-from torch_models.url_cnn import URLCNN
-from torch_models.datasets import URLDataset
-from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.torch_models.url_cnn import URLCNN
+from src.torch_models.datasets import URLDataset
+from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
 from training.checkpoint import CheckpointManager
 
 
