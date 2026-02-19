@@ -206,3 +206,91 @@ class TestBatchPredictorIntegration:
             assert predictor.monitor is not None
         except FileNotFoundError:
             pass  # Expected if models dir doesn't exist
+
+
+class TestBatchPredictorReliability:
+
+    def test_predict_batch_rejects_empty_input(self):
+        """predict_batch should reject empty payload/url/timeseries input."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        predictor = BatchHybridPredictor(validator=False)
+        predictor.loaded = True
+        predictor.pytorch_models = {}
+
+        with pytest.raises(ValidationError):
+            predictor.predict_batch({})
+
+    def test_predict_batch_rejects_mismatched_modalities(self):
+        """predict_batch should fail fast for unequal modality batch sizes."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        predictor = BatchHybridPredictor(validator=False)
+        predictor.loaded = True
+        predictor.pytorch_models = {}
+
+        with pytest.raises(ValidationError):
+            predictor.predict_batch({
+                'payloads': ['a', 'b'],
+                'urls': ['http://example.com'],
+            }, validate=False)
+
+    def test_load_models_tracks_load_errors(self, temp_models_dir, caplog):
+        """Model load failures should be tracked instead of silently ignored."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        # Create malformed artifacts to force load errors.
+        (temp_models_dir / 'payload_cnn.pt').write_text('not a torchscript model', encoding='utf-8')
+        (temp_models_dir / 'network_intrusion_model.pkl').write_text('not a pickle', encoding='utf-8')
+
+        caplog.set_level('WARNING')
+        predictor = BatchHybridPredictor(models_dir=str(temp_models_dir), validator=False)
+        predictor.load_models()
+
+        assert predictor.load_errors
+        assert 'payload_cnn' in predictor.load_errors or 'network' in predictor.load_errors
+        assert any('Failed to load' in r.message for r in caplog.records)
+
+    def test_no_models_returns_deterministic_neutral_scores(self):
+        """When no models are available, predictor should return neutral deterministic scores."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        predictor = BatchHybridPredictor(validator=False)
+        predictor.loaded = True
+        predictor.pytorch_models = {}
+        predictor.sklearn_models = {}
+
+        result = predictor.predict_batch({'payloads': ['a', 'b', 'c']}, validate=False)
+        assert len(result['confidence']) == 3
+        assert np.allclose(result['confidence'], 0.5)
+        assert np.array_equal(result['is_attack'], np.array([0, 0, 0]))
+
+    def test_predict_batch_output_shape_consistency(self):
+        """Output vectors should match requested batch length."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        predictor = BatchHybridPredictor(validator=False)
+        predictor.loaded = True
+        predictor.pytorch_models = {}
+        predictor.sklearn_models = {}
+
+        payload_result = predictor.predict_batch({'payloads': ['x', 'y']}, validate=False)
+        assert len(payload_result['confidence']) == 2
+        assert len(payload_result['is_attack']) == 2
+
+        ts = np.random.rand(2, 60, 8).astype(np.float32)
+        ts_result = predictor.predict_batch({'timeseries': ts}, validate=False)
+        assert len(ts_result['confidence']) == 2
+        assert len(ts_result['is_attack']) == 2
+
+    def test_load_models_can_fail_strictly_when_empty(self, temp_models_dir):
+        """Strict mode should raise if no model artifacts are available."""
+        from src.batch_predictor import BatchHybridPredictor
+
+        predictor = BatchHybridPredictor(
+            models_dir=str(temp_models_dir),
+            validator=False,
+            fail_on_no_models=True,
+        )
+        with pytest.raises(FileNotFoundError):
+            predictor.load_models()

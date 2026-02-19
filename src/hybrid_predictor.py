@@ -3,6 +3,7 @@ import torch
 import joblib
 import numpy as np
 from pathlib import Path
+from urllib.parse import quote, urlsplit, urlunsplit
 
 
 class HybridPredictor:
@@ -11,11 +12,16 @@ class HybridPredictor:
     def __init__(self, models_dir='models', device=None):
         self.models_dir = Path(models_dir)
         self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self._use_amp = self.device.type == 'cuda'
         
         # Model containers
         self.sklearn_models = {}
         self.pytorch_models = {}
         self.loaded = False
+
+    def _autocast_context(self):
+        """Use AMP only when running on CUDA."""
+        return torch.autocast(device_type=self.device.type, enabled=self._use_amp)
     
     def load_models(self):
         """Load all available models."""
@@ -70,9 +76,24 @@ class HybridPredictor:
     
     def _tokenize_url(self, url, max_len=200):
         """Convert URL to character indices."""
-        chars = [ord(c) % 128 for c in str(url)[:max_len]]
+        normalized = self._normalize_url_text(url)
+        chars = [ord(c) % 128 for c in normalized[:max_len]]
         chars += [0] * (max_len - len(chars))
         return chars
+
+    @staticmethod
+    def _normalize_url_text(url: str) -> str:
+        """Normalize URL to an ASCII-safe form while preserving IDN semantics."""
+        text = str(url).strip()
+        try:
+            parts = urlsplit(text)
+            netloc = parts.netloc.encode('idna').decode('ascii') if parts.netloc else parts.netloc
+            path = quote(parts.path, safe="/:@-._~!$&'()*+,;=%")
+            query = quote(parts.query, safe="=&?/:@-._~!$'()*+,;%")
+            fragment = quote(parts.fragment, safe=":@-._~!$&'()*+,;=%")
+            return urlunsplit((parts.scheme, netloc, path, query, fragment))
+        except Exception:
+            return text
     
     @torch.no_grad()
     def predict_payload(self, payloads):
@@ -83,7 +104,7 @@ class HybridPredictor:
         tokens = [self._tokenize_payload(p) for p in payloads]
         x = torch.tensor(tokens, dtype=torch.long).to(self.device)
         
-        with torch.amp.autocast('cuda'):
+        with self._autocast_context():
             logits = self.pytorch_models['payload_cnn'](x)
         
         return torch.sigmoid(logits).cpu().numpy()
@@ -97,7 +118,7 @@ class HybridPredictor:
         tokens = [self._tokenize_url(u) for u in urls]
         x = torch.tensor(tokens, dtype=torch.long).to(self.device)
         
-        with torch.amp.autocast('cuda'):
+        with self._autocast_context():
             logits = self.pytorch_models['url_cnn'](x)
         
         return torch.sigmoid(logits).cpu().numpy()
@@ -110,7 +131,7 @@ class HybridPredictor:
         
         x = torch.tensor(sequences, dtype=torch.float32).to(self.device)
         
-        with torch.amp.autocast('cuda'):
+        with self._autocast_context():
             logits = self.pytorch_models['timeseries_lstm'](x)
         
         return torch.sigmoid(logits).cpu().numpy()
@@ -125,7 +146,7 @@ class HybridPredictor:
         
         x = torch.tensor(model_scores, dtype=torch.float32).to(self.device)
         
-        with torch.amp.autocast('cuda'):
+        with self._autocast_context():
             logits = self.pytorch_models['meta_classifier'](x)
         
         return torch.sigmoid(logits).cpu().numpy()

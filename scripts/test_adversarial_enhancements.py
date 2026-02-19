@@ -3,12 +3,18 @@
 import sys
 from pathlib import Path
 
-# Add stress test v14 directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add repo root to path for package imports
+repo_root = Path(__file__).parent.parent
+sys.path.insert(0, str(repo_root / "src"))
 
-from difficulty import DifficultyMixin
-from real_data import RealDataLoader
-from scenarios import PayloadGenerator, URLGenerator, TimeSeriesGenerator, BenignAdversarialGenerator
+from stress_test.v14.difficulty import DifficultyMixin
+from stress_test.v14.real_data import RealDataLoader
+from stress_test.v14.scenarios import (
+    PayloadGenerator,
+    URLGenerator,
+    TimeSeriesGenerator,
+    BenignAdversarialGenerator,
+)
 
 def test_difficulty_mixin():
     """Test DifficultyMixin obfuscation."""
@@ -79,7 +85,7 @@ def test_generators():
         print(f"  {s.category:20s} | expected={s.expected_label} | {s.input_data[:60]}")
 
 if __name__ == '__main__':
-    print("\n🔬 Adversarial Stress Testing - Component Tests\n")
+    print("\nAdversarial Stress Testing - Component Tests\n")
     
     try:
         test_difficulty_mixin()
@@ -87,16 +93,16 @@ if __name__ == '__main__':
         test_generators()
         
         print("\n" + "=" * 60)
-        print("✅ All component tests passed!")
+        print("All component tests passed")
         print("=" * 60)
         print("\nNext steps:")
-        print("  1. Run full stress test: python scripts/stress_test_v14.py --model payload")
+        print("  1. Run full stress test: python src/stress_test/stress_test_v14.py --model payload")
         print("  2. Check accuracy drops from 100% to 80-90%")
         print("  3. Verify per-difficulty breakdown in output")
         print("  4. View dashboard for visual confirmation")
         
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\nTest failed: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

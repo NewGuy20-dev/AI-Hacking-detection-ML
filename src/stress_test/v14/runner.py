@@ -4,13 +4,20 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
 from tqdm import tqdm
-import sys
 
-sys.path.insert(0, str(Path(__file__).parent))
-
-from scenarios import Scenario, ScenarioResult, ScenarioRegistry, PayloadGenerator, URLGenerator, TimeSeriesGenerator, TabularGenerator, MetaGenerator
-from models import ModelWrapper
-from logger import JSONLogger
+from .scenarios import (
+    Scenario,
+    ScenarioResult,
+    ScenarioRegistry,
+    PayloadGenerator,
+    URLGenerator,
+    TimeSeriesGenerator,
+    TabularGenerator,
+    MetaGenerator,
+    AnomalyGenerator,
+)
+from .models import ModelWrapper
+from .logger import JSONLogger
 
 
 # Risk-weighted base distributions
@@ -36,6 +43,9 @@ BASE_WEIGHTS = {
     },
     'network': {
         'dos': 0.35, 'probe': 0.30, 'r2l': 0.20, 'u2r': 0.15
+    },
+    'anomaly': {
+        'zero_day': 0.35, 'stealth_scan': 0.25, 'low_and_slow_exfiltration': 0.25, 'beaconing': 0.15
     },
     'meta': {
         'combined': 1.0
@@ -83,6 +93,7 @@ class StressTestRunner:
         self.models_dir = Path(config.get('models_dir', 'models'))
         self.scenarios_dir = Path(config.get('scenarios_dir', 'configs/stress_test/scenarios_v14'))
         self.output_dir = Path(config.get('output_dir', 'evaluation/stress_test_v14'))
+        self.seed = config.get('seed')
         
     def run(self) -> Dict:
         """Run complete stress test for this model."""
@@ -107,7 +118,7 @@ class StressTestRunner:
         
         # Run test
         run_date = datetime.now().strftime('%Y-%m-%d')
-        with JSONLogger(self.output_dir, self.model_name, run_date) as logger:
+        with JSONLogger(self.output_dir, self.model_name, run_date, run_seed=self.seed) as logger:
             # Phase 1: Static scenarios
             if static_scenarios:
                 print(f"\nPhase 1: Running static scenarios...")
@@ -127,10 +138,12 @@ class StressTestRunner:
                 pbar = tqdm(desc="Dynamic", unit=" scenarios")
                 while (time.time() - start_time) / 60 < self.target_duration_min:
                     # Get adaptive weights
-                    weights = scheduler.compute_weights(logger.get_category_accuracy())
+                    category_accuracy = logger.get_category_accuracy()
+                    malicious_accuracy = self._filter_malicious_accuracy(category_accuracy)
+                    weights = scheduler.compute_weights(malicious_accuracy)
                     
                     # Generate batch
-                    if self.model_name in ['fraud', 'host', 'network']:
+                    if self.model_name in ['fraud', 'host', 'network', 'anomaly']:
                         batch = generator.generate(self.model_name, 100, weights)
                     else:
                         batch = generator.generate(100, weights)
@@ -176,6 +189,7 @@ class StressTestRunner:
             
             return {
                 'model': self.model_name,
+                'seed': self.seed,
                 'static_count': len(static_scenarios),
                 'dynamic_count': dynamic_count,
                 'total_scenarios': summary['total_scenarios'],
@@ -183,23 +197,36 @@ class StressTestRunner:
                 'accuracy': summary['accuracy'],
                 'accuracy_by_difficulty': summary.get('accuracy_by_difficulty', {}),
                 'difficulty_breakdown': summary.get('difficulty_breakdown', {}),
-                'final_stats': summary['categories']
+                'final_stats': summary['categories'],
+                'failure_log': str((self.output_dir / f"{self.model_name}_{run_date}_failures.jsonl")),
+                'replay_command': (
+                    f"python src/stress_test/stress_test_v14.py --model {self.model_name} "
+                    f"--seed {self.seed if self.seed is not None else 42} "
+                    f"--duration {self.target_duration_min}"
+                )
             }
     
     def _get_generator(self):
         """Get appropriate generator for this model."""
         if self.model_name == 'payload':
-            return PayloadGenerator()
+            return PayloadGenerator(seed=self.seed)
         elif self.model_name == 'url':
-            return URLGenerator()
+            return URLGenerator(seed=self.seed)
         elif self.model_name == 'timeseries':
-            return TimeSeriesGenerator()
+            return TimeSeriesGenerator(seed=self.seed)
         elif self.model_name in ['fraud', 'host', 'network']:
-            return TabularGenerator()
+            return TabularGenerator(seed=self.seed)
+        elif self.model_name == 'anomaly':
+            return AnomalyGenerator(seed=self.seed)
         elif self.model_name == 'meta':
-            return MetaGenerator()
+            return MetaGenerator(seed=self.seed)
         else:
             return None
+
+    def _filter_malicious_accuracy(self, category_accuracy: Dict[str, float]) -> Dict[str, float]:
+        """Keep only categories that belong to this model's malicious base weights."""
+        base_categories = set(BASE_WEIGHTS.get(self.model_name, {}).keys())
+        return {k: v for k, v in category_accuracy.items() if k in base_categories}
     
     def _run_scenario(self, model: ModelWrapper, scenario: Scenario) -> ScenarioResult:
         """Run a single scenario."""
@@ -226,4 +253,3 @@ class StressTestRunner:
                 timestamp=datetime.now().isoformat(),
                 error=str(e)
             )
-

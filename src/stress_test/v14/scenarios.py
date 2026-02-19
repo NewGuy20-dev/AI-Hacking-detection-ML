@@ -1,11 +1,9 @@
 """Scenario dataclasses and registry for V1.4 stress test suite."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, List, Dict
-from datetime import datetime
 from pathlib import Path
 import yaml
 import random
-import base64
 import urllib.parse
 import numpy as np
 
@@ -22,6 +20,7 @@ class Scenario:
     difficulty: str
     description: str
     source: str
+    tags: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -78,9 +77,23 @@ class ScenarioRegistry:
 class DynamicGenerator:
     """Base class for dynamic scenario generation."""
     def __init__(self, seed: int = None):
-        if seed:
+        self.seed = seed
+        if seed is not None:
             random.seed(seed)
             np.random.seed(seed)
+
+    @staticmethod
+    def _normalize_weights(
+        category_weights: Dict[str, float],
+        fallback_weights: Dict[str, float]
+    ) -> Dict[str, float]:
+        """Return a normalized malicious-only weight map."""
+        source = category_weights or fallback_weights
+        filtered = {k: float(v) for k, v in source.items() if k in fallback_weights and v > 0}
+        if not filtered:
+            filtered = dict(fallback_weights)
+        total = sum(filtered.values()) or 1.0
+        return {k: v / total for k, v in filtered.items()}
     
     def generate(self, count: int, category_weights: Dict[str, float]) -> List[Scenario]:
         raise NotImplementedError
@@ -88,6 +101,11 @@ class DynamicGenerator:
 
 class PayloadGenerator(DynamicGenerator):
     """Generate payload variations using mutation techniques with real data and difficulty tiers."""
+
+    DEFAULT_MALICIOUS_WEIGHTS = {
+        'sqli': 0.25, 'xss': 0.20, 'cmdi': 0.20, 'path_traversal': 0.15,
+        'ssti': 0.10, 'xxe': 0.05, 'ldap': 0.05
+    }
     
     BASE_PAYLOADS = {
         'sqli': ["' OR '1'='1", "' UNION SELECT NULL--", "'; DROP TABLE users--", "' AND 1=1--"],
@@ -121,8 +139,8 @@ class PayloadGenerator(DynamicGenerator):
     
     def __init__(self, seed: int = None):
         super().__init__(seed)
-        from real_data import RealDataLoader
-        from difficulty import DifficultyMixin
+        from .real_data import RealDataLoader
+        from .difficulty import DifficultyMixin
         self.real_loader = RealDataLoader()
         self.difficulty_mixin = DifficultyMixin()
     
@@ -160,8 +178,9 @@ class PayloadGenerator(DynamicGenerator):
     
     def _generate_malicious(self, count: int, category_weights: Dict[str, float]) -> List[Scenario]:
         scenarios = []
-        categories = list(category_weights.keys())
-        weights = list(category_weights.values())
+        normalized_weights = self._normalize_weights(category_weights, self.DEFAULT_MALICIOUS_WEIGHTS)
+        categories = list(normalized_weights.keys())
+        weights = list(normalized_weights.values())
         difficulties = ['easy', 'medium', 'hard', 'adversarial']
         
         for i in range(count):
@@ -203,6 +222,14 @@ class PayloadGenerator(DynamicGenerator):
 class URLGenerator(DynamicGenerator):
     """Generate URL variations with real data and difficulty tiers."""
     
+    DEFAULT_MALICIOUS_WEIGHTS = {
+        'phishing': 0.30,
+        'typosquatting': 0.25,
+        'shorteners': 0.15,
+        'homograph': 0.15,
+        'dga': 0.10,
+        'malware': 0.05
+    }
     BRANDS = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'facebook', 'netflix']
     TLDS = ['.com', '.net', '.org', '.co', '.io', '.info']
     
@@ -226,8 +253,8 @@ class URLGenerator(DynamicGenerator):
     
     def __init__(self, seed: int = None):
         super().__init__(seed)
-        from real_data import RealDataLoader
-        from difficulty import DifficultyMixin
+        from .real_data import RealDataLoader
+        from .difficulty import DifficultyMixin
         self.real_loader = RealDataLoader()
         self.difficulty_mixin = DifficultyMixin()
     
@@ -265,8 +292,9 @@ class URLGenerator(DynamicGenerator):
     
     def _generate_malicious(self, count: int, category_weights: Dict[str, float]) -> List[Scenario]:
         scenarios = []
-        categories = list(category_weights.keys())
-        weights = list(category_weights.values())
+        normalized_weights = self._normalize_weights(category_weights, self.DEFAULT_MALICIOUS_WEIGHTS)
+        categories = list(normalized_weights.keys())
+        weights = list(normalized_weights.values())
         difficulties = ['easy', 'medium', 'hard', 'adversarial']
         
         for i in range(count):
@@ -283,8 +311,14 @@ class URLGenerator(DynamicGenerator):
                     url = self._generate_phishing()
                 elif category == 'typosquatting':
                     url = self._generate_typosquatting()
+                elif category == 'shorteners':
+                    url = self._generate_shortener()
+                elif category == 'homograph':
+                    url = self._generate_homograph()
                 elif category == 'dga':
                     url = self._generate_dga()
+                elif category == 'malware':
+                    url = self._generate_malware()
                 else:
                     url = self._generate_generic(category)
             
@@ -306,28 +340,95 @@ class URLGenerator(DynamicGenerator):
     def _generate_phishing(self) -> str:
         brand = random.choice(self.BRANDS)
         keywords = ['verify', 'secure', 'account', 'login', 'update', 'confirm']
-        return f"http://{brand}-{random.choice(keywords)}{random.choice(self.TLDS)}"
+        host = f"{brand}-{random.choice(keywords)}{random.choice(self.TLDS)}"
+        return f"http://{self._host_with_optional_port(host)}{self._random_path()}{self._random_query()}"
     
     def _generate_typosquatting(self) -> str:
         brand = random.choice(self.BRANDS)
         typo = brand[:-1] + random.choice('abcdefghijklmnopqrstuvwxyz')
-        return f"http://{typo}{random.choice(self.TLDS)}"
+        host = f"{typo}{random.choice(self.TLDS)}"
+        return f"http://{self._host_with_optional_port(host)}{self._random_path()}"
+
+    def _generate_shortener(self) -> str:
+        short_domains = ['bit.ly', 'tinyurl.com', 'is.gd', 't.co', 'cutt.ly']
+        token = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=7))
+        if random.random() < 0.5:
+            target = urllib.parse.quote(self._generate_generic('redirect'))
+            return f"http://{random.choice(short_domains)}/{token}?url={target}"
+        return f"http://{random.choice(short_domains)}/{token}"
+
+    def _generate_homograph(self) -> str:
+        # Mix Latin and confusable characters to mimic realistic homograph abuse.
+        template = random.choice(['google', 'paypal', 'microsoft', 'apple'])
+        mappings = {'a': 'а', 'e': 'е', 'o': 'о', 'p': 'р', 'c': 'с', 'x': 'х', 'i': 'і'}
+        chars = []
+        for ch in template:
+            if ch in mappings and random.random() < 0.5:
+                chars.append(mappings[ch])
+            else:
+                chars.append(ch)
+        domain = ''.join(chars)
+        host = f"{domain}{random.choice(self.TLDS)}"
+        return f"http://{self._host_with_optional_port(host)}{self._random_path()}"
     
     def _generate_dga(self) -> str:
         length = random.randint(8, 16)
-        domain = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=length))
-        return f"http://{domain}{random.choice(self.TLDS)}"
+        alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
+        domain = ''.join(random.choices(alphabet, k=length))
+        host = f"{domain}{random.choice(self.TLDS)}"
+        return f"http://{self._host_with_optional_port(host)}{self._random_path()}"
+
+    def _generate_malware(self) -> str:
+        filename = random.choice(['update.exe', 'invoice.zip', 'scan.js', 'loader.bin', 'payload.dll'])
+        lure_path = random.choice(['/download', '/secure', '/patch', '/driver', '/cdn'])
+        host = f"cdn-{random.randint(100,999)}.{random.choice(['ru', 'tk', 'top', 'xyz'])}"
+        return f"http://{self._host_with_optional_port(host)}{lure_path}/{filename}{self._random_query()}"
     
     def _generate_generic(self, category: str) -> str:
-        return f"http://malicious-{category}-{random.randint(1000, 9999)}.com"
+        if random.random() < 0.2:
+            # Decimal-ish IPv4 literals are common in malicious URL feeds.
+            host = ".".join(str(random.randint(1, 254)) for _ in range(4))
+        else:
+            host = f"malicious-{category}-{random.randint(1000, 9999)}.com"
+        return f"http://{self._host_with_optional_port(host)}{self._random_path()}{self._random_query()}"
+
+    @staticmethod
+    def _random_path() -> str:
+        fragments = ['login', 'verify', 'auth', 'account', 'payment', 'security', 'docs']
+        return "/" + "/".join(random.sample(fragments, k=random.randint(1, 3)))
+
+    @staticmethod
+    def _random_query() -> str:
+        params = [
+            f"session={random.randint(100000, 999999)}",
+            f"redirect={random.choice(['home', 'verify', 'profile', 'billing'])}",
+            f"token={''.join(random.choices('abcdef0123456789', k=16))}",
+        ]
+        if random.random() < 0.6:
+            return "?" + "&".join(random.sample(params, k=random.randint(1, 3)))
+        return ""
+
+    @staticmethod
+    def _host_with_optional_port(host: str) -> str:
+        if random.random() < 0.2:
+            return f"{host}:{random.choice([8080, 8081, 8443, 9001, 1337])}"
+        return host
 
 
 class TimeSeriesGenerator(DynamicGenerator):
     """Generate timeseries attack patterns with difficulty-based gradual attacks."""
+
+    DEFAULT_MALICIOUS_WEIGHTS = {
+        'ddos': 0.30,
+        'portscan': 0.25,
+        'exfiltration': 0.20,
+        'c2': 0.15,
+        'bruteforce': 0.10
+    }
     
     def __init__(self, seed: int = None):
         super().__init__(seed)
-        from difficulty import DifficultyMixin
+        from .difficulty import DifficultyMixin
         self.difficulty_mixin = DifficultyMixin()
     
     def generate(self, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
@@ -353,8 +454,9 @@ class TimeSeriesGenerator(DynamicGenerator):
             ))
         
         # Generate malicious samples
-        categories = list(category_weights.keys())
-        weights = list(category_weights.values())
+        normalized_weights = self._normalize_weights(category_weights, self.DEFAULT_MALICIOUS_WEIGHTS)
+        categories = list(normalized_weights.keys())
+        weights = list(normalized_weights.values())
         difficulties = ['easy', 'medium', 'hard', 'adversarial']
         
         for i in range(malicious_count):
@@ -365,8 +467,17 @@ class TimeSeriesGenerator(DynamicGenerator):
                 data = self._generate_ddos(difficulty)
             elif category == 'portscan':
                 data = self._generate_portscan(difficulty)
+            elif category == 'exfiltration':
+                data = self._generate_exfiltration(difficulty)
+            elif category == 'c2':
+                data = self._generate_c2_beaconing(difficulty)
+            elif category == 'bruteforce':
+                data = self._generate_bruteforce(difficulty)
             else:
                 data = self._generate_generic_attack(difficulty)
+
+            data = self.difficulty_mixin.apply_difficulty(data, difficulty, 'timeseries')
+            data = np.clip(data.astype(np.float32), a_min=0.0, a_max=50000.0)
             
             scenarios.append(Scenario(
                 id=f"timeseries_mal_{i}_{random.randint(1000,9999)}",
@@ -482,17 +593,65 @@ class TimeSeriesGenerator(DynamicGenerator):
     
     def _generate_generic_attack(self, difficulty: str) -> np.ndarray:
         """Generate generic attack pattern with difficulty-based ramp."""
-        return np.random.randn(60, 8).astype(np.float32) * 50 + 100
+        seq = self._generate_normal()
+        window = random.randint(15, 45)
+        burst = random.randint(6, 15)
+        seq[window:window + burst, 0] *= np.random.uniform(1.8, 3.0)
+        seq[window:window + burst, 2] *= np.random.uniform(2.0, 4.0)
+        return seq.astype(np.float32)
+
+    def _generate_exfiltration(self, difficulty: str) -> np.ndarray:
+        """Low-and-slow data exfiltration pattern."""
+        seq = self._generate_normal()
+        start = random.randint(20, 35)
+        ramp = np.linspace(1.0, 1.8 if difficulty == 'adversarial' else 2.8, 60 - start)
+        seq[start:, 1] *= ramp  # bytes out grows
+        seq[start:, 3] = np.clip(seq[start:, 3] + np.random.uniform(0.02, 0.08, 60 - start), 0, 1)
+        return seq.astype(np.float32)
+
+    def _generate_c2_beaconing(self, difficulty: str) -> np.ndarray:
+        """Periodic beaconing with low-volume regular traffic."""
+        seq = self._generate_normal()
+        period = 8 if difficulty in ['easy', 'medium'] else 12
+        for t in range(0, 60, period):
+            seq[t, 2] = seq[t, 2] * np.random.uniform(2.0, 4.0)
+            seq[t, 3] = np.clip(seq[t, 3] + np.random.uniform(0.1, 0.25), 0, 1)
+        return seq.astype(np.float32)
+
+    def _generate_bruteforce(self, difficulty: str) -> np.ndarray:
+        """Authentication burst and retry cycles."""
+        seq = self._generate_normal()
+        for _ in range(random.randint(3, 6)):
+            start = random.randint(5, 50)
+            duration = random.randint(2, 5 if difficulty == 'adversarial' else 8)
+            seq[start:start + duration, 0] *= np.random.uniform(1.8, 3.5)
+            seq[start:start + duration, 3] = np.clip(seq[start:start + duration, 3] + np.random.uniform(0.15, 0.35), 0, 1)
+        return seq.astype(np.float32)
 
 
 class TabularGenerator(DynamicGenerator):
     """Generate fraud/host/network feature vectors."""
-    
+
+    DEFAULT_WEIGHTS = {
+        'fraud': {'card_not_present': 0.40, 'account_takeover': 0.35, 'synthetic': 0.25},
+        'host': {'spyware': 0.25, 'ransomware': 0.25, 'trojan': 0.20, 'rootkit': 0.15, 'backdoor': 0.15},
+        'network': {'dos': 0.35, 'probe': 0.30, 'r2l': 0.20, 'u2r': 0.15},
+        'anomaly': {'zero_day': 0.35, 'stealth_scan': 0.25, 'low_and_slow_exfiltration': 0.25, 'beaconing': 0.15},
+    }
+
+    def __init__(self, seed: int = None):
+        super().__init__(seed)
+        from .difficulty import DifficultyMixin
+        self.difficulty_mixin = DifficultyMixin()
+
     def generate(self, model: str, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
         scenarios = []
         benign_count = int(count * benign_ratio)
         malicious_count = count - benign_count
-        
+
+        default_weights = self.DEFAULT_WEIGHTS.get(model, {'generic_attack': 1.0})
+        normalized_weights = self._normalize_weights(category_weights, default_weights)
+
         # Generate benign samples
         difficulties = ['easy', 'medium', 'hard', 'adversarial']
         for i in range(benign_count):
@@ -502,10 +661,13 @@ class TabularGenerator(DynamicGenerator):
                 features = self._generate_host('normal')
             elif model == 'network':
                 features = self._generate_network('normal')
+            elif model == 'anomaly':
+                features = self._generate_anomaly('normal')
             else:
                 features = np.random.randn(10).astype(np.float32)
-            
+
             difficulty = random.choice(difficulties)
+            features = self.difficulty_mixin.apply_difficulty(features, difficulty, 'tabular').astype(np.float32)
             scenarios.append(Scenario(
                 id=f"{model}_benign_{i}_{random.randint(1000,9999)}",
                 model=model,
@@ -517,23 +679,27 @@ class TabularGenerator(DynamicGenerator):
                 description='Normal sample',
                 source='dynamic'
             ))
-        
+
         # Generate malicious samples
-        categories = list(category_weights.keys())
-        weights = list(category_weights.values())
+        categories = list(normalized_weights.keys())
+        weights = list(normalized_weights.values())
         
         for i in range(malicious_count):
             category = random.choices(categories, weights=weights)[0]
-            
+            difficulty = random.choice(difficulties)
+
             if model == 'fraud':
                 features = self._generate_fraud(category)
             elif model == 'host':
                 features = self._generate_host(category)
             elif model == 'network':
                 features = self._generate_network(category)
+            elif model == 'anomaly':
+                features = self._generate_anomaly(category)
             else:
                 features = np.random.randn(10).astype(np.float32)
-            
+
+            features = self.difficulty_mixin.apply_difficulty(features, difficulty, 'tabular').astype(np.float32)
             scenarios.append(Scenario(
                 id=f"{model}_mal_{i}_{random.randint(1000,9999)}",
                 model=model,
@@ -541,7 +707,7 @@ class TabularGenerator(DynamicGenerator):
                 subcategory='dynamic',
                 input_data=features,
                 expected_label=1,
-                difficulty='medium',
+                difficulty=difficulty,
                 description=f'Dynamic {category} sample',
                 source='dynamic'
             ))
@@ -553,18 +719,25 @@ class TabularGenerator(DynamicGenerator):
         features[0] = random.uniform(0, 172800)  # Time (0-2 days in seconds)
         
         if category == 'normal':
-            # Normal transactions: V1-V28 centered around 0 with small variance
             features[1:29] = np.random.normal(0, 1.5, 28)
-            # Amount: typical range $1-$200
             features[29] = max(1, np.random.lognormal(3.5, 1.2))
+        elif category == 'card_not_present':
+            features[1:29] = np.random.normal(0.8, 3.0, 28)
+            features[29] = max(1, np.random.lognormal(5.0, 1.2))
+            features[10:15] += np.random.uniform(2.0, 6.0, 5)
+        elif category == 'account_takeover':
+            features[1:29] = np.random.normal(-0.5, 3.2, 28)
+            features[29] = max(1, np.random.lognormal(4.2, 1.4))
+            features[5:10] += np.random.uniform(3.0, 8.0, 5)
+        elif category == 'synthetic':
+            features[1:29] = np.random.normal(0, 4.0, 28)
+            outlier_indices = np.random.choice(28, size=7, replace=False)
+            features[1 + outlier_indices] = np.random.uniform(-18, 18, 7)
+            features[29] = max(1, np.random.lognormal(5.3, 1.7))
         else:
-            # Fraudulent transactions: more extreme V values
-            # Mix of high positive and negative values
             features[1:29] = np.random.normal(0, 3.5, 28)
-            # Add some extreme outliers for fraud patterns
             outlier_indices = np.random.choice(28, size=5, replace=False)
             features[1 + outlier_indices] = np.random.uniform(-15, 15, 5)
-            # Amount: higher and more variable
             features[29] = max(1, np.random.lognormal(4.5, 1.5))
         
         return features
@@ -575,10 +748,30 @@ class TabularGenerator(DynamicGenerator):
         
         if category == 'normal':
             features[:10] = np.random.uniform(50, 150, 10)
+            features[10:] = np.random.uniform(0, 80, 27)
+        elif category == 'ransomware':
+            features[:10] = np.random.uniform(220, 650, 10)
+            features[10:20] = np.random.uniform(60, 100, 10)
+            features[20:] = np.random.uniform(20, 120, 17)
+        elif category == 'spyware':
+            features[:10] = np.random.uniform(120, 300, 10)
+            features[10:20] = np.random.uniform(10, 60, 10)
+            features[20:] = np.random.uniform(40, 140, 17)
+        elif category == 'trojan':
+            features[:10] = np.random.uniform(140, 360, 10)
+            features[10:20] = np.random.uniform(30, 90, 10)
+            features[20:] = np.random.uniform(35, 125, 17)
+        elif category == 'rootkit':
+            features[:10] = np.random.uniform(180, 420, 10)
+            features[10:20] = np.random.uniform(50, 100, 10)
+            features[20:] = np.random.uniform(30, 110, 17)
+        elif category == 'backdoor':
+            features[:10] = np.random.uniform(130, 340, 10)
+            features[10:20] = np.random.uniform(20, 75, 10)
+            features[20:] = np.random.uniform(45, 130, 17)
         else:
-            features[:10] = np.random.uniform(100, 500, 10)  # Anomalous
-        
-        features[10:] = np.random.uniform(0, 100, 27)
+            features[:10] = np.random.uniform(100, 500, 10)
+            features[10:] = np.random.uniform(0, 100, 27)
         return features
     
     def _generate_network(self, category: str) -> np.ndarray:
@@ -588,16 +781,63 @@ class TabularGenerator(DynamicGenerator):
         if category == 'normal':
             features[0] = random.randint(0, 1000)  # duration
             features[1:3] = np.random.uniform(100, 10000, 2)  # bytes
+            features[3:] = np.random.uniform(0.0, 0.35, 32)
+        elif category == 'dos':
+            features[0] = random.uniform(0, 20)
+            features[1:3] = np.random.uniform(0, 1200, 2)
+            features[3:] = np.random.uniform(0.6, 1.0, 32)
+        elif category == 'probe':
+            features[0] = random.uniform(0, 80)
+            features[1:3] = np.random.uniform(50, 4000, 2)
+            features[3:] = np.random.uniform(0.35, 0.85, 32)
+        elif category == 'r2l':
+            features[0] = random.uniform(20, 300)
+            features[1:3] = np.random.uniform(10, 1800, 2)
+            features[3:] = np.random.uniform(0.4, 0.95, 32)
+        elif category == 'u2r':
+            features[0] = random.uniform(5, 160)
+            features[1:3] = np.random.uniform(0, 900, 2)
+            features[3:] = np.random.uniform(0.5, 1.0, 32)
         else:
-            features[0] = 0  # Short duration for attacks
-            features[1:3] = np.random.uniform(0, 1000, 2)  # Low bytes
-        
-        features[3:] = np.random.uniform(0, 1, 32)
+            features[0] = 0
+            features[1:3] = np.random.uniform(0, 1000, 2)
+            features[3:] = np.random.uniform(0.0, 1.0, 32)
         return features
+
+    def _generate_anomaly(self, category: str) -> np.ndarray:
+        """Generate 15-feature anomaly vector aligned to UNIFIED_FEATURES-like shape."""
+        features = np.zeros(15, dtype=np.float32)
+        if category == 'normal':
+            features[:] = np.random.uniform(0.05, 0.35, 15)
+        elif category == 'zero_day':
+            features[:] = np.random.uniform(0.6, 1.0, 15)
+            features[0] = np.random.uniform(0.0, 0.1)
+        elif category == 'stealth_scan':
+            features[:] = np.random.uniform(0.25, 0.7, 15)
+            features[3:6] = np.random.uniform(0.7, 1.0, 3)
+        elif category == 'low_and_slow_exfiltration':
+            features[:] = np.random.uniform(0.15, 0.55, 15)
+            features[1:3] = np.random.uniform(0.75, 1.0, 2)
+            features[13:15] = np.random.uniform(0.5, 0.9, 2)
+        elif category == 'beaconing':
+            features[:] = np.random.uniform(0.2, 0.6, 15)
+            features[7:10] = np.random.uniform(0.7, 0.95, 3)
+        else:
+            features[:] = np.random.uniform(0.35, 0.85, 15)
+        return features
+
+
+class AnomalyGenerator(TabularGenerator):
+    """Dedicated generator for anomaly-detector scenarios."""
+
+    def generate(self, model: str, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
+        return super().generate('anomaly', count, category_weights, benign_ratio=benign_ratio)
 
 
 class MetaGenerator(DynamicGenerator):
     """Generate meta-classifier input vectors (simulated model outputs)."""
+
+    DEFAULT_MALICIOUS_WEIGHTS = {'combined': 1.0}
     
     def generate(self, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
         """Generate 5-element vectors simulating outputs from 6 base models."""
@@ -624,13 +864,15 @@ class MetaGenerator(DynamicGenerator):
             ))
         
         # Generate malicious samples
-        categories = list(category_weights.keys())
-        weights = list(category_weights.values())
+        normalized_weights = self._normalize_weights(category_weights, self.DEFAULT_MALICIOUS_WEIGHTS)
+        categories = list(normalized_weights.keys())
+        weights = list(normalized_weights.values())
         
         for i in range(malicious_count):
             category = random.choices(categories, weights=weights)[0]
             # Attack: high probabilities (0.7-1.0)
             features = np.random.uniform(0.7, 1.0, 5).astype(np.float32)
+            difficulty = random.choice(difficulties)
             scenarios.append(Scenario(
                 id=f"meta_mal_{i}_{random.randint(1000,9999)}",
                 model='meta',
@@ -638,7 +880,7 @@ class MetaGenerator(DynamicGenerator):
                 subcategory='dynamic',
                 input_data=features,
                 expected_label=1,
-                difficulty='medium',
+                difficulty=difficulty,
                 description=f'Dynamic meta ensemble {category}',
                 source='dynamic'
             ))
@@ -734,4 +976,3 @@ class BenignAdversarialGenerator(DynamicGenerator):
             ))
         
         return scenarios
-

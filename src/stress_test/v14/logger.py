@@ -3,19 +3,19 @@ import json
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict
-import sys
-
-sys.path.insert(0, str(Path(__file__).parent))
-from scenarios import ScenarioResult
+from .scenarios import ScenarioResult
 
 
 class JSONLogger:
     """Per-scenario JSONL logger with real-time category stats."""
     
-    def __init__(self, output_dir: Path, model_name: str, run_date: str):
+    def __init__(self, output_dir: Path, model_name: str, run_date: str, run_seed: int = None):
         self.output_path = output_dir / f"{model_name}_{run_date}.jsonl"
+        self.failure_path = output_dir / f"{model_name}_{run_date}_failures.jsonl"
         self.model_name = model_name
+        self.run_seed = run_seed
         self.file = None
+        self.failure_file = None
         self.stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.difficulty_stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.total_logged = 0
@@ -23,11 +23,14 @@ class JSONLogger:
     def __enter__(self):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         self.file = open(self.output_path, 'w', encoding='utf-8')
+        self.failure_file = open(self.failure_path, 'w', encoding='utf-8')
         return self
         
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.file:
             self.file.close()
+        if self.failure_file:
+            self.failure_file.close()
         
     def log(self, result: ScenarioResult):
         """Log a single scenario result."""
@@ -44,12 +47,17 @@ class JSONLogger:
             'latency_ms': round(result.latency_ms, 2),
             'difficulty': result.scenario.difficulty,
             'source': result.scenario.source,
+            'tags': result.scenario.tags or [result.scenario.category],
+            'run_seed': self.run_seed,
             'timestamp': result.timestamp,
             'error': result.error
         }
         
         self.file.write(json.dumps(record) + '\n')
         self.file.flush()
+        if not result.passed and self.failure_file:
+            self.failure_file.write(json.dumps(record) + '\n')
+            self.failure_file.flush()
         
         # Update category stats
         cat = result.scenario.category
@@ -103,4 +111,3 @@ class JSONLogger:
             'accuracy_by_difficulty': accuracy_by_difficulty,
             'difficulty_breakdown': dict(self.difficulty_stats)
         }
-

@@ -6,15 +6,23 @@ from pathlib import Path
 import csv
 import tempfile
 import json
+import html
 from datetime import datetime
 
 # Global state
 predictor = None
 scan_history = []
 stats = {"total": 0, "malicious": 0, "safe": 0, "by_type": {}}
+_last_batch_export = None
+_last_history_export = None
 
 CSS_PATH = Path(__file__).parent / "static" / "claymorphism.css"
 CSS = CSS_PATH.read_text() if CSS_PATH.exists() else ""
+
+
+def _safe_text(value: str) -> str:
+    """Escape untrusted text before rendering in HTML."""
+    return html.escape(str(value), quote=True)
 
 def load_models():
     global predictor
@@ -97,9 +105,10 @@ def update_stats(is_attack: bool, attack_type: str):
 
 def add_to_history(input_text: str, verdict: str, confidence: float, scan_type: str):
     global scan_history
+    safe_input = _safe_text(input_text)
     scan_history.insert(0, {
         "time": datetime.now().strftime("%H:%M:%S"),
-        "input": input_text[:40] + "..." if len(input_text) > 40 else input_text,
+        "input": safe_input[:40] + "..." if len(safe_input) > 40 else safe_input,
         "verdict": verdict,
         "confidence": f"{confidence:.1%}",
         "type": scan_type
@@ -148,6 +157,7 @@ def scan_url(url: str):
     
     if not url.startswith(('http://', 'https://')):
         url = f"http://{url}"
+    safe_url = _safe_text(url)
     
     result = predictor.predict({'urls': [url]})
     conf = float(result['confidence'][0])
@@ -162,7 +172,7 @@ def scan_url(url: str):
     
     extra_html = f"""
     <div style="margin-top:12px;padding:12px;background:var(--clay-bg);border-radius:var(--clay-radius-sm);">
-        <strong>URL:</strong> <code style="word-break:break-all;">{url}</code>
+        <strong>URL:</strong> <code style="word-break:break-all;">{safe_url}</code>
     </div>
     <div style="margin-top:8px;">
         <strong>Recommendation:</strong> {"🚫 Block this URL" if conf > 0.7 else "✅ Allow"}
@@ -173,14 +183,21 @@ def scan_url(url: str):
 
 def batch_scan(file, progress=gr.Progress()):
     """Process batch with progress indicator."""
+    global _last_batch_export
     if file is None:
         return None, None, """<div class="result-card">📁 Upload a file to begin batch analysis</div>"""
     
     if predictor is None:
         load_models()
     
-    content = Path(file.name).read_text(errors='ignore')
-    lines = [l.strip() for l in content.splitlines() if l.strip()][:100]
+    lines = []
+    with Path(file.name).open("r", encoding="utf-8", errors="ignore") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if line:
+                lines.append(line)
+            if len(lines) >= 100:
+                break
     
     if not lines:
         return None, None, """<div class="result-card">⚠️ File is empty or invalid</div>"""
@@ -206,6 +223,13 @@ def batch_scan(file, progress=gr.Progress()):
         writer.writeheader()
         writer.writerows(results)
         output_path = f.name
+
+    if _last_batch_export and Path(_last_batch_export).exists():
+        try:
+            Path(_last_batch_export).unlink()
+        except OSError:
+            pass
+    _last_batch_export = output_path
     
     summary = f"""
     <div class="result-card">
@@ -256,11 +280,19 @@ def get_history_html():
 
 def export_history():
     """Export history to JSON."""
+    global _last_history_export
     if not scan_history:
         return None
     with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
         json.dump(scan_history, f, indent=2)
-        return f.name
+        output_path = f.name
+    if _last_history_export and Path(_last_history_export).exists():
+        try:
+            Path(_last_history_export).unlink()
+        except OSError:
+            pass
+    _last_history_export = output_path
+    return output_path
 
 def get_stats_html():
     """Generate dashboard stats HTML."""

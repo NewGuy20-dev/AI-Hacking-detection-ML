@@ -34,7 +34,7 @@ class DashboardGenerator:
     
     def _load_all_logs(self, run_date: str) -> Dict:
         """Load all JSONL logs for this run."""
-        models = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network']
+        models = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network', 'anomaly']
         all_results = {}
         
         for model in models:
@@ -196,4 +196,3 @@ class DashboardGenerator:
     </div>
 </body>
 </html>"""
-

@@ -31,7 +31,15 @@ jobs:
       run: |
         pytest tests/ -v --tb=short --ignore=tests/test_robust_training.py
       continue-on-error: false
-    
+
+    - name: Stress Test V1.4 smoke
+      run: |
+        python scripts/test_adversarial_enhancements.py
+
+    - name: Feedback Loop smoke
+      run: |
+        python src/feedback_loop/hard_example_loop.py --model payload,url --dry-run
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()

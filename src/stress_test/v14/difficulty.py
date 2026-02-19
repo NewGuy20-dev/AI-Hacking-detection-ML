@@ -86,52 +86,68 @@ class DifficultyMixin:
         # Homograph mappings
         CYRILLIC = {'a': 'а', 'e': 'е', 'o': 'о', 'p': 'р', 'c': 'с', 'x': 'х'}
         GREEK = {'o': 'ο', 'a': 'α', 'v': 'ν', 'i': 'ι'}
+        parsed = urllib.parse.urlsplit(url if isinstance(url, str) else str(url))
+        scheme = parsed.scheme or 'http'
+        netloc = parsed.netloc
+        path = parsed.path or '/'
+        query = parsed.query
+        fragment = parsed.fragment
+
+        # Normalize bare host inputs
+        if not netloc and parsed.path and '://' not in url:
+            netloc = parsed.path
+            path = '/'
+        
+        def rebuild(nl: str, p: str, q: str, f: str) -> str:
+            safe_path = urllib.parse.quote(p, safe="/:@-._~!$&'()*+,;=%")
+            return urllib.parse.urlunsplit((scheme, nl, safe_path, q, f))
         
         if difficulty == 'medium':
             # Single typo or simple obfuscation
             techniques = [
-                lambda u: u.replace('a', '4', 1),  # Leet speak
-                lambda u: u.replace('o', '0', 1),
-                lambda u: u.replace('i', '1', 1),
-                lambda u: u.replace('.com', '.co'),  # TLD typo
+                lambda nl: nl.replace('a', '4', 1),  # Leet speak
+                lambda nl: nl.replace('o', '0', 1),
+                lambda nl: nl.replace('i', '1', 1),
+                lambda nl: nl.replace('.com', '.co'),  # TLD typo
             ]
-            return random.choice(techniques)(url)
+            new_netloc = random.choice(techniques)(netloc)
+            return rebuild(new_netloc, path, query, fragment)
         
         elif difficulty == 'hard':
             # Homograph + encoding
-            u = url
-            if random.random() < 0.5 and any(c in u for c in CYRILLIC.keys()):
+            new_netloc = netloc
+            new_path = path
+            if random.random() < 0.5 and any(c in new_netloc for c in CYRILLIC.keys()):
                 # Cyrillic substitution
                 for latin, cyrillic in CYRILLIC.items():
-                    if latin in u and random.random() < 0.3:
-                        u = u.replace(latin, cyrillic, 1)
+                    if latin in new_netloc and random.random() < 0.3:
+                        new_netloc = new_netloc.replace(latin, cyrillic, 1)
             if random.random() < 0.3:
-                # Add zero-width space
-                parts = list(u)
-                if len(parts) > 5:
-                    parts.insert(random.randint(3, len(parts)-2), '\u200B')
-                u = ''.join(parts)
-            return u
+                # Encode path fragments while keeping URL parse-valid.
+                segments = [urllib.parse.quote(seg, safe='') for seg in new_path.split('/')]
+                new_path = '/'.join(segments)
+            return rebuild(new_netloc, new_path, query, fragment)
         
         elif difficulty == 'adversarial':
             # Advanced obfuscation
-            u = url
+            new_netloc = netloc
+            new_path = path
+            new_query = query
             if random.random() < 0.3:
                 # Greek homograph
                 for latin, greek in GREEK.items():
-                    if latin in u and random.random() < 0.4:
-                        u = u.replace(latin, greek, 1)
+                    if latin in new_netloc and random.random() < 0.4:
+                        new_netloc = new_netloc.replace(latin, greek, 1)
             if random.random() < 0.3:
-                # IP obfuscation (convert domain to decimal IP)
-                if 'http://' in u:
-                    u = f"http://{random.randint(3000000000, 4000000000)}/"
+                # IP-like host replacement while preserving parse structure.
+                new_netloc = '.'.join(str(random.randint(1, 254)) for _ in range(4))
             if random.random() < 0.2:
-                # Data URI
-                u = f"data:text/html,<script>location='{u}'</script>"
+                target = urllib.parse.quote(rebuild(new_netloc, new_path, new_query, fragment), safe='')
+                new_query = f"redirect={target}"
             if random.random() < 0.3:
-                # Punycode-like obfuscation
-                u = u.replace('.com', '.xn--com')
-            return u
+                # Punycode-like visual marker
+                new_netloc = new_netloc.replace('.com', '.xn--com')
+            return rebuild(new_netloc, new_path, new_query, fragment)
         
         return url
     

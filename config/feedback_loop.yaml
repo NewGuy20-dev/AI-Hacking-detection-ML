@@ -1,0 +1,20 @@
+# Hard-example feedback loop configuration (manual trigger)
+
+gating:
+  min_targeted_recall_delta: 0.02
+  max_fpr_regression: 0.005
+  max_latency_regression_pct: 0.10
+
+dataset:
+  max_failures_per_category: 5000
+  variants_per_failure: 3
+  replay_ratio: 0.60
+  hard_ratio_cap: 0.40
+  baseline_max_samples: 30000
+  previous_max_samples: 20000
+
+training:
+  timeout_seconds: 7200
+  supported_models:
+    - payload
+    - url

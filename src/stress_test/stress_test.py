@@ -120,7 +120,7 @@ NOVEL_BENIGN = [
     
     # Escaped characters
     "Path: C:\\\\Users\\\\Admin",
-    "Quote: \\"Hello\\"",
+    "Quote: \"Hello\"",
     "Tab:\\tNext",
 ]
 

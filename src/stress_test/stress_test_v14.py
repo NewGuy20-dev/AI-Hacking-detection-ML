@@ -4,14 +4,16 @@ import argparse
 import sys
 from pathlib import Path
 from datetime import date
+from typing import Any, Optional, Tuple, Type
 
 # Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.stress_test.v14.runner import StressTestRunner
-from src.stress_test.v14.dashboard import DashboardGenerator
+# Imported lazily so --help works even when runtime ML deps are not installed.
+StressTestRunner = None
+DashboardGenerator = None
 
-MODELS = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network']
+MODELS = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network', 'anomaly']
 
 
 class TeeLogger:
@@ -32,6 +34,29 @@ class TeeLogger:
         self.log.close()
 
 
+def _resolve_runtime_components() -> Tuple[Optional[Type[Any]], Optional[Type[Any]], Optional[str]]:
+    """Load heavy runtime components with a user-friendly dependency error."""
+    runner_cls = globals().get("StressTestRunner")
+    dashboard_cls = globals().get("DashboardGenerator")
+
+    if runner_cls is not None and dashboard_cls is not None:
+        return runner_cls, dashboard_cls, None
+
+    try:
+        from stress_test.v14.runner import StressTestRunner as _runner
+        from stress_test.v14.dashboard import DashboardGenerator as _dashboard
+    except ModuleNotFoundError as exc:
+        missing = exc.name or str(exc)
+        return None, None, (
+            f"Missing dependency '{missing}'. Install project dependencies first "
+            f"(for example: py -3 -m pip install -r requirements.txt on Windows)."
+        )
+
+    globals()["StressTestRunner"] = _runner
+    globals()["DashboardGenerator"] = _dashboard
+    return _runner, _dashboard, None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='V1.4 Comprehensive Stress Test Suite',
@@ -39,16 +64,16 @@ def main():
         epilog='''
 Examples:
   # Run all models (default)
-  python scripts/stress_test_v14.py
+  python src/stress_test/stress_test_v14.py
   
   # Run specific models
-  python scripts/stress_test_v14.py --model url,payload
+  python src/stress_test/stress_test_v14.py --model url,payload
   
   # Quick test (5 min per model)
-  python scripts/stress_test_v14.py --duration 5
+  python src/stress_test/stress_test_v14.py --duration 5
   
   # Skip dashboard generation
-  python scripts/stress_test_v14.py --no-dashboard
+  python src/stress_test/stress_test_v14.py --no-dashboard
         '''
     )
     parser.add_argument('--model', type=str, default='all',
@@ -65,7 +90,18 @@ Examples:
                         help='Skip dashboard generation')
     parser.add_argument('--checkpoint-interval', type=int, default=500,
                         help='Log progress every N scenarios (default: 500)')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='Random seed for deterministic dynamic scenario generation')
     args = parser.parse_args()
+
+    runner_cls, dashboard_cls, import_error = _resolve_runtime_components()
+    if import_error:
+        print(f"ERROR: {import_error}")
+        sys.exit(2)
+    if runner_cls is None or dashboard_cls is None:
+        print("ERROR: Failed to resolve runtime components.")
+        sys.exit(2)
+    assert runner_cls is not None and dashboard_cls is not None
     
     # Setup dual logging to terminal and test.log
     log_file = Path('test.log')
@@ -107,11 +143,12 @@ Examples:
                 'checkpoint_interval': args.checkpoint_interval,
                 'models_dir': args.models_dir,
                 'scenarios_dir': args.scenarios_dir,
-                'output_dir': args.output_dir
+                'output_dir': args.output_dir,
+                'seed': args.seed,
             }
             
             try:
-                runner = StressTestRunner(model, config)
+                runner = runner_cls(model, config)
                 results[model] = runner.run()
             except Exception as e:
                 print(f"❌ Error testing {model}: {e}")
@@ -130,7 +167,7 @@ Examples:
             
             dashboard_path = output_dir / f"dashboard_{run_date}.html"
             try:
-                generator = DashboardGenerator(output_dir, dashboard_path)
+                generator = dashboard_cls(output_dir, dashboard_path)
                 generator.generate(run_date)
                 
                 print(f"✓ Dashboard: {dashboard_path}")
@@ -163,7 +200,9 @@ Examples:
         print(f"\n{'='*70}")
         
         # Exit code based on results
-        all_passed = all(r.get('accuracy', 0) >= 0.90 for r in results.values() if 'error' not in r)
+        successful = [r for r in results.values() if 'error' not in r]
+        has_errors = any('error' in r for r in results.values())
+        all_passed = bool(successful) and not has_errors and all(r.get('accuracy', 0) >= 0.90 for r in successful)
     
     finally:
         # Restore stdout and close log file

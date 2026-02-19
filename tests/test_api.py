@@ -231,18 +231,30 @@ class TestBatchEndpoint:
     
     def test_batch_predict_mixed(self, client, mock_predictor):
         """Test batch with both payloads and URLs."""
-        mock_predictor.predict_batch.return_value = {
-            'is_attack': np.array([True]),
-            'confidence': np.array([0.9]),
-            'scores': {}
-        }
+        mock_predictor.predict_batch.side_effect = [
+            {
+                'is_attack': np.array([True]),
+                'confidence': np.array([0.9]),
+                'scores': {}
+            },
+            {
+                'is_attack': np.array([False]),
+                'confidence': np.array([0.1]),
+                'scores': {}
+            }
+        ]
         
         response = client.post(
             "/api/v1/predict/batch",
-            json={"payloads": ["test"], "urls": ["http://test.com"]}
+            json={"payloads": ["' OR 1=1--"], "urls": ["http://test.com"]}
         )
         
         assert response.status_code == 200
+        data = response.json()
+        assert len(data['results']) == 2
+        assert data['results'][0]['attack_type'] in ['SQL_INJECTION', 'UNKNOWN', None]
+        assert data['results'][1]['attack_type'] in ['MALICIOUS_URL', None]
+        assert mock_predictor.predict_batch.call_count == 2
     
     def test_batch_predict_limit(self, client, mock_predictor):
         """Test batch respects 100 item limit."""
@@ -258,6 +270,78 @@ class TestBatchEndpoint:
         )
         
         assert response.status_code == 200
+
+    def test_batch_predict_preserves_order_with_benign_prefilter(self, client, mock_predictor):
+        """Test mixed payload/url results preserve request order with benign prefiltering."""
+        class FakeFilter:
+            def is_benign(self, payload):
+                return (payload == "hello", 0.95, "heuristic")
+
+            def get_confidence_scale(self, payload):
+                return 1.0
+
+        mock_predictor.predict_batch.side_effect = [
+            {
+                'is_attack': np.array([True]),
+                'confidence': np.array([0.91]),
+                'scores': {}
+            },
+            {
+                'is_attack': np.array([False, True]),
+                'confidence': np.array([0.2, 0.9]),
+                'scores': {}
+            }
+        ]
+
+        with patch('src.api.routes.predict.get_filter', return_value=FakeFilter()):
+            response = client.post(
+                "/api/v1/predict/batch",
+                json={
+                    "payloads": ["hello", "' OR 1=1--"],
+                    "urls": ["https://example.com", "http://bad.example"]
+                }
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data['results']) == 4
+
+        # Payload slot 0 was benign-prefiltered and should remain in place.
+        assert data['results'][0]['is_attack'] is False
+        # Payload slot 1 is ML output.
+        assert data['results'][1]['is_attack'] is True
+        # URL slots follow payload slots in order.
+        assert data['results'][2]['is_attack'] is False
+        assert data['results'][3]['is_attack'] is True
+
+        # Predictor called once for non-benign payloads and once for URLs.
+        assert mock_predictor.predict_batch.call_count == 2
+        first_call = mock_predictor.predict_batch.call_args_list[0]
+        second_call = mock_predictor.predict_batch.call_args_list[1]
+        assert 'payloads' in first_call.args[0]
+        assert first_call.args[0]['payloads'] == ["' OR 1=1--"]
+        assert second_call.args[0]['urls'] == ["https://example.com", "http://bad.example"]
+
+    def test_batch_payload_only_all_benign_skips_model(self, client, mock_predictor):
+        """Payload-only benign batches should return results without model inference."""
+        class FakeFilter:
+            def is_benign(self, payload):
+                return True, 0.9, "heuristic"
+
+            def get_confidence_scale(self, payload):
+                return 1.0
+
+        with patch('src.api.routes.predict.get_filter', return_value=FakeFilter()):
+            response = client.post(
+                "/api/v1/predict/batch",
+                json={"payloads": ["hello", "world"]}
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data['results']) == 2
+        assert all(r['is_attack'] is False for r in data['results'])
+        assert mock_predictor.predict_batch.call_count == 0
 
 
 class TestAPIEdgeCases:

@@ -110,51 +110,78 @@ async def predict_batch(request: BatchRequest):
     if not predictor:
         raise HTTPException(status_code=503, detail="Models not loaded")
     
-    data = {}
-    benign_indices = []
-    
-    # Pre-filter payloads
-    if request.payloads:
-        filtered_payloads = []
-        for i, p in enumerate(request.payloads[:100]):
-            is_benign, _, _ = benign_filter.is_benign(p)
-            if is_benign:
-                benign_indices.append(i)
-            else:
-                filtered_payloads.append(p)
-        if filtered_payloads:
-            data['payloads'] = filtered_payloads
-    
-    if request.urls:
-        data['urls'] = request.urls[:100]
-    
-    results = []
-    
-    # Add benign results
-    for i in benign_indices:
-        results.append(PredictResponse(
-            is_attack=False,
-            confidence=0.05,
-            severity="LOW",
-            processing_time_ms=0
-        ))
-    
-    # Process remaining through ML
-    if data:
+    payloads = (request.payloads or [])[:100]
+    urls = (request.urls or [])[:100]
+    if not payloads and not urls:
+        raise HTTPException(status_code=422, detail="At least one of payloads or urls is required")
+
+    total = len(payloads) + len(urls)
+    results = [None] * total
+
+    # Prefilter payloads while preserving original payload positions.
+    ml_payloads = []
+    ml_payload_indices = []
+    for i, payload in enumerate(payloads):
+        is_benign, benign_confidence, _ = benign_filter.is_benign(payload)
+        if is_benign:
+            results[i] = PredictResponse(
+                is_attack=False,
+                confidence=1.0 - benign_confidence,
+                attack_type=None,
+                severity="LOW",
+                processing_time_ms=0
+            )
+        else:
+            ml_payloads.append(payload)
+            ml_payload_indices.append(i)
+
+    if ml_payloads:
         try:
-            result = predictor.predict_batch(data)
+            payload_result = predictor.predict_batch({'payloads': ml_payloads})
         except ValidationError as e:
             raise HTTPException(status_code=422, detail=str(e))
-        
-        for i in range(len(result['is_attack'])):
-            confidence = float(result['confidence'][i])
+
+        for i, raw_confidence in enumerate(payload_result['confidence']):
+            payload = ml_payloads[i]
+            idx = ml_payload_indices[i]
+            confidence = float(raw_confidence) * benign_filter.get_confidence_scale(payload)
             is_attack = confidence >= ATTACK_THRESHOLD
-            results.append(PredictResponse(
+            results[idx] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,
+                attack_type=_classify_attack(payload) if is_attack else None,
                 severity=_get_severity(confidence) if is_attack else "LOW",
                 processing_time_ms=0
-            ))
+            )
+
+    if urls:
+        try:
+            url_result = predictor.predict_batch({'urls': urls})
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+
+        base_idx = len(payloads)
+        for i, raw_confidence in enumerate(url_result['confidence']):
+            confidence = float(raw_confidence)
+            is_attack = confidence >= 0.80
+            results[base_idx + i] = PredictResponse(
+                is_attack=is_attack,
+                confidence=confidence,
+                attack_type="MALICIOUS_URL" if is_attack else None,
+                severity=_get_severity(confidence) if is_attack else "LOW",
+                processing_time_ms=0
+            )
+
+    # Defensive fallback: never return missing slots.
+    for i, item in enumerate(results):
+        if item is None:
+            results[i] = PredictResponse(
+                is_attack=False,
+                confidence=0.5,
+                attack_type=None,
+                severity="LOW",
+                processing_time_ms=0
+            )
     
     return BatchResponse(
         results=results,

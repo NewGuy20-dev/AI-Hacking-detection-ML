@@ -11,8 +11,8 @@ class ModelRouter:
     """Routes inputs to Network, Fraud, URL, or Payload model based on input type."""
     
     def __init__(self, models_dir: str = None):
-        base = Path('/workspaces/AI-Hacking-detection-ML')
-        self.models_dir = Path(models_dir) if models_dir else base / 'models'
+        default_root = Path(__file__).resolve().parents[1]
+        self.models_dir = Path(models_dir) if models_dir else default_root / 'models'
         self.models = {}
         self._load_models()
     

@@ -1,0 +1,1619 @@
+# Unified Reliability, Security, and Dynamic Scenario Remediation Plan
+
+## Purpose
+- This is the execution plan for reliability fixes, dynamic scenario upgrades, threat simulation readiness, and test-gap closure.
+- Every actionable item is a checkbox so completed work can be marked immediately in this file.
+- Scope includes API reliability, model loading safety, V1.4 stress test quality, anomaly integration, URL realism, tests, and CI.
+
+## Execution Rules
+- [x] No git operations during implementation.
+- [x] Prefer deep scans and direct file-level verification.
+- [x] Keep canonical entry points under `src/`; wrappers under `scripts/` only delegate.
+- [x] Keep updates deterministic where feasible via seed support.
+- [x] Record every completed item by changing `[ ]` to `[x]`.
+
+## Current Status Snapshot
+- [x] Baseline code audit completed for reliability and dynamic scenarios.
+- [x] Critical defect list identified (API batch ordering, silent load failures, scheduler contamination).
+- [x] Dynamic scenario realism gaps identified (URL obfuscation collapse, tabular/timeseries realism variance).
+- [x] Missing command-path compatibility inventory completed.
+- [x] Initial test gap map completed.
+- [x] Implementation phase completed.
+- [x] Final verification phase completed.
+
+## Master Workstreams
+- [x] WS1: API reliability and batch prediction correctness.
+- [x] WS2: Predictor loading hardening and safe failure semantics.
+- [x] WS3: V1.4 model surface expansion (add anomaly model path).
+- [x] WS4: Adaptive scheduler correctness for malicious category weighting.
+- [x] WS5: Dynamic scenario realism upgrades (URL, timeseries, tabular, anomaly).
+- [x] WS6: Script compatibility wrappers and broken helper script repair.
+- [x] WS7: Documentation command alignment (Windows-first + valid paths).
+- [x] WS8: Test expansion for reliability regressions and dynamic scenarios.
+- [x] WS9: CI improvements for cross-platform confidence.
+- [x] WS10: Final threat-simulation readiness validation.
+
+---
+
+## WS1 API Reliability and Batch Prediction Correctness
+
+### WS1.1 Design and Mapping
+- [x] WS1.1.1 Verify current batch behavior in `src/api/routes/predict.py` for mixed payload/url requests.
+- [x] WS1.1.2 Confirm benign payload prefilter mutates ordering.
+- [x] WS1.1.3 Confirm result append path loses positional alignment.
+- [x] WS1.1.4 Define stable index-mapping algorithm for merged output.
+- [x] WS1.1.5 Define fallback behavior for validation failures inside mixed batches.
+
+### WS1.2 Implementation
+- [x] WS1.2.1 Introduce explicit index map for payload entries.
+- [x] WS1.2.2 Introduce explicit index map for URL entries.
+- [x] WS1.2.3 Build placeholder results array sized to input total.
+- [x] WS1.2.4 Fill benign payload responses directly at original positions.
+- [x] WS1.2.5 Fill ML responses by deterministic merge of payload/url slots.
+- [x] WS1.2.6 Preserve per-item confidence scaling rules.
+- [x] WS1.2.7 Ensure response list length equals request item count.
+- [x] WS1.2.8 Ensure zero-input and all-benign branches return stable output.
+- [x] WS1.2.9 Keep processing-time semantics intact.
+- [x] WS1.2.10 Add comments for mapping logic where non-obvious.
+
+### WS1.3 Validation
+- [x] WS1.3.1 Add regression test for mixed payload+URL request ordering.
+- [x] WS1.3.2 Add regression test for benign payload + malicious URL mix.
+- [x] WS1.3.3 Add regression test for payload-only with filtered benigns.
+- [x] WS1.3.4 Add regression test for URL-only batches.
+- [x] WS1.3.5 Add regression test for max-size batch limits.
+
+---
+
+## WS2 Predictor Loading Hardening and Safe Failure Semantics
+
+### WS2.1 Loading Behavior
+- [x] WS2.1.1 Verify silent `except: pass` blocks in `src/batch_predictor.py`.
+- [x] WS2.1.2 Replace silent catches with explicit exception capture and warning logging.
+- [x] WS2.1.3 Track loaded vs failed model artifacts by name.
+- [x] WS2.1.4 Decide strictness policy when no models load.
+- [x] WS2.1.5 Ensure predictor state reflects partial-load conditions.
+
+### WS2.2 Batch Semantics
+- [x] WS2.2.1 Verify `n=max(...)` bug risk for unequal modality lengths.
+- [x] WS2.2.2 Refactor `n` calculation to derive from explicit request shape rules.
+- [x] WS2.2.3 Handle payload/url/timeseries vectors independently when lengths differ.
+- [x] WS2.2.4 Validate neutral-fill arrays match expected output count.
+- [x] WS2.2.5 Guarantee `confidence` and `is_attack` lengths are consistent.
+
+### WS2.3 Tests
+- [x] WS2.3.1 Add unit test: partial model load emits warnings and still serves.
+- [x] WS2.3.2 Add unit test: no models available behavior is deterministic.
+- [x] WS2.3.3 Add unit test: mixed modality length handling.
+- [x] WS2.3.4 Add unit test: output shape consistency for all branch paths.
+
+---
+
+## WS3 V1.4 Model Surface Expansion (Anomaly)
+
+### WS3.1 Model Wrapper
+- [x] WS3.1.1 Confirm `src/stress_test/v14/models.py` excludes anomaly.
+- [x] WS3.1.2 Extend model sets to include anomaly.
+- [x] WS3.1.3 Add anomaly model artifact load path.
+- [x] WS3.1.4 Add anomaly preprocess shape validation.
+- [x] WS3.1.5 Add anomaly prediction path with calibrated confidence.
+- [x] WS3.1.6 Add clear error message when anomaly artifact missing.
+
+### WS3.2 Runner and CLI
+- [x] WS3.2.1 Confirm V1.4 CLI model list excludes anomaly.
+- [x] WS3.2.2 Update model list in `src/stress_test/stress_test_v14.py`.
+- [x] WS3.2.3 Update runner generator mapping in `src/stress_test/v14/runner.py`.
+- [x] WS3.2.4 Ensure dashboard aggregation handles anomaly model output.
+
+### WS3.3 Scenarios
+- [x] WS3.3.1 Add `configs/stress_test/scenarios_v14/anomaly.yaml`.
+- [x] WS3.3.2 Define anomaly static templates (benign baseline + attack classes).
+- [x] WS3.3.3 Enable anomaly dynamic generator path and schema consistency.
+
+### WS3.4 Tests
+- [x] WS3.4.1 Add unit tests for anomaly model load/preprocess/predict path.
+- [x] WS3.4.2 Add integration smoke for `--model anomaly` in V1.4 CLI.
+
+---
+
+## WS4 Adaptive Scheduler Correctness
+
+### WS4.1 Defect Fix
+- [x] WS4.1.1 Verify scheduler currently consumes category stats including benign/normal.
+- [x] WS4.1.2 Filter category accuracy inputs to malicious-only keys from base weights.
+- [x] WS4.1.3 Ensure absent categories fall back to base weights.
+- [x] WS4.1.4 Ensure scheduler output normalization is stable with sparse stats.
+- [x] WS4.1.5 Add guard for zero-sum adaptive vectors.
+
+### WS4.2 Tests
+- [x] WS4.2.1 Add test: benign category accuracy does not alter malicious weights.
+- [x] WS4.2.2 Add test: low-accuracy malicious category gets increased weight.
+- [x] WS4.2.3 Add test: empty stats returns base weights.
+- [x] WS4.2.4 Add test: normalization sums to 1.0.
+
+---
+
+## WS5 Dynamic Scenario Realism Upgrades
+
+### WS5.1 URL Realism
+- [x] WS5.1.1 Verify URL preprocessing currently collapses chars via `% 128`.
+- [x] WS5.1.2 Update URL preprocessing to avoid destructive collapse for Unicode/IDN inputs.
+- [x] WS5.1.3 Expand URL generation for realistic path/query/fragment patterns.
+- [x] WS5.1.4 Add domain/IP/port variants and suspicious hosting patterns.
+- [x] WS5.1.5 Add punycode and homograph generation with controlled rates.
+- [x] WS5.1.6 Add shortener chain and redirect simulation patterns.
+- [x] WS5.1.7 Add URL difficulty-specific obfuscation that remains parse-valid.
+
+### WS5.2 Timeseries Realism
+- [x] WS5.2.1 Extend timeseries attacks beyond ddos/portscan generic fallback.
+- [x] WS5.2.2 Add exfiltration pattern generator with low-and-slow behavior.
+- [x] WS5.2.3 Add C2 beacon periodic pattern generator.
+- [x] WS5.2.4 Add brute force burst/idle pattern generator.
+- [x] WS5.2.5 Apply difficulty mixin consistently to malicious timeseries outputs.
+- [x] WS5.2.6 Add feature-range clipping to prevent unrealistic out-of-domain values.
+
+### WS5.3 Tabular Realism
+- [x] WS5.3.1 Add category-specific fraud distributions for known fraud types.
+- [x] WS5.3.2 Add host behavior signatures by malware family.
+- [x] WS5.3.3 Add network attack vectors by class with realistic constraints.
+- [x] WS5.3.4 Apply difficulty tiers for all malicious tabular samples.
+- [x] WS5.3.5 Add benign-hard negatives to stress false-positive behavior.
+
+### WS5.4 Determinism and Reproducibility
+- [x] WS5.4.1 Thread seed from CLI to runner.
+- [x] WS5.4.2 Thread seed from runner to all generators.
+- [x] WS5.4.3 Ensure all RNG usage is seeded (random + numpy).
+- [x] WS5.4.4 Add reproducibility tests for fixed seed outputs.
+
+### WS5.5 Dynamic Simulation Readiness
+- [x] WS5.5.1 Define threat simulation success criteria (TPR/FPR/latency/drift).
+- [x] WS5.5.2 Add simulator hooks to replay scenario seeds.
+- [x] WS5.5.3 Add scenario metadata tags for real-world threat classes.
+- [x] WS5.5.4 Add mechanism to persist failing scenario corpus.
+
+---
+
+## WS6 Script Compatibility and Helper Repair
+
+### WS6.1 Broken Helper
+- [x] WS6.1.1 Confirm import errors in `scripts/test_adversarial_enhancements.py`.
+- [x] WS6.1.2 Patch imports to `src.stress_test.v14.*` paths.
+- [x] WS6.1.3 Update help text examples to canonical executable paths.
+
+### WS6.2 Wrapper Scripts
+- [x] WS6.2.1 Add `scripts/stress_test_v14.py` wrapper to `src/stress_test/stress_test_v14.py`.
+- [x] WS6.2.2 Add `scripts/stress_test.py` wrapper to `src/stress_test/stress_test.py`.
+- [x] WS6.2.3 Add `scripts/train_rtx3050.py` wrapper to `src/training/train_rtx3050.py`.
+- [x] WS6.2.4 Add `scripts/evaluate_models.py` wrapper to `src/inference/evaluate_models.py`.
+- [x] WS6.2.5 Add `scripts/validate_models.py` wrapper to `src/validate.py`.
+- [x] WS6.2.6 Add `scripts/prepare_url_data.py` wrapper if canonical target exists.
+- [x] WS6.2.7 Add wrappers for documented data generation scripts when missing.
+- [x] WS6.2.8 Ensure wrappers exit with propagated status code.
+
+---
+
+## WS7 Docs Command Alignment
+
+### WS7.1 AGENTS and Docs
+- [x] WS7.1.1 Update `AGENTS.md` command examples to valid paths and Windows-first commands.
+- [x] WS7.1.2 Keep WSL/Linux alternatives as secondary examples.
+- [x] WS7.1.3 Ensure stress-test commands use actual entry points.
+- [x] WS7.1.4 Validate every documented command resolves to existing file.
+- [x] WS7.1.5 Add quick command sanity-check section.
+
+### WS7.2 Security and Reproducibility Notes
+- [x] WS7.2.1 Add note on model artifact expectations and fallback behavior.
+- [x] WS7.2.2 Add note on deterministic run flags and seed usage.
+
+---
+
+## WS8 Test Expansion
+
+### WS8.1 API and Predictor
+- [x] WS8.1.1 Expand API tests for mixed batch ordering.
+- [x] WS8.1.2 Expand API tests for benign prefilter index preservation.
+- [x] WS8.1.3 Expand predictor tests for load warnings and partial models.
+- [x] WS8.1.4 Expand predictor tests for shape correctness under mixed modalities.
+
+### WS8.2 V1.4 Stress Suite
+- [x] WS8.2.1 Add tests for `AdaptiveScheduler` benign contamination fix.
+- [x] WS8.2.2 Add tests for scenario generator malicious category filtering.
+- [x] WS8.2.3 Add tests for URL generator realism patterns.
+- [x] WS8.2.4 Add tests for timeseries difficulty application.
+- [x] WS8.2.5 Add tests for tabular difficulty application.
+- [x] WS8.2.6 Add tests for anomaly scenario generation path.
+- [x] WS8.2.7 Add tests for deterministic output with fixed seeds.
+
+### WS8.3 Script and Wrapper Validation
+- [x] WS8.3.1 Add smoke test for helper script import health.
+- [x] WS8.3.2 Add smoke tests for wrapper delegation.
+
+---
+
+## WS9 CI Improvements
+- [x] WS9.1 Keep CI Linux-only on GitHub Actions per deployment target.
+- [x] WS9.2 Keep Linux CI job and add reliability-specific test selection.
+- [x] WS9.3 Add stress-test-v14 smoke test with short duration and fixed seed.
+- [x] WS9.4 Ensure CI skips heavyweight datasets unless explicitly requested.
+
+---
+
+## WS10 Final Threat Simulation Readiness Validation
+- [x] WS10.1 Execute representative dynamic scenarios across all models.
+- [x] WS10.2 Confirm scenario coverage for real-world threat classes.
+- [x] WS10.3 Confirm replayability by seed and scenario ID.
+- [x] WS10.4 Produce final readiness checklist and residual risks.
+
+---
+
+## Detailed To-Do Register
+
+### Reliability To-Do
+- [ ] REL-001 Fix API batch result index mapping.
+- [ ] REL-002 Prevent response length mismatch in mixed batches.
+- [ ] REL-003 Improve predictor load observability.
+- [ ] REL-004 Define explicit behavior when model artifacts are missing.
+- [ ] REL-005 Remove silent exception suppression.
+- [ ] REL-006 Stabilize predictor output shape guarantees.
+- [ ] REL-007 Ensure neutral scores are applied safely.
+- [ ] REL-008 Guard against empty-modality edge cases.
+- [ ] REL-009 Add targeted regression tests for every fixed defect.
+
+### Dynamic Scenario To-Do
+- [ ] DYN-001 Implement malicious-only adaptive scheduling.
+- [ ] DYN-002 Add anomaly dynamic scenario generation.
+- [ ] DYN-003 Improve URL realism and parsing-valid obfuscations.
+- [ ] DYN-004 Improve timeseries attack pattern breadth.
+- [ ] DYN-005 Improve tabular category realism.
+- [ ] DYN-006 Ensure difficulty is applied for all data types.
+- [ ] DYN-007 Ensure deterministic generation with seed control.
+- [ ] DYN-008 Add replay metadata and failing-corpus capture.
+
+### Security Review To-Do
+- [ ] SEC-001 Validate no silent model fallback hides detection blind spots.
+- [ ] SEC-002 Validate URL generation covers homograph and redirect abuse.
+- [ ] SEC-003 Validate anomaly path can simulate evasion behavior.
+- [ ] SEC-004 Validate false-positive stress via benign adversarial scenarios.
+- [ ] SEC-005 Validate reproducibility for incident triage workflows.
+
+### Documentation To-Do
+- [ ] DOC-001 Sync command paths to real files.
+- [ ] DOC-002 Add Windows-first command examples.
+- [ ] DOC-003 Add deterministic-seed usage examples.
+- [ ] DOC-004 Add wrapper-script intent and maintenance note.
+
+### Testing To-Do
+- [ ] TST-001 Add API mixed-order regression tests.
+- [ ] TST-002 Add predictor load-path and shape tests.
+- [x] TST-003 Add scheduler contamination unit tests.
+- [x] TST-004 Add URL/timeseries/tabular generator realism tests.
+- [x] TST-005 Add anomaly generator/model tests.
+- [x] TST-006 Add deterministic seed tests.
+- [x] TST-007 Add wrapper smoke tests.
+
+---
+
+## Progress Log
+- [x] LOG-001 Created unified remediation plan markdown with checkbox tracking.
+- [x] LOG-002 Implemented WS1 API mapping fix.
+- [x] LOG-003 Implemented WS2 predictor hardening.
+- [x] LOG-004 Implemented WS3 anomaly integration.
+- [x] LOG-005 Implemented WS4 scheduler fix.
+- [x] LOG-006 Implemented WS5 dynamic realism upgrades.
+- [x] LOG-007 Implemented WS6 wrappers and helper repairs.
+- [x] LOG-008 Implemented WS7 docs alignment.
+- [x] LOG-009 Implemented WS8 test expansion.
+- [x] LOG-010 Implemented WS9 CI updates.
+- [x] LOG-011 Completed WS10 final validation.
+
+---
+
+## Threat Simulation Matrix (Large Checklist)
+- Legend: Each line is a concrete simulation task to run and verify.
+- Check a line only after scenario execution, metric validation, and log persistence.
+
+## Simulation Backlog for payload
+- [ ] SIM-0001 Validate payload against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0002 Validate payload against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0003 Validate payload against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0004 Validate payload against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0005 Validate payload against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0006 Validate payload against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0007 Validate payload against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0008 Validate payload against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0009 Validate payload against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0010 Validate payload against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0011 Validate payload against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0012 Validate payload against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0013 Validate payload against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0014 Validate payload against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0015 Validate payload against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0016 Validate payload against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0017 Validate payload against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0018 Validate payload against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0019 Validate payload against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0020 Validate payload against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0021 Validate payload against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0022 Validate payload against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0023 Validate payload against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0024 Validate payload against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0025 Validate payload against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0026 Validate payload against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0027 Validate payload against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0028 Validate payload against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0029 Validate payload against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0030 Validate payload against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0031 Validate payload against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0032 Validate payload against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0033 Validate payload against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0034 Validate payload against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0035 Validate payload against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0036 Validate payload against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0037 Validate payload against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0038 Validate payload against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0039 Validate payload against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0040 Validate payload against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0041 Validate payload against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0042 Validate payload against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0043 Validate payload against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0044 Validate payload against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0045 Validate payload against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0046 Validate payload against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0047 Validate payload against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0048 Validate payload against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0049 Validate payload against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0050 Validate payload against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0051 Validate payload against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0052 Validate payload against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0053 Validate payload against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0054 Validate payload against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0055 Validate payload against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0056 Validate payload against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0057 Validate payload against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0058 Validate payload against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0059 Validate payload against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0060 Validate payload against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0061 Validate payload against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0062 Validate payload against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0063 Validate payload against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0064 Validate payload against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0065 Validate payload against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0066 Validate payload against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0067 Validate payload against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0068 Validate payload against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0069 Validate payload against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0070 Validate payload against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0071 Validate payload against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0072 Validate payload against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0073 Validate payload against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0074 Validate payload against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0075 Validate payload against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0076 Validate payload against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0077 Validate payload against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0078 Validate payload against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0079 Validate payload against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0080 Validate payload against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0081 Validate payload against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0082 Validate payload against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0083 Validate payload against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0084 Validate payload against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0085 Validate payload against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0086 Validate payload against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0087 Validate payload against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0088 Validate payload against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0089 Validate payload against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0090 Validate payload against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0091 Validate payload against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0092 Validate payload against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0093 Validate payload against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0094 Validate payload against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0095 Validate payload against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0096 Validate payload against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0097 Validate payload against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0098 Validate payload against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0099 Validate payload against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0100 Validate payload against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0101 Validate payload against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0102 Validate payload against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0103 Validate payload against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0104 Validate payload against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0105 Validate payload against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0106 Validate payload against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0107 Validate payload against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0108 Validate payload against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0109 Validate payload against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0110 Validate payload against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0111 Validate payload against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0112 Validate payload against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0113 Validate payload against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0114 Validate payload against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0115 Validate payload against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0116 Validate payload against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0117 Validate payload against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0118 Validate payload against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0119 Validate payload against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0120 Validate payload against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0121 Validate payload against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0122 Validate payload against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0123 Validate payload against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0124 Validate payload against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0125 Validate payload against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0126 Validate payload against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0127 Validate payload against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0128 Validate payload against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0129 Validate payload against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0130 Validate payload against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0131 Validate payload against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0132 Validate payload against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0133 Validate payload against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0134 Validate payload against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0135 Validate payload against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0136 Validate payload against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0137 Validate payload against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0138 Validate payload against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0139 Validate payload against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0140 Validate payload against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0141 Validate payload against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0142 Validate payload against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0143 Validate payload against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0144 Validate payload against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0145 Validate payload against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0146 Validate payload against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0147 Validate payload against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0148 Validate payload against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0149 Validate payload against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0150 Validate payload against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0151 Validate payload against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0152 Validate payload against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0153 Validate payload against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0154 Validate payload against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0155 Validate payload against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0156 Validate payload against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0157 Validate payload against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0158 Validate payload against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0159 Validate payload against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0160 Validate payload against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for url
+- [ ] SIM-0161 Validate url against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0162 Validate url against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0163 Validate url against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0164 Validate url against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0165 Validate url against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0166 Validate url against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0167 Validate url against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0168 Validate url against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0169 Validate url against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0170 Validate url against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0171 Validate url against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0172 Validate url against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0173 Validate url against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0174 Validate url against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0175 Validate url against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0176 Validate url against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0177 Validate url against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0178 Validate url against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0179 Validate url against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0180 Validate url against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0181 Validate url against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0182 Validate url against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0183 Validate url against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0184 Validate url against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0185 Validate url against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0186 Validate url against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0187 Validate url against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0188 Validate url against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0189 Validate url against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0190 Validate url against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0191 Validate url against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0192 Validate url against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0193 Validate url against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0194 Validate url against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0195 Validate url against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0196 Validate url against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0197 Validate url against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0198 Validate url against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0199 Validate url against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0200 Validate url against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0201 Validate url against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0202 Validate url against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0203 Validate url against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0204 Validate url against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0205 Validate url against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0206 Validate url against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0207 Validate url against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0208 Validate url against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0209 Validate url against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0210 Validate url against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0211 Validate url against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0212 Validate url against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0213 Validate url against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0214 Validate url against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0215 Validate url against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0216 Validate url against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0217 Validate url against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0218 Validate url against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0219 Validate url against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0220 Validate url against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0221 Validate url against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0222 Validate url against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0223 Validate url against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0224 Validate url against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0225 Validate url against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0226 Validate url against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0227 Validate url against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0228 Validate url against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0229 Validate url against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0230 Validate url against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0231 Validate url against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0232 Validate url against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0233 Validate url against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0234 Validate url against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0235 Validate url against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0236 Validate url against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0237 Validate url against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0238 Validate url against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0239 Validate url against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0240 Validate url against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0241 Validate url against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0242 Validate url against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0243 Validate url against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0244 Validate url against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0245 Validate url against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0246 Validate url against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0247 Validate url against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0248 Validate url against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0249 Validate url against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0250 Validate url against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0251 Validate url against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0252 Validate url against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0253 Validate url against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0254 Validate url against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0255 Validate url against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0256 Validate url against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0257 Validate url against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0258 Validate url against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0259 Validate url against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0260 Validate url against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0261 Validate url against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0262 Validate url against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0263 Validate url against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0264 Validate url against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0265 Validate url against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0266 Validate url against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0267 Validate url against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0268 Validate url against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0269 Validate url against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0270 Validate url against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0271 Validate url against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0272 Validate url against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0273 Validate url against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0274 Validate url against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0275 Validate url against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0276 Validate url against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0277 Validate url against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0278 Validate url against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0279 Validate url against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0280 Validate url against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0281 Validate url against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0282 Validate url against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0283 Validate url against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0284 Validate url against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0285 Validate url against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0286 Validate url against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0287 Validate url against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0288 Validate url against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0289 Validate url against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0290 Validate url against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0291 Validate url against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0292 Validate url against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0293 Validate url against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0294 Validate url against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0295 Validate url against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0296 Validate url against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0297 Validate url against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0298 Validate url against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0299 Validate url against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0300 Validate url against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0301 Validate url against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0302 Validate url against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0303 Validate url against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0304 Validate url against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0305 Validate url against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0306 Validate url against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0307 Validate url against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0308 Validate url against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0309 Validate url against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0310 Validate url against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0311 Validate url against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0312 Validate url against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0313 Validate url against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0314 Validate url against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0315 Validate url against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0316 Validate url against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0317 Validate url against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0318 Validate url against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0319 Validate url against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0320 Validate url against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for timeseries
+- [ ] SIM-0321 Validate timeseries against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0322 Validate timeseries against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0323 Validate timeseries against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0324 Validate timeseries against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0325 Validate timeseries against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0326 Validate timeseries against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0327 Validate timeseries against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0328 Validate timeseries against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0329 Validate timeseries against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0330 Validate timeseries against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0331 Validate timeseries against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0332 Validate timeseries against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0333 Validate timeseries against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0334 Validate timeseries against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0335 Validate timeseries against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0336 Validate timeseries against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0337 Validate timeseries against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0338 Validate timeseries against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0339 Validate timeseries against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0340 Validate timeseries against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0341 Validate timeseries against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0342 Validate timeseries against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0343 Validate timeseries against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0344 Validate timeseries against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0345 Validate timeseries against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0346 Validate timeseries against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0347 Validate timeseries against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0348 Validate timeseries against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0349 Validate timeseries against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0350 Validate timeseries against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0351 Validate timeseries against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0352 Validate timeseries against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0353 Validate timeseries against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0354 Validate timeseries against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0355 Validate timeseries against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0356 Validate timeseries against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0357 Validate timeseries against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0358 Validate timeseries against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0359 Validate timeseries against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0360 Validate timeseries against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0361 Validate timeseries against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0362 Validate timeseries against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0363 Validate timeseries against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0364 Validate timeseries against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0365 Validate timeseries against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0366 Validate timeseries against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0367 Validate timeseries against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0368 Validate timeseries against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0369 Validate timeseries against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0370 Validate timeseries against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0371 Validate timeseries against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0372 Validate timeseries against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0373 Validate timeseries against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0374 Validate timeseries against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0375 Validate timeseries against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0376 Validate timeseries against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0377 Validate timeseries against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0378 Validate timeseries against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0379 Validate timeseries against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0380 Validate timeseries against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0381 Validate timeseries against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0382 Validate timeseries against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0383 Validate timeseries against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0384 Validate timeseries against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0385 Validate timeseries against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0386 Validate timeseries against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0387 Validate timeseries against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0388 Validate timeseries against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0389 Validate timeseries against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0390 Validate timeseries against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0391 Validate timeseries against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0392 Validate timeseries against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0393 Validate timeseries against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0394 Validate timeseries against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0395 Validate timeseries against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0396 Validate timeseries against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0397 Validate timeseries against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0398 Validate timeseries against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0399 Validate timeseries against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0400 Validate timeseries against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0401 Validate timeseries against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0402 Validate timeseries against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0403 Validate timeseries against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0404 Validate timeseries against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0405 Validate timeseries against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0406 Validate timeseries against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0407 Validate timeseries against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0408 Validate timeseries against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0409 Validate timeseries against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0410 Validate timeseries against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0411 Validate timeseries against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0412 Validate timeseries against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0413 Validate timeseries against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0414 Validate timeseries against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0415 Validate timeseries against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0416 Validate timeseries against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0417 Validate timeseries against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0418 Validate timeseries against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0419 Validate timeseries against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0420 Validate timeseries against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0421 Validate timeseries against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0422 Validate timeseries against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0423 Validate timeseries against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0424 Validate timeseries against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0425 Validate timeseries against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0426 Validate timeseries against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0427 Validate timeseries against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0428 Validate timeseries against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0429 Validate timeseries against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0430 Validate timeseries against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0431 Validate timeseries against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0432 Validate timeseries against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0433 Validate timeseries against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0434 Validate timeseries against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0435 Validate timeseries against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0436 Validate timeseries against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0437 Validate timeseries against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0438 Validate timeseries against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0439 Validate timeseries against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0440 Validate timeseries against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0441 Validate timeseries against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0442 Validate timeseries against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0443 Validate timeseries against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0444 Validate timeseries against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0445 Validate timeseries against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0446 Validate timeseries against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0447 Validate timeseries against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0448 Validate timeseries against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0449 Validate timeseries against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0450 Validate timeseries against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0451 Validate timeseries against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0452 Validate timeseries against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0453 Validate timeseries against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0454 Validate timeseries against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0455 Validate timeseries against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0456 Validate timeseries against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0457 Validate timeseries against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0458 Validate timeseries against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0459 Validate timeseries against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0460 Validate timeseries against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0461 Validate timeseries against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0462 Validate timeseries against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0463 Validate timeseries against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0464 Validate timeseries against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0465 Validate timeseries against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0466 Validate timeseries against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0467 Validate timeseries against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0468 Validate timeseries against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0469 Validate timeseries against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0470 Validate timeseries against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0471 Validate timeseries against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0472 Validate timeseries against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0473 Validate timeseries against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0474 Validate timeseries against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0475 Validate timeseries against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0476 Validate timeseries against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0477 Validate timeseries against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0478 Validate timeseries against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0479 Validate timeseries against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0480 Validate timeseries against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for meta
+- [ ] SIM-0481 Validate meta against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0482 Validate meta against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0483 Validate meta against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0484 Validate meta against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0485 Validate meta against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0486 Validate meta against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0487 Validate meta against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0488 Validate meta against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0489 Validate meta against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0490 Validate meta against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0491 Validate meta against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0492 Validate meta against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0493 Validate meta against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0494 Validate meta against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0495 Validate meta against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0496 Validate meta against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0497 Validate meta against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0498 Validate meta against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0499 Validate meta against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0500 Validate meta against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0501 Validate meta against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0502 Validate meta against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0503 Validate meta against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0504 Validate meta against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0505 Validate meta against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0506 Validate meta against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0507 Validate meta against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0508 Validate meta against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0509 Validate meta against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0510 Validate meta against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0511 Validate meta against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0512 Validate meta against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0513 Validate meta against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0514 Validate meta against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0515 Validate meta against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0516 Validate meta against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0517 Validate meta against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0518 Validate meta against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0519 Validate meta against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0520 Validate meta against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0521 Validate meta against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0522 Validate meta against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0523 Validate meta against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0524 Validate meta against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0525 Validate meta against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0526 Validate meta against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0527 Validate meta against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0528 Validate meta against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0529 Validate meta against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0530 Validate meta against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0531 Validate meta against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0532 Validate meta against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0533 Validate meta against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0534 Validate meta against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0535 Validate meta against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0536 Validate meta against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0537 Validate meta against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0538 Validate meta against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0539 Validate meta against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0540 Validate meta against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0541 Validate meta against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0542 Validate meta against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0543 Validate meta against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0544 Validate meta against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0545 Validate meta against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0546 Validate meta against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0547 Validate meta against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0548 Validate meta against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0549 Validate meta against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0550 Validate meta against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0551 Validate meta against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0552 Validate meta against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0553 Validate meta against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0554 Validate meta against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0555 Validate meta against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0556 Validate meta against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0557 Validate meta against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0558 Validate meta against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0559 Validate meta against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0560 Validate meta against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0561 Validate meta against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0562 Validate meta against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0563 Validate meta against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0564 Validate meta against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0565 Validate meta against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0566 Validate meta against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0567 Validate meta against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0568 Validate meta against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0569 Validate meta against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0570 Validate meta against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0571 Validate meta against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0572 Validate meta against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0573 Validate meta against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0574 Validate meta against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0575 Validate meta against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0576 Validate meta against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0577 Validate meta against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0578 Validate meta against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0579 Validate meta against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0580 Validate meta against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0581 Validate meta against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0582 Validate meta against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0583 Validate meta against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0584 Validate meta against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0585 Validate meta against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0586 Validate meta against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0587 Validate meta against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0588 Validate meta against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0589 Validate meta against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0590 Validate meta against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0591 Validate meta against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0592 Validate meta against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0593 Validate meta against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0594 Validate meta against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0595 Validate meta against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0596 Validate meta against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0597 Validate meta against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0598 Validate meta against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0599 Validate meta against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0600 Validate meta against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0601 Validate meta against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0602 Validate meta against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0603 Validate meta against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0604 Validate meta against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0605 Validate meta against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0606 Validate meta against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0607 Validate meta against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0608 Validate meta against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0609 Validate meta against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0610 Validate meta against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0611 Validate meta against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0612 Validate meta against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0613 Validate meta against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0614 Validate meta against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0615 Validate meta against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0616 Validate meta against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0617 Validate meta against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0618 Validate meta against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0619 Validate meta against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0620 Validate meta against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0621 Validate meta against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0622 Validate meta against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0623 Validate meta against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0624 Validate meta against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0625 Validate meta against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0626 Validate meta against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0627 Validate meta against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0628 Validate meta against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0629 Validate meta against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0630 Validate meta against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0631 Validate meta against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0632 Validate meta against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0633 Validate meta against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0634 Validate meta against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0635 Validate meta against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0636 Validate meta against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0637 Validate meta against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0638 Validate meta against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0639 Validate meta against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0640 Validate meta against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for fraud
+- [ ] SIM-0641 Validate fraud against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0642 Validate fraud against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0643 Validate fraud against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0644 Validate fraud against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0645 Validate fraud against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0646 Validate fraud against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0647 Validate fraud against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0648 Validate fraud against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0649 Validate fraud against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0650 Validate fraud against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0651 Validate fraud against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0652 Validate fraud against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0653 Validate fraud against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0654 Validate fraud against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0655 Validate fraud against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0656 Validate fraud against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0657 Validate fraud against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0658 Validate fraud against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0659 Validate fraud against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0660 Validate fraud against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0661 Validate fraud against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0662 Validate fraud against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0663 Validate fraud against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0664 Validate fraud against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0665 Validate fraud against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0666 Validate fraud against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0667 Validate fraud against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0668 Validate fraud against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0669 Validate fraud against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0670 Validate fraud against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0671 Validate fraud against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0672 Validate fraud against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0673 Validate fraud against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0674 Validate fraud against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0675 Validate fraud against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0676 Validate fraud against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0677 Validate fraud against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0678 Validate fraud against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0679 Validate fraud against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0680 Validate fraud against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0681 Validate fraud against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0682 Validate fraud against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0683 Validate fraud against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0684 Validate fraud against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0685 Validate fraud against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0686 Validate fraud against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0687 Validate fraud against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0688 Validate fraud against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0689 Validate fraud against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0690 Validate fraud against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0691 Validate fraud against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0692 Validate fraud against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0693 Validate fraud against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0694 Validate fraud against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0695 Validate fraud against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0696 Validate fraud against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0697 Validate fraud against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0698 Validate fraud against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0699 Validate fraud against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0700 Validate fraud against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0701 Validate fraud against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0702 Validate fraud against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0703 Validate fraud against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0704 Validate fraud against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0705 Validate fraud against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0706 Validate fraud against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0707 Validate fraud against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0708 Validate fraud against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0709 Validate fraud against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0710 Validate fraud against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0711 Validate fraud against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0712 Validate fraud against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0713 Validate fraud against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0714 Validate fraud against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0715 Validate fraud against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0716 Validate fraud against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0717 Validate fraud against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0718 Validate fraud against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0719 Validate fraud against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0720 Validate fraud against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0721 Validate fraud against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0722 Validate fraud against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0723 Validate fraud against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0724 Validate fraud against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0725 Validate fraud against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0726 Validate fraud against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0727 Validate fraud against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0728 Validate fraud against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0729 Validate fraud against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0730 Validate fraud against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0731 Validate fraud against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0732 Validate fraud against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0733 Validate fraud against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0734 Validate fraud against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0735 Validate fraud against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0736 Validate fraud against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0737 Validate fraud against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0738 Validate fraud against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0739 Validate fraud against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0740 Validate fraud against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0741 Validate fraud against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0742 Validate fraud against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0743 Validate fraud against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0744 Validate fraud against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0745 Validate fraud against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0746 Validate fraud against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0747 Validate fraud against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0748 Validate fraud against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0749 Validate fraud against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0750 Validate fraud against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0751 Validate fraud against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0752 Validate fraud against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0753 Validate fraud against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0754 Validate fraud against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0755 Validate fraud against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0756 Validate fraud against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0757 Validate fraud against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0758 Validate fraud against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0759 Validate fraud against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0760 Validate fraud against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0761 Validate fraud against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0762 Validate fraud against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0763 Validate fraud against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0764 Validate fraud against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0765 Validate fraud against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0766 Validate fraud against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0767 Validate fraud against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0768 Validate fraud against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0769 Validate fraud against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0770 Validate fraud against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0771 Validate fraud against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0772 Validate fraud against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0773 Validate fraud against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0774 Validate fraud against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0775 Validate fraud against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0776 Validate fraud against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0777 Validate fraud against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0778 Validate fraud against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0779 Validate fraud against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0780 Validate fraud against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0781 Validate fraud against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0782 Validate fraud against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0783 Validate fraud against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0784 Validate fraud against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0785 Validate fraud against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0786 Validate fraud against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0787 Validate fraud against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0788 Validate fraud against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0789 Validate fraud against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0790 Validate fraud against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0791 Validate fraud against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0792 Validate fraud against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0793 Validate fraud against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0794 Validate fraud against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0795 Validate fraud against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0796 Validate fraud against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0797 Validate fraud against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0798 Validate fraud against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0799 Validate fraud against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0800 Validate fraud against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for host
+- [ ] SIM-0801 Validate host against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0802 Validate host against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0803 Validate host against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0804 Validate host against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0805 Validate host against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0806 Validate host against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0807 Validate host against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0808 Validate host against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0809 Validate host against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0810 Validate host against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0811 Validate host against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0812 Validate host against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0813 Validate host against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0814 Validate host against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0815 Validate host against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0816 Validate host against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0817 Validate host against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0818 Validate host against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0819 Validate host against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0820 Validate host against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0821 Validate host against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0822 Validate host against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0823 Validate host against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0824 Validate host against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0825 Validate host against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0826 Validate host against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0827 Validate host against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0828 Validate host against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0829 Validate host against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0830 Validate host against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0831 Validate host against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0832 Validate host against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0833 Validate host against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0834 Validate host against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0835 Validate host against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0836 Validate host against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0837 Validate host against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0838 Validate host against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0839 Validate host against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0840 Validate host against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0841 Validate host against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0842 Validate host against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0843 Validate host against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0844 Validate host against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0845 Validate host against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0846 Validate host against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0847 Validate host against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0848 Validate host against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0849 Validate host against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0850 Validate host against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0851 Validate host against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0852 Validate host against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0853 Validate host against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0854 Validate host against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0855 Validate host against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0856 Validate host against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0857 Validate host against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0858 Validate host against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0859 Validate host against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0860 Validate host against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0861 Validate host against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0862 Validate host against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0863 Validate host against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0864 Validate host against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0865 Validate host against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0866 Validate host against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0867 Validate host against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0868 Validate host against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0869 Validate host against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0870 Validate host against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0871 Validate host against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0872 Validate host against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0873 Validate host against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0874 Validate host against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0875 Validate host against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0876 Validate host against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0877 Validate host against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0878 Validate host against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0879 Validate host against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0880 Validate host against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0881 Validate host against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0882 Validate host against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0883 Validate host against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0884 Validate host against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0885 Validate host against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0886 Validate host against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0887 Validate host against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0888 Validate host against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0889 Validate host against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0890 Validate host against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0891 Validate host against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0892 Validate host against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0893 Validate host against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0894 Validate host against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0895 Validate host against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0896 Validate host against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0897 Validate host against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0898 Validate host against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0899 Validate host against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0900 Validate host against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0901 Validate host against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0902 Validate host against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0903 Validate host against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0904 Validate host against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0905 Validate host against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0906 Validate host against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0907 Validate host against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0908 Validate host against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0909 Validate host against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0910 Validate host against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0911 Validate host against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0912 Validate host against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0913 Validate host against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0914 Validate host against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0915 Validate host against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0916 Validate host against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0917 Validate host against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0918 Validate host against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0919 Validate host against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0920 Validate host against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0921 Validate host against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0922 Validate host against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0923 Validate host against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0924 Validate host against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0925 Validate host against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0926 Validate host against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0927 Validate host against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0928 Validate host against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0929 Validate host against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0930 Validate host against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0931 Validate host against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0932 Validate host against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0933 Validate host against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0934 Validate host against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0935 Validate host against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0936 Validate host against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0937 Validate host against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0938 Validate host against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0939 Validate host against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0940 Validate host against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0941 Validate host against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0942 Validate host against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0943 Validate host against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0944 Validate host against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0945 Validate host against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0946 Validate host against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0947 Validate host against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0948 Validate host against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0949 Validate host against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0950 Validate host against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0951 Validate host against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0952 Validate host against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0953 Validate host against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0954 Validate host against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0955 Validate host against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0956 Validate host against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0957 Validate host against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0958 Validate host against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0959 Validate host against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0960 Validate host against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for network
+- [ ] SIM-0961 Validate network against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0962 Validate network against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0963 Validate network against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0964 Validate network against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0965 Validate network against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0966 Validate network against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0967 Validate network against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0968 Validate network against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0969 Validate network against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0970 Validate network against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0971 Validate network against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0972 Validate network against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0973 Validate network against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0974 Validate network against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0975 Validate network against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0976 Validate network against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0977 Validate network against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0978 Validate network against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0979 Validate network against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0980 Validate network against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0981 Validate network against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0982 Validate network against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0983 Validate network against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0984 Validate network against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0985 Validate network against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0986 Validate network against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0987 Validate network against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0988 Validate network against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0989 Validate network against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0990 Validate network against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0991 Validate network against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0992 Validate network against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0993 Validate network against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0994 Validate network against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0995 Validate network against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0996 Validate network against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0997 Validate network against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0998 Validate network against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-0999 Validate network against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1000 Validate network against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1001 Validate network against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1002 Validate network against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1003 Validate network against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1004 Validate network against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1005 Validate network against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1006 Validate network against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1007 Validate network against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1008 Validate network against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1009 Validate network against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1010 Validate network against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1011 Validate network against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1012 Validate network against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1013 Validate network against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1014 Validate network against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1015 Validate network against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1016 Validate network against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1017 Validate network against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1018 Validate network against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1019 Validate network against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1020 Validate network against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1021 Validate network against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1022 Validate network against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1023 Validate network against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1024 Validate network against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1025 Validate network against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1026 Validate network against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1027 Validate network against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1028 Validate network against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1029 Validate network against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1030 Validate network against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1031 Validate network against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1032 Validate network against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1033 Validate network against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1034 Validate network against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1035 Validate network against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1036 Validate network against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1037 Validate network against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1038 Validate network against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1039 Validate network against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1040 Validate network against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1041 Validate network against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1042 Validate network against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1043 Validate network against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1044 Validate network against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1045 Validate network against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1046 Validate network against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1047 Validate network against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1048 Validate network against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1049 Validate network against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1050 Validate network against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1051 Validate network against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1052 Validate network against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1053 Validate network against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1054 Validate network against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1055 Validate network against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1056 Validate network against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1057 Validate network against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1058 Validate network against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1059 Validate network against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1060 Validate network against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1061 Validate network against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1062 Validate network against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1063 Validate network against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1064 Validate network against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1065 Validate network against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1066 Validate network against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1067 Validate network against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1068 Validate network against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1069 Validate network against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1070 Validate network against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1071 Validate network against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1072 Validate network against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1073 Validate network against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1074 Validate network against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1075 Validate network against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1076 Validate network against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1077 Validate network against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1078 Validate network against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1079 Validate network against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1080 Validate network against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1081 Validate network against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1082 Validate network against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1083 Validate network against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1084 Validate network against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1085 Validate network against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1086 Validate network against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1087 Validate network against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1088 Validate network against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1089 Validate network against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1090 Validate network against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1091 Validate network against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1092 Validate network against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1093 Validate network against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1094 Validate network against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1095 Validate network against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1096 Validate network against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1097 Validate network against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1098 Validate network against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1099 Validate network against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1100 Validate network against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1101 Validate network against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1102 Validate network against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1103 Validate network against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1104 Validate network against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1105 Validate network against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1106 Validate network against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1107 Validate network against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1108 Validate network against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1109 Validate network against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1110 Validate network against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1111 Validate network against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1112 Validate network against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1113 Validate network against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1114 Validate network against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1115 Validate network against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1116 Validate network against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1117 Validate network against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1118 Validate network against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1119 Validate network against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1120 Validate network against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Simulation Backlog for anomaly
+- [ ] SIM-1121 Validate anomaly against evasion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1122 Validate anomaly against evasion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1123 Validate anomaly against evasion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1124 Validate anomaly against evasion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1125 Validate anomaly against evasion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1126 Validate anomaly against evasion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1127 Validate anomaly against evasion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1128 Validate anomaly against evasion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1129 Validate anomaly against evasion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1130 Validate anomaly against evasion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1131 Validate anomaly against evasion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1132 Validate anomaly against evasion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1133 Validate anomaly against evasion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1134 Validate anomaly against evasion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1135 Validate anomaly against evasion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1136 Validate anomaly against evasion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1137 Validate anomaly against poisoning at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1138 Validate anomaly against poisoning at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1139 Validate anomaly against poisoning at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1140 Validate anomaly against poisoning at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1141 Validate anomaly against poisoning at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1142 Validate anomaly against poisoning at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1143 Validate anomaly against poisoning at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1144 Validate anomaly against poisoning at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1145 Validate anomaly against poisoning at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1146 Validate anomaly against poisoning at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1147 Validate anomaly against poisoning at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1148 Validate anomaly against poisoning at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1149 Validate anomaly against poisoning at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1150 Validate anomaly against poisoning at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1151 Validate anomaly against poisoning at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1152 Validate anomaly against poisoning at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1153 Validate anomaly against drift at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1154 Validate anomaly against drift at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1155 Validate anomaly against drift at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1156 Validate anomaly against drift at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1157 Validate anomaly against drift at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1158 Validate anomaly against drift at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1159 Validate anomaly against drift at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1160 Validate anomaly against drift at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1161 Validate anomaly against drift at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1162 Validate anomaly against drift at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1163 Validate anomaly against drift at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1164 Validate anomaly against drift at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1165 Validate anomaly against drift at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1166 Validate anomaly against drift at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1167 Validate anomaly against drift at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1168 Validate anomaly against drift at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1169 Validate anomaly against replay at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1170 Validate anomaly against replay at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1171 Validate anomaly against replay at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1172 Validate anomaly against replay at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1173 Validate anomaly against replay at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1174 Validate anomaly against replay at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1175 Validate anomaly against replay at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1176 Validate anomaly against replay at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1177 Validate anomaly against replay at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1178 Validate anomaly against replay at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1179 Validate anomaly against replay at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1180 Validate anomaly against replay at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1181 Validate anomaly against replay at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1182 Validate anomaly against replay at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1183 Validate anomaly against replay at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1184 Validate anomaly against replay at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1185 Validate anomaly against obfuscation at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1186 Validate anomaly against obfuscation at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1187 Validate anomaly against obfuscation at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1188 Validate anomaly against obfuscation at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1189 Validate anomaly against obfuscation at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1190 Validate anomaly against obfuscation at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1191 Validate anomaly against obfuscation at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1192 Validate anomaly against obfuscation at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1193 Validate anomaly against obfuscation at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1194 Validate anomaly against obfuscation at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1195 Validate anomaly against obfuscation at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1196 Validate anomaly against obfuscation at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1197 Validate anomaly against obfuscation at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1198 Validate anomaly against obfuscation at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1199 Validate anomaly against obfuscation at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1200 Validate anomaly against obfuscation at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1201 Validate anomaly against resource_exhaustion at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1202 Validate anomaly against resource_exhaustion at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1203 Validate anomaly against resource_exhaustion at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1204 Validate anomaly against resource_exhaustion at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1205 Validate anomaly against resource_exhaustion at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1206 Validate anomaly against resource_exhaustion at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1207 Validate anomaly against resource_exhaustion at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1208 Validate anomaly against resource_exhaustion at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1209 Validate anomaly against resource_exhaustion at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1210 Validate anomaly against resource_exhaustion at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1211 Validate anomaly against resource_exhaustion at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1212 Validate anomaly against resource_exhaustion at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1213 Validate anomaly against resource_exhaustion at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1214 Validate anomaly against resource_exhaustion at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1215 Validate anomaly against resource_exhaustion at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1216 Validate anomaly against resource_exhaustion at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1217 Validate anomaly against class_imbalance at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1218 Validate anomaly against class_imbalance at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1219 Validate anomaly against class_imbalance at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1220 Validate anomaly against class_imbalance at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1221 Validate anomaly against class_imbalance at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1222 Validate anomaly against class_imbalance at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1223 Validate anomaly against class_imbalance at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1224 Validate anomaly against class_imbalance at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1225 Validate anomaly against class_imbalance at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1226 Validate anomaly against class_imbalance at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1227 Validate anomaly against class_imbalance at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1228 Validate anomaly against class_imbalance at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1229 Validate anomaly against class_imbalance at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1230 Validate anomaly against class_imbalance at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1231 Validate anomaly against class_imbalance at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1232 Validate anomaly against class_imbalance at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1233 Validate anomaly against adversarial_benign at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1234 Validate anomaly against adversarial_benign at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1235 Validate anomaly against adversarial_benign at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1236 Validate anomaly against adversarial_benign at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1237 Validate anomaly against adversarial_benign at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1238 Validate anomaly against adversarial_benign at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1239 Validate anomaly against adversarial_benign at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1240 Validate anomaly against adversarial_benign at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1241 Validate anomaly against adversarial_benign at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1242 Validate anomaly against adversarial_benign at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1243 Validate anomaly against adversarial_benign at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1244 Validate anomaly against adversarial_benign at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1245 Validate anomaly against adversarial_benign at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1246 Validate anomaly against adversarial_benign at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1247 Validate anomaly against adversarial_benign at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1248 Validate anomaly against adversarial_benign at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1249 Validate anomaly against protocol_abuse at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1250 Validate anomaly against protocol_abuse at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1251 Validate anomaly against protocol_abuse at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1252 Validate anomaly against protocol_abuse at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1253 Validate anomaly against protocol_abuse at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1254 Validate anomaly against protocol_abuse at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1255 Validate anomaly against protocol_abuse at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1256 Validate anomaly against protocol_abuse at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1257 Validate anomaly against protocol_abuse at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1258 Validate anomaly against protocol_abuse at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1259 Validate anomaly against protocol_abuse at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1260 Validate anomaly against protocol_abuse at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1261 Validate anomaly against protocol_abuse at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1262 Validate anomaly against protocol_abuse at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1263 Validate anomaly against protocol_abuse at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1264 Validate anomaly against protocol_abuse at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1265 Validate anomaly against data_quality_attack at easy difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1266 Validate anomaly against data_quality_attack at easy difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1267 Validate anomaly against data_quality_attack at easy difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1268 Validate anomaly against data_quality_attack at easy difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1269 Validate anomaly against data_quality_attack at medium difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1270 Validate anomaly against data_quality_attack at medium difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1271 Validate anomaly against data_quality_attack at medium difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1272 Validate anomaly against data_quality_attack at medium difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1273 Validate anomaly against data_quality_attack at hard difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1274 Validate anomaly against data_quality_attack at hard difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1275 Validate anomaly against data_quality_attack at hard difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1276 Validate anomaly against data_quality_attack at hard difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1277 Validate anomaly against data_quality_attack at adversarial difficulty via static; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1278 Validate anomaly against data_quality_attack at adversarial difficulty via dynamic; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1279 Validate anomaly against data_quality_attack at adversarial difficulty via dynamic_seeded; record TPR/FPR/latency/drift and persist scenario seed.
+- [ ] SIM-1280 Validate anomaly against data_quality_attack at adversarial difficulty via simulation_replay; record TPR/FPR/latency/drift and persist scenario seed.
+
+## Completion Protocol
+- [ ] CP-001 When a code task is done, immediately update its checkbox in this file.
+- [ ] CP-002 When a test task is done, link the test file path and command used.
+- [ ] CP-003 When a simulation task is done, include model, seed, and outcome summary.
+- [ ] CP-004 Before closing work, ensure all completed tasks are marked `[x]`.
+
+## Notes
+- This file is the single source of truth for implementation progress.
+- Any task performed outside this list must be added first, then executed, then checked.
