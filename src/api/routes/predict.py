@@ -32,20 +32,7 @@ def _classify_attack(text: str) -> str:
 async def predict_payload(request: PayloadRequest):
     """Analyze payload for attacks."""
     start = time.perf_counter()
-    
-    # Check benign pre-filter first
-    benign_filter = get_filter()
-    is_benign, benign_confidence, reason = benign_filter.is_benign(request.payload)
-    
-    if is_benign:
-        return PredictResponse(
-            is_attack=False,
-            confidence=1.0 - benign_confidence,  # Low attack confidence
-            attack_type=None,
-            severity="LOW",
-            processing_time_ms=(time.perf_counter() - start) * 1000
-        )
-    
+
     predictor = server.get_predictor()
     
     if not predictor:
@@ -58,11 +45,7 @@ async def predict_payload(request: PayloadRequest):
     
     raw_confidence = float(result['confidence'][0])
     
-    # Scale confidence based on input length
-    scale = benign_filter.get_confidence_scale(request.payload)
-    confidence = raw_confidence * scale
-    
-    # Apply threshold
+    confidence = raw_confidence
     is_attack = confidence >= ATTACK_THRESHOLD
     
     return PredictResponse(
@@ -141,10 +124,12 @@ async def predict_batch(request: BatchRequest):
         except ValidationError as e:
             raise HTTPException(status_code=422, detail=str(e))
 
-        for i, raw_confidence in enumerate(payload_result['confidence']):
+        payload_confidences = payload_result.get('confidence', [])
+        safe_count = min(len(ml_payloads), len(payload_confidences))
+        for i in range(safe_count):
             payload = ml_payloads[i]
             idx = ml_payload_indices[i]
-            confidence = float(raw_confidence) * benign_filter.get_confidence_scale(payload)
+            confidence = float(payload_confidences[i])
             is_attack = confidence >= ATTACK_THRESHOLD
             results[idx] = PredictResponse(
                 is_attack=is_attack,

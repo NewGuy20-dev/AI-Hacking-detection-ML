@@ -34,27 +34,36 @@ class TeeLogger:
         self.log.close()
 
 
-def _resolve_runtime_components() -> Tuple[Optional[Type[Any]], Optional[Type[Any]], Optional[str]]:
+def _resolve_runtime_components(require_dashboard: bool = True) -> Tuple[Optional[Type[Any]], Optional[Type[Any]], Optional[str]]:
     """Load heavy runtime components with a user-friendly dependency error."""
     runner_cls = globals().get("StressTestRunner")
     dashboard_cls = globals().get("DashboardGenerator")
 
-    if runner_cls is not None and dashboard_cls is not None:
-        return runner_cls, dashboard_cls, None
+    if runner_cls is None:
+        try:
+            from stress_test.v14.runner import StressTestRunner as _runner
+        except ModuleNotFoundError as exc:
+            missing = exc.name or str(exc)
+            return None, None, (
+                f"Missing dependency '{missing}'. Install project dependencies first "
+                f"(for example: py -3 -m pip install -r requirements.txt on Windows)."
+            )
+        globals()["StressTestRunner"] = _runner
+        runner_cls = _runner
 
-    try:
-        from stress_test.v14.runner import StressTestRunner as _runner
-        from stress_test.v14.dashboard import DashboardGenerator as _dashboard
-    except ModuleNotFoundError as exc:
-        missing = exc.name or str(exc)
-        return None, None, (
-            f"Missing dependency '{missing}'. Install project dependencies first "
-            f"(for example: py -3 -m pip install -r requirements.txt on Windows)."
-        )
+    if require_dashboard and dashboard_cls is None:
+        try:
+            from stress_test.v14.dashboard import DashboardGenerator as _dashboard
+        except ModuleNotFoundError as exc:
+            missing = exc.name or str(exc)
+            return runner_cls, None, (
+                f"Missing dependency '{missing}'. Install project dependencies first "
+                f"(for example: py -3 -m pip install -r requirements.txt on Windows)."
+            )
+        globals()["DashboardGenerator"] = _dashboard
+        dashboard_cls = _dashboard
 
-    globals()["StressTestRunner"] = _runner
-    globals()["DashboardGenerator"] = _dashboard
-    return _runner, _dashboard, None
+    return runner_cls, dashboard_cls, None
 
 
 def main():
@@ -94,14 +103,14 @@ Examples:
                         help='Random seed for deterministic dynamic scenario generation')
     args = parser.parse_args()
 
-    runner_cls, dashboard_cls, import_error = _resolve_runtime_components()
+    runner_cls, dashboard_cls, import_error = _resolve_runtime_components(require_dashboard=not args.no_dashboard)
     if import_error:
         print(f"ERROR: {import_error}")
         sys.exit(2)
-    if runner_cls is None or dashboard_cls is None:
+    if runner_cls is None or (not args.no_dashboard and dashboard_cls is None):
         print("ERROR: Failed to resolve runtime components.")
         sys.exit(2)
-    assert runner_cls is not None and dashboard_cls is not None
+    assert runner_cls is not None
     
     # Setup dual logging to terminal and test.log
     log_file = Path('test.log')

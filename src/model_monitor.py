@@ -73,9 +73,10 @@ class ModelMonitor:
 class DriftDetector:
     """Detects data drift using statistical tests."""
     
-    def __init__(self, reference_data: np.ndarray, threshold: float = 0.05):
+    def __init__(self, reference_data: np.ndarray, threshold: float = 0.05, min_effect_size: float = 0.08):
         self.reference = np.asarray(reference_data).flatten()
         self.threshold = threshold
+        self.min_effect_size = min_effect_size
         self._last_result = None
     
     def detect(self, new_data: np.ndarray) -> bool:
@@ -85,9 +86,15 @@ class DriftDetector:
         if len(new_data) < 10 or len(self.reference) < 10:
             return False
         statistic, p_value = ks_2samp(self.reference, new_data)
-        self._last_result = {'statistic': statistic, 'p_value': p_value, 
-                            'is_drifted': p_value < self.threshold}
-        return p_value < self.threshold
+        is_drifted = bool((p_value < self.threshold) and (statistic >= self.min_effect_size))
+        self._last_result = {
+            'statistic': float(statistic),
+            'p_value': float(p_value),
+            'threshold': self.threshold,
+            'min_effect_size': self.min_effect_size,
+            'is_drifted': is_drifted
+        }
+        return is_drifted
     
     def get_report(self) -> Optional[Dict]:
         """Get the last drift detection report."""
