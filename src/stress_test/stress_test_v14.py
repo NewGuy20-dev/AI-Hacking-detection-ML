@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 StressTestRunner = None
 DashboardGenerator = None
 
-MODELS = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network', 'anomaly']
+DEFAULT_MODELS = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network']
+SUPPORTED_MODELS = [*DEFAULT_MODELS, 'anomaly']
 
 
 class TeeLogger:
@@ -120,13 +121,13 @@ Examples:
     try:
         # Parse model selection
         if args.model == 'all':
-            models = MODELS
+            models = DEFAULT_MODELS
         else:
             models = [m.strip() for m in args.model.split(',')]
-            invalid = set(models) - set(MODELS)
+            invalid = set(models) - set(SUPPORTED_MODELS)
             if invalid:
                 print(f"❌ Invalid models: {invalid}")
-                print(f"   Valid models: {', '.join(MODELS)}")
+                print(f"   Valid models: {', '.join(SUPPORTED_MODELS)}")
                 sys.exit(1)
         
         output_dir = Path(args.output_dir)
