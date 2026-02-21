@@ -141,7 +141,8 @@ def normalize_data(data):
     """Normalize features to 0-1 range."""
     mins = data.min(axis=(0, 1), keepdims=True)
     maxs = data.max(axis=(0, 1), keepdims=True)
-    return (data - mins) / (maxs - mins + 1e-8)
+    normalized = (data - mins) / (maxs - mins + 1e-8)
+    return normalized, mins, maxs
 
 
 def train():
@@ -185,7 +186,7 @@ def train():
     
     # Normalize
     all_data = np.concatenate([normal, attack], axis=0)
-    all_data = normalize_data(all_data)
+    all_data, mins, maxs = normalize_data(all_data)
     normal = all_data[:len(normal)]
     attack = all_data[len(normal):]
     
@@ -320,6 +321,8 @@ def train():
     example = torch.zeros(1, 60, 8, dtype=torch.float32).to(device)
     save_model(model, models_dir / 'timeseries_lstm', example)
     torch.save(best_state, models_dir / 'timeseries_lstm.pth')
+    # Save normalization stats for inference parity
+    np.savez(models_dir / 'timeseries_norm_v1.npz', mins=mins, maxs=maxs)
     
     print(f"✓ Model saved to models/timeseries_lstm.pt")
     print(f"✓ Best validation accuracy: {best_val_acc:.2%}")

@@ -15,6 +15,10 @@ import os
 import argparse
 from datetime import datetime
 from pathlib import Path
+import threading
+import socket
+import json
+import secrets
 
 try:
     import requests
@@ -23,6 +27,7 @@ except ImportError:
     HAS_REQUESTS = False
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1452715933398466782/Ajftu5_fHelFqifTRcZN3S7fCDddXPs89p9w8dTHX8pF1xUO59ckac_DyCTQsRKC1H8O"
+DEFAULT_HANDSHAKE_FILE = Path('evaluation') / 'thermal_guardian' / 'handshake.json'
 
 
 def get_gpu_temp():
@@ -91,10 +96,64 @@ def log(msg):
     print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] {msg}")
 
 
+def _handshake_server(bind_addr: str, token: str, ready_evt: threading.Event,
+                      stop_evt: threading.Event, handshake_file: Path):
+    """Start a one-shot TCP handshake server."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind((bind_addr, 0))
+    sock.listen(1)
+    port = sock.getsockname()[1]
+
+    handshake_file.parent.mkdir(parents=True, exist_ok=True)
+    with handshake_file.open('w', encoding='utf-8') as f:
+        json.dump({
+            'token': token,
+            'port': port,
+            'created_at': datetime.now().isoformat(),
+        }, f, indent=2)
+
+    log(f"Handshake server listening on {bind_addr}:{port}")
+    ready_evt.set()
+
+    sock.settimeout(1.0)
+    try:
+        while not stop_evt.is_set():
+            try:
+                conn, _addr = sock.accept()
+            except socket.timeout:
+                continue
+            with conn:
+                try:
+                    data = conn.recv(1024).decode('utf-8', errors='ignore').strip()
+                except Exception:
+                    data = ''
+                if data == f"HELLO {token}":
+                    conn.sendall(b"OK\n")
+                    stop_evt.set()
+                else:
+                    conn.sendall(b"ERR\n")
+            if stop_evt.is_set():
+                break
+    finally:
+        sock.close()
+        if handshake_file.exists():
+            try:
+                handshake_file.unlink()
+                log("Handshake token file deleted")
+            except Exception:
+                pass
+
+
 def main():
     parser = argparse.ArgumentParser(description='GPU Thermal Guardian')
     parser.add_argument('--threshold', type=int, default=90, help='Kill threshold (default: 90°C)')
     parser.add_argument('--interval', type=float, default=5.0, help='Poll interval (default: 5s)')
+    parser.add_argument('--handshake', action='store_true', default=True, help='Enable handshake server')
+    parser.add_argument('--no-handshake', action='store_true', default=False, help='Disable handshake server')
+    parser.add_argument('--handshake-timeout', type=int, default=180, help='Handshake server max lifetime (seconds)')
+    parser.add_argument('--handshake-file', type=str, default=str(DEFAULT_HANDSHAKE_FILE),
+                        help='Handshake token file path')
+    parser.add_argument('--handshake-bind', type=str, default='127.0.0.1', help='Bind address for handshake server')
     args = parser.parse_args()
     
     threshold = args.threshold
@@ -104,6 +163,37 @@ def main():
     log(f"   Threshold: {threshold}°C")
     log(f"   Poll interval: {interval}s")
     log(f"   Will kill training and exit if temp >= {threshold}°C")
+
+    handshake_file = Path(args.handshake_file)
+    if args.no_handshake:
+        log("Handshake server disabled by --no-handshake")
+    elif args.handshake:
+        token = secrets.token_hex(16)
+        ready_evt = threading.Event()
+        stop_evt = threading.Event()
+        server_thread = threading.Thread(
+            target=_handshake_server,
+            args=(args.handshake_bind, token, ready_evt, stop_evt, handshake_file),
+            daemon=True
+        )
+        server_thread.start()
+        ready_evt.wait(timeout=5)
+        log("Handshake server ready")
+
+        def _handshake_timeout():
+            time.sleep(args.handshake_timeout)
+            if not stop_evt.is_set():
+                log("Handshake timeout reached; stopping handshake server")
+                stop_evt.set()
+                if handshake_file.exists():
+                    try:
+                        handshake_file.unlink()
+                        log("Handshake token file deleted")
+                    except Exception:
+                        pass
+
+        timeout_thread = threading.Thread(target=_handshake_timeout, daemon=True)
+        timeout_thread.start()
     
     last_log = 0
     

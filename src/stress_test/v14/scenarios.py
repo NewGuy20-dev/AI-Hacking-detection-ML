@@ -1,11 +1,12 @@
 """Scenario dataclasses and registry for V1.4 stress test suite."""
 from dataclasses import dataclass, field
-from typing import Any, Optional, List, Dict
+from typing import Any, Optional, List, Dict, Tuple
 from pathlib import Path
 import yaml
 import random
 import urllib.parse
 import numpy as np
+import json
 
 
 @dataclass
@@ -643,6 +644,45 @@ class TabularGenerator(DynamicGenerator):
         super().__init__(seed)
         from .difficulty import DifficultyMixin
         self.difficulty_mixin = DifficultyMixin()
+        self.feature_profiles = self._load_feature_profiles()
+
+    @staticmethod
+    def _load_feature_profiles() -> Dict[str, Dict]:
+        profiles = {}
+        base = Path(__file__).parent.parent.parent.parent / 'configs' / 'stress_test' / 'feature_profiles'
+        for name in ['host_profile_v1.json', 'network_profile_v1.json']:
+            path = base / name
+            if path.exists():
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    model = data.get('model')
+                    if model:
+                        profiles[model] = data
+                except Exception:
+                    continue
+        return profiles
+
+    @staticmethod
+    def _sample_truncnorm(p01: np.ndarray, p50: np.ndarray, p99: np.ndarray) -> np.ndarray:
+        """Sample from a bounded normal distribution using quantile estimates."""
+        p01 = np.asarray(p01, dtype=np.float32)
+        p50 = np.asarray(p50, dtype=np.float32)
+        p99 = np.asarray(p99, dtype=np.float32)
+        # Approximate std from quantiles; avoid zero std
+        std = np.maximum((p99 - p01) / 4.0, 1e-6)
+        sample = np.random.normal(loc=p50, scale=std).astype(np.float32)
+        return np.clip(sample, p01, p99)
+
+    def _profile_sample(self, model: str, category: str) -> Optional[np.ndarray]:
+        profile = self.feature_profiles.get(model)
+        if not profile:
+            return None
+        categories = profile.get('profiles', {})
+        entry = categories.get(category)
+        if not entry:
+            return None
+        return self._sample_truncnorm(entry['p01'], entry['p50'], entry['p99'])
 
     def generate(self, model: str, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
         scenarios = []
@@ -658,9 +698,9 @@ class TabularGenerator(DynamicGenerator):
             if model == 'fraud':
                 features = self._generate_fraud('normal')
             elif model == 'host':
-                features = self._generate_host('normal')
+                features = self._profile_sample('host', 'normal') or self._generate_host('normal')
             elif model == 'network':
-                features = self._generate_network('normal')
+                features = self._profile_sample('network', 'normal') or self._generate_network('normal')
             elif model == 'anomaly':
                 features = self._generate_anomaly('normal')
             else:
@@ -691,9 +731,9 @@ class TabularGenerator(DynamicGenerator):
             if model == 'fraud':
                 features = self._generate_fraud(category)
             elif model == 'host':
-                features = self._generate_host(category)
+                features = self._profile_sample('host', category) or self._generate_host(category)
             elif model == 'network':
-                features = self._generate_network(category)
+                features = self._profile_sample('network', category) or self._generate_network(category)
             elif model == 'anomaly':
                 features = self._generate_anomaly(category)
             else:
