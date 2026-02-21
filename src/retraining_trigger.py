@@ -36,6 +36,7 @@ class RetrainingTrigger:
             'drift_threshold': 0.05,
             'min_accuracy': 0.90,
             'schedule_days': 7,
+            'use_model_mtime_baseline': False,
             'auto_deploy': False,
             'min_improvement': 0.02
         }
@@ -223,8 +224,9 @@ class RetrainingTrigger:
         """Check if scheduled retraining is due."""
         last = self._last_trained.get(model_name)
         schedule_days = self.config.get('schedule_days', 7)
+        use_model_mtime = self.config.get('use_model_mtime_baseline', False)
         
-        if last is None:
+        if last is None and use_model_mtime:
             # Check model file modification time
             model_path = Path('models') / f"{model_name}.pt"
             if model_path.exists():

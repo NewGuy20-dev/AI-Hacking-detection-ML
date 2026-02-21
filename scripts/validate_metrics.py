@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 from metrics_tracker import MetricsTracker, check_targets

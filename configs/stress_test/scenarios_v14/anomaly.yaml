@@ -1,0 +1,41 @@
+# Anomaly detector scenarios - mostly generated dynamically
+scenarios:
+  - id: anomaly_001
+    category: zero_day
+    subcategory: unknown_signature
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: hard
+    description: "Unknown attack distribution shift"
+
+  - id: anomaly_002
+    category: stealth_scan
+    subcategory: low_volume_scan
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: medium
+    description: "Stealth scanning behavior"
+
+  - id: anomaly_003
+    category: low_and_slow_exfiltration
+    subcategory: delayed_exfil
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: adversarial
+    description: "Low-and-slow exfiltration profile"
+
+  - id: anomaly_004
+    category: beaconing
+    subcategory: c2_pulse
+    input: "DYNAMIC"
+    expected: 1
+    difficulty: hard
+    description: "Periodic beaconing anomaly"
+
+  - id: anomaly_005
+    category: normal
+    subcategory: benign_baseline
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Benign baseline profile"

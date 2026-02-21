@@ -2,7 +2,7 @@
 """Test payload model FP rate on 5M fresh benign samples (not in training data)."""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
 import numpy as np

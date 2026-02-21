@@ -1,0 +1,17 @@
+# Meta classifier scenarios - primarily generated dynamically
+scenarios:
+  - id: meta_001
+    category: combined
+    subcategory: ensemble
+    input: "DYNAMIC"  # Will be generated as 5-element probability vector
+    expected: 1
+    difficulty: medium
+    description: "Combined model outputs - malicious"
+  
+  - id: meta_002
+    category: combined
+    subcategory: ensemble
+    input: "DYNAMIC"
+    expected: 0
+    difficulty: easy
+    description: "Combined model outputs - benign"

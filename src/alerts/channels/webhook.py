@@ -1,12 +1,31 @@
 """Webhook notification channel for Slack/Discord/Teams."""
+import importlib
+import importlib.util
 import json
-import requests
+from typing import Any, Callable
+
 from .base import BaseChannel
+
+
+def _missing_requests_post(*_args: Any, **_kwargs: Any) -> Any:
+    raise ModuleNotFoundError(
+        "Missing dependency 'requests'. Install project dependencies first "
+        "(for example: py -3 -m pip install -r requirements.txt on Windows)."
+    )
+
+
+if importlib.util.find_spec("requests") is not None:
+    requests = importlib.import_module("requests")
+else:
+    class _RequestsShim:
+        post: Callable[..., Any] = staticmethod(_missing_requests_post)
+
+    requests = _RequestsShim()
 
 
 class WebhookChannel(BaseChannel):
     """Send alerts via webhook (Slack, Discord, Teams)."""
-    
+
     def __init__(self, url: str, format: str = "slack", enabled: bool = True,
                  timeout: int = 10, retry_attempts: int = 3):
         super().__init__(enabled)
@@ -14,13 +33,13 @@ class WebhookChannel(BaseChannel):
         self.format = format
         self.timeout = timeout
         self.retry_attempts = retry_attempts
-    
+
     def send(self, alert: dict) -> bool:
         if not self.enabled or not self.url:
             return False
-        
+
         payload = self._format_payload(alert)
-        
+
         for attempt in range(self.retry_attempts):
             try:
                 resp = requests.post(self.url, json=payload, timeout=self.timeout)
@@ -29,19 +48,19 @@ class WebhookChannel(BaseChannel):
             except Exception:
                 continue
         return False
-    
+
     def format_message(self, alert: dict) -> str:
         return json.dumps(self._format_payload(alert))
-    
+
     def _format_payload(self, alert: dict) -> dict:
         if self.format == "discord":
             return self._format_discord(alert)
         return self._format_slack(alert)
-    
+
     def _format_slack(self, alert: dict) -> dict:
         severity = alert.get('severity', 'UNKNOWN')
         colors = {'CRITICAL': '#FF0000', 'HIGH': '#FF6600', 'MEDIUM': '#FFCC00', 'LOW': '#00CC00'}
-        
+
         return {
             "attachments": [{
                 "color": colors.get(severity, '#808080'),
@@ -53,11 +72,11 @@ class WebhookChannel(BaseChannel):
                 "ts": alert.get('timestamp', '')
             }]
         }
-    
+
     def _format_discord(self, alert: dict) -> dict:
         severity = alert.get('severity', 'UNKNOWN')
         colors = {'CRITICAL': 0xFF0000, 'HIGH': 0xFF6600, 'MEDIUM': 0xFFCC00, 'LOW': 0x00CC00}
-        
+
         return {
             "embeds": [{
                 "title": f"🚨 {severity}: {alert.get('attack_type', 'Alert')}",

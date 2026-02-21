@@ -1,6 +1,7 @@
 """Retrain all PyTorch models with improved data."""
 import subprocess
 import sys
+import argparse
 from pathlib import Path
 
 def run_script(script_path, desc):
@@ -10,7 +11,35 @@ def run_script(script_path, desc):
     result = subprocess.run([sys.executable, str(script_path)], cwd=script_path.parent.parent)
     return result.returncode == 0
 
+def _run_feedback_loop(base: Path, run_date: str = None, promote: bool = False):
+    """Optional hard-example feedback loop integration."""
+    loop_script = base / 'src' / 'feedback_loop' / 'hard_example_loop.py'
+    if not loop_script.exists():
+        print("Feedback loop script not found, skipping.")
+        return
+
+    cmd = [sys.executable, str(loop_script), '--model', 'payload,url']
+    if run_date:
+        cmd.extend(['--run-date', run_date])
+    if promote:
+        cmd.append('--promote')
+
+    print("\n" + "=" * 60)
+    print(" FEEDBACK LOOP (PAYLOAD+URL)")
+    print("=" * 60)
+    subprocess.run(cmd, cwd=base)
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Full retraining pipeline")
+    parser.add_argument('--with-feedback-loop', action='store_true',
+                        help='Run hard-example feedback loop before retraining payload/url')
+    parser.add_argument('--feedback-run-date', type=str, default=None,
+                        help='Optional run date (YYYY-MM-DD) for selecting stress failure logs')
+    parser.add_argument('--feedback-promote', action='store_true',
+                        help='Allow feedback loop model promotion if strict gates pass')
+    args = parser.parse_args()
+
     base = Path(__file__).parent.parent
     training_dir = base / 'src' / 'training'
     scripts_dir = base / 'scripts'
@@ -18,6 +47,9 @@ def main():
     print("="*60)
     print(" FULL MODEL RETRAINING PIPELINE")
     print("="*60)
+
+    if args.with_feedback_loop:
+        _run_feedback_loop(base, run_date=args.feedback_run_date, promote=args.feedback_promote)
     
     # Step 1: Generate fresh benign data
     print("\n[1/7] Generating curated benign data...")

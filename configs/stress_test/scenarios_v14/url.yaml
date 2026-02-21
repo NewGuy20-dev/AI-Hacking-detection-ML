@@ -1,0 +1,67 @@
+scenarios:
+  # Phishing - 15 core scenarios (rest dynamic)
+  - {id: url_phish_001, category: phishing, subcategory: brand_impersonation, input: "http://paypal-verify-account.com/login", expected: 1, difficulty: easy, description: "PayPal phishing"}
+  - {id: url_phish_002, category: phishing, subcategory: brand_impersonation, input: "http://amazon-security-alert.com/verify", expected: 1, difficulty: easy, description: "Amazon phishing"}
+  - {id: url_phish_003, category: phishing, subcategory: brand_impersonation, input: "http://apple-id-locked.com/unlock", expected: 1, difficulty: easy, description: "Apple ID phishing"}
+  - {id: url_phish_004, category: phishing, subcategory: brand_impersonation, input: "http://microsoft-account-suspended.com/restore", expected: 1, difficulty: easy, description: "Microsoft phishing"}
+  - {id: url_phish_005, category: phishing, subcategory: brand_impersonation, input: "http://google-security-check.com/verify", expected: 1, difficulty: easy, description: "Google phishing"}
+  - {id: url_phish_006, category: phishing, subcategory: credential_harvesting, input: "http://secure-login-verification.com/auth", expected: 1, difficulty: medium, description: "Generic credential phishing"}
+  - {id: url_phish_007, category: phishing, subcategory: brand_impersonation, input: "http://netflix-billing-update.com/payment", expected: 1, difficulty: easy, description: "Netflix phishing"}
+  - {id: url_phish_008, category: phishing, subcategory: brand_impersonation, input: "http://chase-fraud-alert.com/verify", expected: 1, difficulty: easy, description: "Chase bank phishing"}
+  - {id: url_phish_009, category: phishing, subcategory: brand_impersonation, input: "http://dropbox-file-shared.com/view", expected: 1, difficulty: medium, description: "Dropbox phishing"}
+  - {id: url_phish_010, category: phishing, subcategory: brand_impersonation, input: "http://office365-mailbox-full.com/expand", expected: 1, difficulty: medium, description: "Office 365 phishing"}
+  - {id: url_phish_011, category: phishing, subcategory: credential_harvesting, input: "http://cryptocurrency-wallet-verify.com/secure", expected: 1, difficulty: hard, description: "Crypto wallet phishing"}
+  - {id: url_phish_012, category: phishing, subcategory: brand_impersonation, input: "http://usps-package-delivery.com/track", expected: 1, difficulty: medium, description: "USPS phishing"}
+  - {id: url_phish_013, category: phishing, subcategory: credential_harvesting, input: "http://tax-refund-pending.com/claim", expected: 1, difficulty: hard, description: "Tax refund phishing"}
+  - {id: url_phish_014, category: phishing, subcategory: brand_impersonation, input: "http://whatsapp-verification-code.com/verify", expected: 1, difficulty: medium, description: "WhatsApp phishing"}
+  - {id: url_phish_015, category: phishing, subcategory: credential_harvesting, input: "http://account-data-breach.com/secure", expected: 1, difficulty: hard, description: "Data breach phishing"}
+  
+  # Typosquatting - 15 core scenarios
+  - {id: url_typo_001, category: typosquatting, subcategory: character_swap, input: "http://gooogle.com", expected: 1, difficulty: easy, description: "Google typo"}
+  - {id: url_typo_002, category: typosquatting, subcategory: character_swap, input: "http://faceboook.com", expected: 1, difficulty: easy, description: "Facebook typo"}
+  - {id: url_typo_003, category: typosquatting, subcategory: character_swap, input: "http://amazom.com", expected: 1, difficulty: easy, description: "Amazon typo"}
+  - {id: url_typo_004, category: typosquatting, subcategory: character_swap, input: "http://paypa1.com", expected: 1, difficulty: medium, description: "PayPal with 1"}
+  - {id: url_typo_005, category: typosquatting, subcategory: character_swap, input: "http://app1e.com", expected: 1, difficulty: medium, description: "Apple with 1"}
+  - {id: url_typo_006, category: typosquatting, subcategory: homoglyph, input: "http://gооgle.com", expected: 1, difficulty: hard, description: "Google Cyrillic o"}
+  - {id: url_typo_007, category: typosquatting, subcategory: homoglyph, input: "http://аmazon.com", expected: 1, difficulty: hard, description: "Amazon Cyrillic a"}
+  - {id: url_typo_008, category: typosquatting, subcategory: tld_variation, input: "http://google.co", expected: 1, difficulty: medium, description: "Google .co TLD"}
+  - {id: url_typo_009, category: typosquatting, subcategory: tld_variation, input: "http://facebook.net", expected: 1, difficulty: medium, description: "Facebook .net TLD"}
+  - {id: url_typo_010, category: typosquatting, subcategory: character_swap, input: "http://microsfot.com", expected: 1, difficulty: easy, description: "Microsoft typo"}
+  - {id: url_typo_011, category: typosquatting, subcategory: character_swap, input: "http://netflx.com", expected: 1, difficulty: easy, description: "Netflix typo"}
+  - {id: url_typo_012, category: typosquatting, subcategory: character_swap, input: "http://instgram.com", expected: 1, difficulty: easy, description: "Instagram typo"}
+  - {id: url_typo_013, category: typosquatting, subcategory: character_swap, input: "http://githb.com", expected: 1, difficulty: easy, description: "GitHub typo"}
+  - {id: url_typo_014, category: typosquatting, subcategory: homoglyph, input: "http://microsоft.com", expected: 1, difficulty: hard, description: "Microsoft Cyrillic o"}
+  - {id: url_typo_015, category: typosquatting, subcategory: tld_variation, input: "http://paypal.info", expected: 1, difficulty: medium, description: "PayPal .info TLD"}
+  
+  # Shorteners - 10 core scenarios
+  - {id: url_short_001, category: shorteners, subcategory: suspicious, input: "http://bit.ly/3xK9mP2", expected: 1, difficulty: medium, description: "Suspicious bit.ly"}
+  - {id: url_short_002, category: shorteners, subcategory: suspicious, input: "http://tinyurl.com/y7h3k9m", expected: 1, difficulty: medium, description: "Suspicious tinyurl"}
+  - {id: url_short_003, category: shorteners, subcategory: suspicious, input: "http://goo.gl/xY9kL", expected: 1, difficulty: medium, description: "Suspicious goo.gl"}
+  - {id: url_short_004, category: shorteners, subcategory: suspicious, input: "http://t.co/xK9mP2yH", expected: 1, difficulty: medium, description: "Suspicious t.co"}
+  - {id: url_short_005, category: shorteners, subcategory: suspicious, input: "http://is.gd/xK9mP2", expected: 1, difficulty: medium, description: "Suspicious is.gd"}
+  - {id: url_short_006, category: shorteners, subcategory: suspicious, input: "http://adf.ly/3xK9mP", expected: 1, difficulty: hard, description: "Suspicious adf.ly"}
+  - {id: url_short_007, category: shorteners, subcategory: suspicious, input: "http://cutt.ly/xK9mP2", expected: 1, difficulty: medium, description: "Suspicious cutt.ly"}
+  - {id: url_short_008, category: shorteners, subcategory: suspicious, input: "http://tiny.cc/xK9mP2", expected: 1, difficulty: medium, description: "Suspicious tiny.cc"}
+  - {id: url_short_009, category: shorteners, subcategory: suspicious, input: "http://v.gd/xK9mP2", expected: 1, difficulty: medium, description: "Suspicious v.gd"}
+  - {id: url_short_010, category: shorteners, subcategory: suspicious, input: "http://yourls.org/xK9mP", expected: 1, difficulty: medium, description: "Suspicious yourls"}
+  
+  # Homograph - 5 core scenarios
+  - {id: url_homo_001, category: homograph, subcategory: idn, input: "http://xn--80ak6aa92e.com", expected: 1, difficulty: hard, description: "IDN homograph"}
+  - {id: url_homo_002, category: homograph, subcategory: punycode, input: "http://xn--pple-43d.com", expected: 1, difficulty: hard, description: "Punycode apple"}
+  - {id: url_homo_003, category: homograph, subcategory: mixed_script, input: "http://аррӏе.com", expected: 1, difficulty: hard, description: "Mixed Cyrillic apple"}
+  - {id: url_homo_004, category: homograph, subcategory: punycode, input: "http://xn--gogle-0mc.com", expected: 1, difficulty: hard, description: "Punycode google"}
+  - {id: url_homo_005, category: homograph, subcategory: mixed_script, input: "http://gооgӏе.com", expected: 1, difficulty: hard, description: "Mixed Cyrillic google"}
+  
+  # DGA - 5 core scenarios
+  - {id: url_dga_001, category: dga, subcategory: random, input: "http://xkjdh3k9mzp.com", expected: 1, difficulty: medium, description: "Random DGA domain"}
+  - {id: url_dga_002, category: dga, subcategory: random, input: "http://qw9ertyuiop.net", expected: 1, difficulty: medium, description: "Random DGA domain"}
+  - {id: url_dga_003, category: dga, subcategory: random, input: "http://asdfghjklzx.org", expected: 1, difficulty: medium, description: "Random DGA domain"}
+  - {id: url_dga_004, category: dga, subcategory: random, input: "http://mnbvcxzlkjh.com", expected: 1, difficulty: medium, description: "Random DGA domain"}
+  - {id: url_dga_005, category: dga, subcategory: random, input: "http://poiuytrewqa.net", expected: 1, difficulty: medium, description: "Random DGA domain"}
+  
+  # Malware - 5 core scenarios
+  - {id: url_mal_001, category: malware, subcategory: hosting, input: "http://malware-download-site.tk", expected: 1, difficulty: hard, description: "Malware hosting .tk"}
+  - {id: url_mal_002, category: malware, subcategory: hosting, input: "http://free-software-crack.ml", expected: 1, difficulty: hard, description: "Crack site .ml"}
+  - {id: url_mal_003, category: malware, subcategory: hosting, input: "http://exploit-kit-download.tk", expected: 1, difficulty: hard, description: "Exploit kit .tk"}
+  - {id: url_mal_004, category: malware, subcategory: hosting, input: "http://botnet-c2-server.ml", expected: 1, difficulty: hard, description: "C2 server .ml"}
+  - {id: url_mal_005, category: malware, subcategory: hosting, input: "http://cryptominer-script.cf", expected: 1, difficulty: hard, description: "Cryptominer .cf"}

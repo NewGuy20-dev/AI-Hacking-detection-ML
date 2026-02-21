@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import torch
 import torch.nn as nn
@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader, random_split
 from torch.amp import GradScaler
 from tqdm import tqdm
 
-from torch_models.timeseries_lstm import TimeSeriesLSTM
-from torch_models.datasets import TimeSeriesDataset
-from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.torch_models.timeseries_lstm import TimeSeriesLSTM
+from src.torch_models.datasets import TimeSeriesDataset
+from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
 from training.checkpoint import CheckpointManager
 
 
@@ -163,8 +163,8 @@ def train():
     
     # Try to load live_benign timeseries first
     live_benign_path = base_path / 'datasets' / 'live_benign' / 'timeseries_benign.npy'
-    synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_500k.npy'
-    synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_500k.npy'
+    synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_expansion.npy'
+    synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_expansion.npy'
     
     if live_benign_path.exists():
         print(f"Loading live benign from {live_benign_path}")

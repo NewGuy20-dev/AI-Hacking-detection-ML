@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import torch
 import torch.nn as nn
@@ -12,8 +12,8 @@ from torch.utils.data import DataLoader, TensorDataset, random_split
 from torch.amp import GradScaler
 from tqdm import tqdm
 
-from torch_models.meta_classifier import MetaClassifier
-from torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.torch_models.meta_classifier import MetaClassifier
+from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
 from training.checkpoint import CheckpointManager
 
 
@@ -87,7 +87,10 @@ def load_hybrid_data(base_path: Path, n_synthetic: int = 10000):
     if real_path.exists():
         print(f"Loading real model outputs from {real_path}")
         data = np.load(real_path)
-        real_outputs = data['outputs']
+        # Extract individual model outputs
+        model_names = ['payload', 'url', 'network', 'fraud', 'host']
+        outputs_list = [data[name] for name in model_names if name in data]
+        real_outputs = np.column_stack(outputs_list).astype(np.float32)
         real_labels = data['labels']
         
         # Pad real outputs to 5 columns if needed (we may only have 2 models)
