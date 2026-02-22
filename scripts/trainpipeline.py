@@ -69,13 +69,13 @@ def main():
     full_minutes = 7 * args.full_min
     fixed_hours = (quick_minutes + full_minutes) / 60.0 + 0.3
     if args.retrain_hours is None:
-        print(f\"\nEstimated total time: retrain + ~{fixed_hours:.1f} hours "
-              f\"(quick ~{quick_minutes}m + full ~{full_minutes}m)\")
-        print(\"Tip: pass --retrain-hours N to include retrain time in ETA.\")
+        print(f"\nEstimated total time: retrain + ~{fixed_hours:.1f} hours "
+              f"(quick ~{quick_minutes}m + full ~{full_minutes}m)")
+        print("Tip: pass --retrain-hours N to include retrain time in ETA.")
     else:
         eta_hours = args.retrain_hours + fixed_hours
-        print(f\"\nEstimated total time: ~{eta_hours:.1f} hours "
-              f\"(retrain ~{args.retrain_hours:.1f}h + quick ~{quick_minutes}m + full ~{full_minutes}m)\")
+        print(f"\nEstimated total time: ~{eta_hours:.1f} hours "
+              f"(retrain ~{args.retrain_hours:.1f}h + quick ~{quick_minutes}m + full ~{full_minutes}m)")
 
     if not args.skip_handshake:
         print("Waiting for thermal guardian handshake...")
@@ -83,7 +83,7 @@ def main():
             raise SystemExit("Thermal guardian handshake failed. Start thermal_guardian.py first.")
 
     if not args.skip_label_check:
-        run([python, 'check_labels.py'])
+        run([python, 'scripts/check_labels.py'])
 
     if not args.skip_train:
         run([python, 'scripts/train_rtx3050.py'])

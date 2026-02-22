@@ -26,7 +26,7 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
-DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1452715933398466782/Ajftu5_fHelFqifTRcZN3S7fCDddXPs89p9w8dTHX8pF1xUO59ckac_DyCTQsRKC1H8O"
+DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 DEFAULT_HANDSHAKE_FILE = Path('evaluation') / 'thermal_guardian' / 'handshake.json'
 
 
@@ -76,7 +76,7 @@ def find_training_pid():
 
 def notify_discord(title, message, color=0xe74c3c):
     """Send Discord notification."""
-    if not HAS_REQUESTS:
+    if not HAS_REQUESTS or not DISCORD_WEBHOOK:
         return
     try:
         requests.post(DISCORD_WEBHOOK, json={
@@ -97,12 +97,23 @@ def log(msg):
 
 
 def _handshake_server(bind_addr: str, token: str, ready_evt: threading.Event,
-                      stop_evt: threading.Event, handshake_file: Path):
+                      stop_evt: threading.Event, handshake_file: Path, error_ref: dict):
     """Start a one-shot TCP handshake server."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((bind_addr, 0))
-    sock.listen(1)
-    port = sock.getsockname()[1]
+    sock = None
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((bind_addr, 0))
+        sock.listen(1)
+        port = sock.getsockname()[1]
+    except Exception as exc:
+        error_ref['error'] = str(exc)
+        ready_evt.set()
+        if sock:
+            try:
+                sock.close()
+            except Exception:
+                pass
+        return
 
     handshake_file.parent.mkdir(parents=True, exist_ok=True)
     with handshake_file.open('w', encoding='utf-8') as f:
@@ -134,8 +145,11 @@ def _handshake_server(bind_addr: str, token: str, ready_evt: threading.Event,
                     conn.sendall(b"ERR\n")
             if stop_evt.is_set():
                 break
+    except Exception as exc:
+        error_ref['error'] = str(exc)
     finally:
-        sock.close()
+        if sock:
+            sock.close()
         if handshake_file.exists():
             try:
                 handshake_file.unlink()
@@ -148,8 +162,10 @@ def main():
     parser = argparse.ArgumentParser(description='GPU Thermal Guardian')
     parser.add_argument('--threshold', type=int, default=90, help='Kill threshold (default: 90°C)')
     parser.add_argument('--interval', type=float, default=5.0, help='Poll interval (default: 5s)')
-    parser.add_argument('--handshake', action='store_true', default=True, help='Enable handshake server')
-    parser.add_argument('--no-handshake', action='store_true', default=False, help='Disable handshake server')
+    handshake_group = parser.add_mutually_exclusive_group()
+    handshake_group.add_argument('--handshake', dest='handshake', action='store_true', help='Enable handshake server')
+    handshake_group.add_argument('--no-handshake', dest='handshake', action='store_false', help='Disable handshake server')
+    parser.set_defaults(handshake=True)
     parser.add_argument('--handshake-timeout', type=int, default=180, help='Handshake server max lifetime (seconds)')
     parser.add_argument('--handshake-file', type=str, default=str(DEFAULT_HANDSHAKE_FILE),
                         help='Handshake token file path')
@@ -163,21 +179,34 @@ def main():
     log(f"   Threshold: {threshold}°C")
     log(f"   Poll interval: {interval}s")
     log(f"   Will kill training and exit if temp >= {threshold}°C")
+    if HAS_REQUESTS and not DISCORD_WEBHOOK:
+        log("ERROR: DISCORD_WEBHOOK not set; Discord alerts disabled")
 
     handshake_file = Path(args.handshake_file)
-    if args.no_handshake:
+    if not args.handshake:
         log("Handshake server disabled by --no-handshake")
-    elif args.handshake:
+    else:
         token = secrets.token_hex(16)
         ready_evt = threading.Event()
         stop_evt = threading.Event()
+        error_ref = {}
         server_thread = threading.Thread(
             target=_handshake_server,
-            args=(args.handshake_bind, token, ready_evt, stop_evt, handshake_file),
+            args=(args.handshake_bind, token, ready_evt, stop_evt, handshake_file, error_ref),
             daemon=True
         )
         server_thread.start()
-        ready_evt.wait(timeout=5)
+        ready = ready_evt.wait(timeout=5)
+        if not ready:
+            log("ERROR: Handshake server failed to start (timeout)")
+            stop_evt.set()
+            server_thread.join(timeout=2)
+            raise SystemExit("Handshake server failed to start")
+        if error_ref.get('error'):
+            log(f"ERROR: Handshake server failed to start: {error_ref['error']}")
+            stop_evt.set()
+            server_thread.join(timeout=2)
+            raise SystemExit("Handshake server failed to start")
         log("Handshake server ready")
 
         def _handshake_timeout():

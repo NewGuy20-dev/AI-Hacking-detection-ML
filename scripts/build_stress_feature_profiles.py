@@ -54,13 +54,15 @@ def build_profiles(rows_by_category, feature_order):
         if not rows:
             continue
         data = np.asarray(rows, dtype=np.float64)
+        if data.shape[1] != len(feature_order):
+            raise ValueError("Feature count mismatch for profile build")
         p01 = np.nanpercentile(data, 1, axis=0)
         p50 = np.nanpercentile(data, 50, axis=0)
         p99 = np.nanpercentile(data, 99, axis=0)
         profiles[category] = {
-            'p01': p01.tolist(),
-            'p50': p50.tolist(),
-            'p99': p99.tolist(),
+            'p01': {feature_order[i]: float(p01[i]) for i in range(len(feature_order))},
+            'p50': {feature_order[i]: float(p50[i]) for i in range(len(feature_order))},
+            'p99': {feature_order[i]: float(p99[i]) for i in range(len(feature_order))},
         }
     return profiles
 
@@ -95,16 +97,17 @@ def main():
             break
 
     if host_feature_order:
+        def host_category(obj):
+            label = obj.get('label', 0)
+            if int(label) == 0:
+                return 'normal'
+            cat = str(obj.get('category', '')).strip().lower()
+            return cat if cat else None
+
         host_rows = defaultdict(list)
         for p in host_paths:
             if not p.exists():
                 continue
-            def host_category(obj):
-                label = obj.get('label', 0)
-                if int(label) == 0:
-                    return 'normal'
-                cat = str(obj.get('category', '')).strip().lower()
-                return cat if cat else None
             rows, _ = sample_rows(p, args.max_samples, host_feature_order, host_category, max_lines=args.max_lines)
             for cat, data in rows.items():
                 host_rows[cat].extend(data)
@@ -123,18 +126,19 @@ def main():
         base / 'network_intrusion' / 'synthetic_500k.jsonl',
     ]
 
+    def net_category(obj):
+        label = obj.get('label', None)
+        attack_type = str(obj.get('attack_type', '')).strip().lower()
+        if label is not None and int(label) == 0:
+            return 'normal'
+        if attack_type:
+            return attack_type
+        return None
+
     net_rows = defaultdict(list)
     for p in net_paths:
         if not p.exists():
             continue
-        def net_category(obj):
-            label = obj.get('label', None)
-            attack_type = str(obj.get('attack_type', '')).strip().lower()
-            if label is not None and int(label) == 0:
-                return 'normal'
-            if attack_type:
-                return attack_type
-            return None
         rows, _ = sample_rows(p, args.max_samples, NET_FEATURES, net_category, max_lines=args.max_lines)
         for cat, data in rows.items():
             net_rows[cat].extend(data)

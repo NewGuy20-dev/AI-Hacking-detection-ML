@@ -1,5 +1,6 @@
 """Adaptive scheduler and stress test runner for V1.4."""
 import time
+import json
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
@@ -189,6 +190,12 @@ class StressTestRunner:
             summary = logger.get_summary()
             total_duration = (time.time() - start_time) / 60 if generator else 0
             ops = metrics.summary()
+
+            ops_path = self.output_dir / f"{self.model_name}_{run_date}_ops.json"
+            try:
+                ops_path.write_text(json.dumps(ops, indent=2), encoding='utf-8')
+            except Exception:
+                pass
             
             print(f"\n✓ Test complete!")
             print(f"  Static: {len(static_scenarios)} scenarios")

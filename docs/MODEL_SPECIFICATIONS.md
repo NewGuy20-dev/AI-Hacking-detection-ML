@@ -187,4 +187,5 @@ models/
 - sklearn/XGBoost models output **probabilities** directly
 - MetaClassifier expects normalized probability scores (0-1 range) from individual models
 - sklearn models use StandardScaler for feature normalization; scaler must be applied at inference time
+- Inference uses per-model thresholds from `config/model_thresholds.json` (defaults to 0.5)
 - All models use random_state=42 for reproducibility

@@ -5,7 +5,7 @@ from typing import Any, Tuple, Dict
 from urllib.parse import quote, urlsplit, urlunsplit
 
 import numpy as np
-import yaml
+import json
 
 try:
     import joblib
@@ -26,6 +26,8 @@ class ModelWrapper:
     PYTORCH_MODELS = ['payload', 'url', 'timeseries', 'meta']
     SKLEARN_MODELS = ['fraud', 'host', 'network', 'anomaly']
 
+    _threshold_cache = None
+
     def __init__(self, model_name: str, models_dir: Path = None):
         if model_name not in self.PYTORCH_MODELS + self.SKLEARN_MODELS:
             raise ValueError(f"Unknown model: {model_name}")
@@ -39,25 +41,29 @@ class ModelWrapper:
 
     @staticmethod
     def _load_thresholds() -> Dict[str, float]:
-        """Load per-model decision thresholds from config/model_thresholds.yaml."""
-        if not hasattr(ModelWrapper, "_threshold_cache"):
-            ModelWrapper._threshold_cache = {}
-            config_path = Path(__file__).parent.parent.parent.parent / 'config' / 'model_thresholds.yaml'
+        """Load per-model decision thresholds from config/model_thresholds.json."""
+        if ModelWrapper._threshold_cache is None:
+            thresholds: Dict[str, float] = {}
+            config_path = Path(__file__).parent.parent.parent.parent / 'config' / 'model_thresholds.json'
             if config_path.exists():
                 try:
                     with open(config_path, 'r', encoding='utf-8') as f:
-                        data = yaml.safe_load(f) or {}
+                        data = json.load(f) or {}
                     if isinstance(data, dict):
-                        ModelWrapper._threshold_cache = {
-                            k: float(v) for k, v in data.items() if isinstance(v, (int, float))
-                        }
+                        thresholds = {k: float(v) for k, v in data.items() if isinstance(v, (int, float))}
                 except Exception:
-                    ModelWrapper._threshold_cache = {}
+                    thresholds = {}
+            ModelWrapper._threshold_cache = thresholds
         return ModelWrapper._threshold_cache
 
     def _get_threshold(self) -> float:
         thresholds = self._load_thresholds()
         return float(thresholds.get(self.model_name, 0.5))
+
+    @classmethod
+    def get_threshold(cls, name: str) -> float:
+        thresholds = cls._load_thresholds()
+        return float(thresholds.get(name, 0.5))
 
     def load(self) -> 'ModelWrapper':
         """Load model from disk."""

@@ -41,13 +41,18 @@ def _load_csv(path: Path, text_field: str, label_field: str, label_map: Dict[str
         for row in reader:
             if len(samples) >= max_samples:
                 break
-            txt = row.get(text_field)
-            lab_raw = row.get(label_field)
-            if txt is None or lab_raw is None:
+            try:
+                txt = row.get(text_field)
+                lab_raw = row.get(label_field)
+                if txt is None or lab_raw is None:
+                    continue
+                lab = label_map.get(str(lab_raw), label_map.get(lab_raw, lab_raw))
+                lab = int(lab)
+                samples.append(ReplaySample(txt, lab, row.get('category', 'realworld'), path.stem))
+            except (ValueError, TypeError):
                 continue
-            lab = label_map.get(str(lab_raw), label_map.get(lab_raw, lab_raw))
-            lab = int(lab)
-            samples.append(ReplaySample(txt, lab, row.get('category', 'realworld'), path.stem))
+            except Exception:
+                continue
     return samples
 
 

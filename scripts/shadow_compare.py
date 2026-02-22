@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.stress_test.v14.models import ModelWrapper
+from jsonl_utils import iter_records
 
 
 def parse_args():
@@ -31,19 +32,19 @@ def main():
     latencies = []
     confidences = []
 
-    with open(log_path, encoding='utf-8') as f:
-        for line in f:
-            rec = json.loads(line)
-            if rec.get('input_type') != 'text':
-                continue
-            raw_input = rec.get('raw_input') or ''
-            pred, conf, lat = wrapper.predict(raw_input)
-            orig_pred = rec.get('prediction')
-            total += 1
-            if pred != orig_pred:
-                disagreements += 1
-            latencies.append(lat)
-            confidences.append(conf)
+    for rec in iter_records(log_path):
+        if rec.get('input_type') != 'text':
+            continue
+        raw_input = rec.get('raw_input')
+        if raw_input is None:
+            continue
+        pred, conf, lat = wrapper.predict(raw_input)
+        orig_pred = rec.get('prediction')
+        total += 1
+        if pred != orig_pred:
+            disagreements += 1
+        latencies.append(lat)
+        confidences.append(conf)
 
     summary = {
         'model': args.model,

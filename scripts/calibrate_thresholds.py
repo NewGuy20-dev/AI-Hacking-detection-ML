@@ -4,19 +4,8 @@ import argparse
 import json
 from pathlib import Path
 import numpy as np
-import yaml
 
-
-def iter_records(path):
-    with Path(path).open('r', encoding='utf-8') as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                yield json.loads(line)
-            except json.JSONDecodeError:
-                continue
+from jsonl_utils import iter_records
 
 
 def best_threshold(records, fp_cap, recall_min):
@@ -69,18 +58,18 @@ def main():
     parser.add_argument('--date', default=None)
     parser.add_argument('--fp-cap', type=float, default=0.35)
     parser.add_argument('--recall-min', type=float, default=0.8)
-    parser.add_argument('--output', default='config/model_thresholds.yaml')
+    parser.add_argument('--output', default='config/model_thresholds.json')
     args = parser.parse_args()
 
     base = Path(args.dir)
-    paths = sorted(base.glob('*.jsonl'))
+    if not base.exists() or not base.is_dir():
+        raise SystemExit(f"Missing directory: {base}")
+    paths = [p for p in sorted(base.glob('*.jsonl')) if not p.name.endswith('_failures.jsonl')]
     if args.date:
-        paths = [p for p in paths if args.date in p.name and not p.name.endswith('_failures.jsonl')]
+        paths = [p for p in paths if args.date in p.name]
 
     thresholds = {}
     for path in paths:
-        if path.name.endswith('_failures.jsonl'):
-            continue
         model = path.stem.split('_')[0]
         records = list(iter_records(path))
         th, f1, recall = best_threshold(records, args.fp_cap, args.recall_min)
@@ -90,7 +79,7 @@ def main():
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open('w', encoding='utf-8') as f:
-        yaml.safe_dump(thresholds, f, sort_keys=True)
+        json.dump(thresholds, f, indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':

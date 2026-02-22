@@ -18,11 +18,12 @@ class ShadowLogger:
 
     def log(self, *, model: str, route: str, input_data: str, prediction: int,
             confidence: float, latency_ms: float, version: str = "", error: Optional[str] = None):
+        input_hash = self._hash_input(input_data) if input_data is not None else None
         record = {
             'ts': datetime.utcnow().isoformat() + 'Z',
             'model': model,
             'route': route,
-            'input_hash': self._hash_input(input_data),
+            'input_hash': input_hash,
             'input_len': len(input_data) if input_data is not None else 0,
             'input_type': 'text',
             'prediction': prediction,

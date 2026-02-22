@@ -650,9 +650,10 @@ class TabularGenerator(DynamicGenerator):
     def _load_feature_profiles() -> Dict[str, Dict]:
         profiles = {}
         base = Path(__file__).parent.parent.parent.parent / 'configs' / 'stress_test' / 'feature_profiles'
-        for name in ['host_profile_v1.json', 'network_profile_v1.json']:
-            path = base / name
-            if path.exists():
+        if base.exists():
+            for path in base.glob('*.json'):
+                if not path.is_file():
+                    continue
                 try:
                     with open(path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
@@ -682,7 +683,17 @@ class TabularGenerator(DynamicGenerator):
         entry = categories.get(category)
         if not entry:
             return None
-        return self._sample_truncnorm(entry['p01'], entry['p50'], entry['p99'])
+        feature_order = profile.get('features', [])
+        p01 = entry.get('p01')
+        p50 = entry.get('p50')
+        p99 = entry.get('p99')
+        if isinstance(p01, dict) and feature_order:
+            p01 = [p01.get(name, 0.0) for name in feature_order]
+        if isinstance(p50, dict) and feature_order:
+            p50 = [p50.get(name, 0.0) for name in feature_order]
+        if isinstance(p99, dict) and feature_order:
+            p99 = [p99.get(name, 0.0) for name in feature_order]
+        return self._sample_truncnorm(p01, p50, p99)
 
     def generate(self, model: str, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
         scenarios = []
@@ -698,9 +709,11 @@ class TabularGenerator(DynamicGenerator):
             if model == 'fraud':
                 features = self._generate_fraud('normal')
             elif model == 'host':
-                features = self._profile_sample('host', 'normal') or self._generate_host('normal')
+                sample = self._profile_sample('host', 'normal')
+                features = sample if sample is not None else self._generate_host('normal')
             elif model == 'network':
-                features = self._profile_sample('network', 'normal') or self._generate_network('normal')
+                sample = self._profile_sample('network', 'normal')
+                features = sample if sample is not None else self._generate_network('normal')
             elif model == 'anomaly':
                 features = self._generate_anomaly('normal')
             else:
@@ -731,9 +744,11 @@ class TabularGenerator(DynamicGenerator):
             if model == 'fraud':
                 features = self._generate_fraud(category)
             elif model == 'host':
-                features = self._profile_sample('host', category) or self._generate_host(category)
+                sample = self._profile_sample('host', category)
+                features = sample if sample is not None else self._generate_host(category)
             elif model == 'network':
-                features = self._profile_sample('network', category) or self._generate_network(category)
+                sample = self._profile_sample('network', category)
+                features = sample if sample is not None else self._generate_network(category)
             elif model == 'anomaly':
                 features = self._generate_anomaly(category)
             else:

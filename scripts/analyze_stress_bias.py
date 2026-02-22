@@ -1,20 +1,9 @@
 #!/usr/bin/env python3
 """Analyze stress-test JSONL logs for confusion/FP/FN rates."""
 import argparse
-import json
 from pathlib import Path
 
-
-def iter_records(path: Path):
-    with path.open('r', encoding='utf-8') as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                yield json.loads(line)
-            except json.JSONDecodeError:
-                continue
+from jsonl_utils import iter_records
 
 
 def analyze(path: Path):
@@ -76,13 +65,11 @@ def main():
     if not base.exists():
         raise SystemExit(f"Missing directory: {base}")
 
-    paths = sorted(base.glob('*.jsonl'))
+    paths = [p for p in sorted(base.glob('*.jsonl')) if not p.name.endswith('_failures.jsonl')]
     if args.date:
-        paths = [p for p in paths if args.date in p.name and not p.name.endswith('_failures.jsonl')]
+        paths = [p for p in paths if args.date in p.name]
 
     for path in paths:
-        if path.name.endswith('_failures.jsonl'):
-            continue
         stats = analyze(path)
         model = path.stem.split('_')[0]
         print(f"\n{model.upper()} {path.name}")

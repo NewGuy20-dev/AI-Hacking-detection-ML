@@ -22,7 +22,7 @@ class DashboardGenerator:
             return None
         
         # Compute statistics
-        stats = self._compute_stats(all_results)
+        stats = self._compute_stats(all_results, run_date)
         
         # Generate HTML
         html = self._render_html(stats, run_date)
@@ -48,7 +48,7 @@ class DashboardGenerator:
         
         return all_results
     
-    def _compute_stats(self, all_results: Dict) -> Dict:
+    def _compute_stats(self, all_results: Dict, run_date: str) -> Dict:
         """Compute aggregate statistics."""
         stats = {
             'models': {},
@@ -70,10 +70,17 @@ class DashboardGenerator:
                 if r['passed']:
                     categories[cat]['passed'] += 1
 
-            # Ops metrics (if present)
-            ops = r.get('ops_metrics') if results else None
-            metrics_block = ops['metrics'] if ops else {}
-            latency_block = ops['latency'] if ops else {}
+            # Ops metrics (sidecar if present)
+            metrics_block = {}
+            latency_block = {}
+            ops_path = self.logs_dir / f"{model}_{run_date}_ops.json"
+            if ops_path.exists():
+                try:
+                    ops = json.loads(ops_path.read_text(encoding='utf-8'))
+                    metrics_block = ops.get('metrics', {})
+                    latency_block = ops.get('latency', {})
+                except Exception:
+                    pass
 
             # Per-difficulty stats
             difficulties = defaultdict(lambda: {'total': 0, 'passed': 0})
