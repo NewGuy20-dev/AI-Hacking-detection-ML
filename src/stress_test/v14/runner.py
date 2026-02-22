@@ -1,5 +1,6 @@
 """Adaptive scheduler and stress test runner for V1.4."""
 import time
+import json
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
@@ -16,6 +17,7 @@ from .scenarios import (
     MetaGenerator,
     AnomalyGenerator,
 )
+from .ops_metrics import OpsMetricsState
 from .models import ModelWrapper
 from .logger import JSONLogger
 
@@ -118,12 +120,22 @@ class StressTestRunner:
         
         # Run test
         run_date = datetime.now().strftime('%Y-%m-%d')
+        metrics = OpsMetricsState()
+
         with JSONLogger(self.output_dir, self.model_name, run_date, run_seed=self.seed) as logger:
             # Phase 1: Static scenarios
             if static_scenarios:
                 print(f"\nPhase 1: Running static scenarios...")
                 for scenario in tqdm(static_scenarios, desc="Static"):
                     result = self._run_scenario(model, scenario)
+                    metrics.update(
+                        expected=scenario.expected_label,
+                        predicted=result.prediction,
+                        confidence=result.confidence,
+                        latency_ms=result.latency_ms,
+                        category=scenario.category,
+                        difficulty=scenario.difficulty,
+                    )
                     logger.log(result)
                 
                 print(f"✓ Static phase complete")
@@ -150,6 +162,14 @@ class StressTestRunner:
                     
                     for scenario in batch:
                         result = self._run_scenario(model, scenario)
+                        metrics.update(
+                            expected=scenario.expected_label,
+                            predicted=result.prediction,
+                            confidence=result.confidence,
+                            latency_ms=result.latency_ms,
+                            category=scenario.category,
+                            difficulty=scenario.difficulty,
+                        )
                         logger.log(result)
                         dynamic_count += 1
                         pbar.update(1)
@@ -169,6 +189,13 @@ class StressTestRunner:
             # Final summary
             summary = logger.get_summary()
             total_duration = (time.time() - start_time) / 60 if generator else 0
+            ops = metrics.summary()
+
+            ops_path = self.output_dir / f"{self.model_name}_{run_date}_ops.json"
+            try:
+                ops_path.write_text(json.dumps(ops, indent=2), encoding='utf-8')
+            except Exception:
+                pass
             
             print(f"\n✓ Test complete!")
             print(f"  Static: {len(static_scenarios)} scenarios")
@@ -177,6 +204,8 @@ class StressTestRunner:
             print(f"  Duration: {total_duration:.1f} min")
             print(f"  Accuracy: {summary['accuracy']*100:.1f}%")
             print(f"  Passed: {summary['passed']}/{summary['total_scenarios']}")
+            print(f"  Precision: {ops['metrics']['precision']*100:.1f}%  Recall: {ops['metrics']['recall']*100:.1f}%  FPR: {ops['metrics']['fp_rate']*100:.2f}%  FNR: {ops['metrics']['fn_rate']*100:.2f}%")
+            print(f"  ECE: {ops['metrics']['ece']:.3f}  Latency p95: {ops['latency']['p95_ms']:.2f} ms")
             
             # Display per-difficulty accuracy
             if summary.get('accuracy_by_difficulty'):
@@ -199,6 +228,7 @@ class StressTestRunner:
                 'difficulty_breakdown': summary.get('difficulty_breakdown', {}),
                 'final_stats': summary['categories'],
                 'failure_log': str((self.output_dir / f"{self.model_name}_{run_date}_failures.jsonl")),
+                'ops_metrics': ops,
                 'replay_command': (
                     f"python src/stress_test/stress_test_v14.py --model {self.model_name} "
                     f"--seed {self.seed if self.seed is not None else 42} "

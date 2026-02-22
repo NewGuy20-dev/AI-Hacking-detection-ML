@@ -1,16 +1,24 @@
 """Prediction API routes."""
 from fastapi import APIRouter, HTTPException
 import time
+import os
+from pathlib import Path
 
 from src.api.schemas import PayloadRequest, URLRequest, BatchRequest, PredictResponse, BatchResponse
 from src.api import server
 from src.input_validator import ValidationError
 from src.benign_filter import get_filter
+from src.stress_test.v14.shadow_logger import ShadowLogger
+from src.stress_test.v14.models import ModelWrapper
+import logging
 
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
-# Confidence threshold for attack classification
-ATTACK_THRESHOLD = 0.75  # Lowered from 0.85 to catch more attacks
+SHADOW_ENABLED = os.getenv("SHADOW_EVAL_ENABLED", "0") == "1"
+SHADOW_STORE_RAW = os.getenv("SHADOW_EVAL_STORE_RAW", "0") == "1"
+SHADOW_LOG_PATH = os.getenv("SHADOW_EVAL_LOG_PATH", "evaluation/shadow_logs.jsonl")
+shadow_logger = ShadowLogger(Path(SHADOW_LOG_PATH), store_raw=SHADOW_STORE_RAW) if SHADOW_ENABLED else None
+logger = logging.getLogger(__name__)
 
 
 def _get_severity(confidence: float) -> str:
@@ -46,14 +54,33 @@ async def predict_payload(request: PayloadRequest):
     raw_confidence = float(result['confidence'][0])
     
     confidence = raw_confidence
-    is_attack = confidence >= ATTACK_THRESHOLD
+    thresholds = ModelWrapper._load_thresholds()
+    attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
+    is_attack = confidence >= attack_threshold
     
+    latency_ms = (time.perf_counter() - start) * 1000
+
+    if shadow_logger:
+        try:
+            shadow_logger.log(
+                model=predictor.active_model if hasattr(predictor, 'active_model') else 'payload',
+                route='payload',
+                input_data=request.payload,
+                prediction=int(is_attack),
+                confidence=confidence,
+                latency_ms=latency_ms,
+                version=getattr(predictor, 'version', ''),
+                error=None,
+            )
+        except Exception as e:
+            logger.warning("shadow_logger.log failed for route='payload': %s", e)
+
     return PredictResponse(
         is_attack=is_attack,
         confidence=confidence,
         attack_type=_classify_attack(request.payload) if is_attack else None,
         severity=_get_severity(confidence) if is_attack else "LOW",
-        processing_time_ms=(time.perf_counter() - start) * 1000
+        processing_time_ms=latency_ms
     )
 
 
@@ -72,14 +99,33 @@ async def predict_url(request: URLRequest):
         raise HTTPException(status_code=422, detail=str(e))
     
     confidence = float(result['confidence'][0])
-    is_attack = confidence >= 0.80  # URL threshold
+    thresholds = ModelWrapper._load_thresholds()
+    url_threshold = float(thresholds.get('url', 0.5))
+    is_attack = confidence >= url_threshold
     
+    latency_ms = (time.perf_counter() - start) * 1000
+
+    if shadow_logger:
+        try:
+            shadow_logger.log(
+                model=predictor.active_model if hasattr(predictor, 'active_model') else 'url',
+                route='url',
+                input_data=request.url,
+                prediction=int(is_attack),
+                confidence=confidence,
+                latency_ms=latency_ms,
+                version=getattr(predictor, 'version', ''),
+                error=None,
+            )
+        except Exception as e:
+            logger.warning("shadow_logger.log failed for route='url': %s", e)
+
     return PredictResponse(
         is_attack=is_attack,
         confidence=confidence,
         attack_type="MALICIOUS_URL" if is_attack else None,
         severity=_get_severity(confidence) if is_attack else "LOW",
-        processing_time_ms=(time.perf_counter() - start) * 1000
+        processing_time_ms=latency_ms
     )
 
 
@@ -130,7 +176,9 @@ async def predict_batch(request: BatchRequest):
             payload = ml_payloads[i]
             idx = ml_payload_indices[i]
             confidence = float(payload_confidences[i])
-            is_attack = confidence >= ATTACK_THRESHOLD
+            thresholds = ModelWrapper._load_thresholds()
+            attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
+            is_attack = confidence >= attack_threshold
             results[idx] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,
@@ -148,7 +196,9 @@ async def predict_batch(request: BatchRequest):
         base_idx = len(payloads)
         for i, raw_confidence in enumerate(url_result['confidence']):
             confidence = float(raw_confidence)
-            is_attack = confidence >= 0.80
+            thresholds = ModelWrapper._load_thresholds()
+            url_threshold = float(thresholds.get('url', 0.5))
+            is_attack = confidence >= url_threshold
             results[base_idx + i] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,
@@ -168,7 +218,25 @@ async def predict_batch(request: BatchRequest):
                 processing_time_ms=0
             )
     
+    total_latency_ms = (time.perf_counter() - start) * 1000
+
+    if shadow_logger:
+        try:
+            # log aggregate info only to avoid large payloads
+            shadow_logger.log(
+                model=predictor.active_model if hasattr(predictor, 'active_model') else 'batch',
+                route='batch',
+                input_data='batch',
+                prediction=0,
+                confidence=0.0,
+                latency_ms=total_latency_ms,
+                version=getattr(predictor, 'version', ''),
+                error=None,
+            )
+        except Exception as e:
+            logger.warning("shadow_logger.log failed for route='batch': %s", e)
+
     return BatchResponse(
         results=results,
-        total_processing_time_ms=(time.perf_counter() - start) * 1000
+        total_processing_time_ms=total_latency_ms
     )

@@ -109,3 +109,4 @@ datasets/cic_malmem_full/.gitattributes
 
 # Stress test logs (large JSONL files)
 evaluation/stress_test_v14/*.jsonl
+evaluation/**/*.html

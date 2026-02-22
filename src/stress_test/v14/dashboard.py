@@ -22,7 +22,7 @@ class DashboardGenerator:
             return None
         
         # Compute statistics
-        stats = self._compute_stats(all_results)
+        stats = self._compute_stats(all_results, run_date)
         
         # Generate HTML
         html = self._render_html(stats, run_date)
@@ -48,7 +48,7 @@ class DashboardGenerator:
         
         return all_results
     
-    def _compute_stats(self, all_results: Dict) -> Dict:
+    def _compute_stats(self, all_results: Dict, run_date: str) -> Dict:
         """Compute aggregate statistics."""
         stats = {
             'models': {},
@@ -61,7 +61,7 @@ class DashboardGenerator:
             total = len(results)
             passed = sum(1 for r in results if r['passed'])
             failed = total - passed
-            
+
             # Per-category stats
             categories = defaultdict(lambda: {'total': 0, 'passed': 0})
             for r in results:
@@ -69,7 +69,19 @@ class DashboardGenerator:
                 categories[cat]['total'] += 1
                 if r['passed']:
                     categories[cat]['passed'] += 1
-            
+
+            # Ops metrics (sidecar if present)
+            metrics_block = {}
+            latency_block = {}
+            ops_path = self.logs_dir / f"{model}_{run_date}_ops.json"
+            if ops_path.exists():
+                try:
+                    ops = json.loads(ops_path.read_text(encoding='utf-8'))
+                    metrics_block = ops.get('metrics', {})
+                    latency_block = ops.get('latency', {})
+                except Exception:
+                    pass
+
             # Per-difficulty stats
             difficulties = defaultdict(lambda: {'total': 0, 'passed': 0})
             for r in results:
@@ -80,7 +92,7 @@ class DashboardGenerator:
             
             # Failed samples
             failed_samples = [r for r in results if not r['passed']][:20]
-            
+
             stats['models'][model] = {
                 'total': total,
                 'passed': passed,
@@ -88,14 +100,16 @@ class DashboardGenerator:
                 'accuracy': passed / total if total > 0 else 0,
                 'categories': dict(categories),
                 'difficulties': dict(difficulties),
-                'failed_samples': failed_samples
+                'failed_samples': failed_samples,
+                'ops_metrics': metrics_block,
+                'latency': latency_block,
             }
-            
+
             stats['total_scenarios'] += total
             stats['total_passed'] += passed
-        
+
         stats['overall_accuracy'] = stats['total_passed'] / stats['total_scenarios'] if stats['total_scenarios'] > 0 else 0
-        
+
         return stats
     
     def _render_html(self, stats: Dict, run_date: str) -> str:
@@ -105,6 +119,22 @@ class DashboardGenerator:
             acc = data['accuracy'] * 100
             status = "✅" if acc >= 95 else "⚠️" if acc >= 90 else "❌"
             
+            # Ops metrics block
+            ops_html = ""
+            if data.get('ops_metrics'):
+                m = data['ops_metrics']
+                lat = data.get('latency', {})
+                ops_html = f"""
+                <div class="stats">
+                    <div class="stat"><span class="label">Precision:</span> <span class="value">{m.get('precision',0)*100:.1f}%</span></div>
+                    <div class="stat"><span class="label">Recall:</span> <span class="value">{m.get('recall',0)*100:.1f}%</span></div>
+                    <div class="stat"><span class="label">FPR:</span> <span class="value">{m.get('fp_rate',0)*100:.2f}%</span></div>
+                    <div class="stat"><span class="label">FNR:</span> <span class="value">{m.get('fn_rate',0)*100:.2f}%</span></div>
+                    <div class="stat"><span class="label">ECE:</span> <span class="value">{m.get('ece',0):.3f}</span></div>
+                    <div class="stat"><span class="label">Latency p95:</span> <span class="value">{lat.get('p95_ms',0):.1f} ms</span></div>
+                </div>
+                """
+
             # Category breakdown
             cat_rows = ""
             for cat, cat_data in data['categories'].items():
@@ -133,6 +163,7 @@ class DashboardGenerator:
                     <div class="stat"><span class="label">Passed:</span> <span class="value pass">{data['passed']:,}</span></div>
                     <div class="stat"><span class="label">Failed:</span> <span class="value fail">{data['failed']:,}</span></div>
                 </div>
+                {ops_html}
                 <h3>Difficulty Breakdown</h3>
                 <table>
                     <tr><th>Difficulty</th><th>Accuracy</th><th>Passed/Total</th></tr>

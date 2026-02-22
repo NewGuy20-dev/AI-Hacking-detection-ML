@@ -1,0 +1,22 @@
+sources:
+  - name: urlhaus_sample
+    model: url
+    format: csv
+    path: datasets/url_analysis/urlhaus.csv
+    text_field: url
+    label_field: threat
+    label_map: {malware: 1, benign: 0}
+    category: malware
+    max_samples: 5000
+    enabled: true
+
+  - name: payloadsallthethings
+    model: payload
+    format: jsonl
+    path: datasets/security_payloads/payloads.jsonl
+    text_field: payload
+    label_field: label
+    label_map: {malicious: 1, benign: 0}
+    category: sqli
+    max_samples: 5000
+    enabled: true
