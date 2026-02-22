@@ -5,7 +5,7 @@ from typing import Any, Tuple, Dict
 from urllib.parse import quote, urlsplit, urlunsplit
 
 import numpy as np
-import json
+import yaml
 
 try:
     import joblib
@@ -41,14 +41,14 @@ class ModelWrapper:
 
     @staticmethod
     def _load_thresholds() -> Dict[str, float]:
-        """Load per-model decision thresholds from config/model_thresholds.json."""
+        """Load per-model decision thresholds from config/model_thresholds.yaml."""
         if ModelWrapper._threshold_cache is None:
             thresholds: Dict[str, float] = {}
-            config_path = Path(__file__).parent.parent.parent.parent / 'config' / 'model_thresholds.json'
+            config_path = Path(__file__).parent.parent.parent.parent / 'config' / 'model_thresholds.yaml'
             if config_path.exists():
                 try:
                     with open(config_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f) or {}
+                        data = yaml.safe_load(f) or {}
                     if isinstance(data, dict):
                         thresholds = {k: float(v) for k, v in data.items() if isinstance(v, (int, float))}
                 except Exception:

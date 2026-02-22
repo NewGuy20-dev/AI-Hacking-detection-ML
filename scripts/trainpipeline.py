@@ -26,12 +26,15 @@ def handshake(handshake_file: Path, timeout_s: int):
                 token = data.get('token')
                 port = data.get('port')
                 if token and port:
-                    with socket.create_connection(('127.0.0.1', int(port)), timeout=5) as sock:
-                        sock.sendall(f"HELLO {token}\n".encode('utf-8'))
-                        resp = sock.recv(1024).decode('utf-8', errors='ignore').strip()
-                        if resp == 'OK':
-                            return True
-            except Exception:
+                    try:
+                        with socket.create_connection(('127.0.0.1', int(port)), timeout=5) as sock:
+                            sock.sendall(f"HELLO {token}\n".encode('utf-8'))
+                            resp = sock.recv(1024).decode('utf-8', errors='ignore').strip()
+                            if resp == 'OK':
+                                return True
+                    except (OSError, ValueError):
+                        pass
+            except (json.JSONDecodeError, OSError, ValueError):
                 pass
         time.sleep(1)
     return False
@@ -83,7 +86,11 @@ def main():
             raise SystemExit("Thermal guardian handshake failed. Start thermal_guardian.py first.")
 
     if not args.skip_label_check:
-        run([python, 'scripts/check_labels.py'])
+        label_script = Path('scripts') / 'check_labels.py'
+        if label_script.exists():
+            run([python, str(label_script)])
+        else:
+            run([python, 'check_labels.py'])
 
     if not args.skip_train:
         run([python, 'scripts/train_rtx3050.py'])

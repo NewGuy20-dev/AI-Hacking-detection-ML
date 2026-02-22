@@ -2,6 +2,7 @@
 """Calibrate per-model thresholds using stress-test JSONL logs."""
 import argparse
 import json
+import yaml
 from pathlib import Path
 import numpy as np
 
@@ -58,7 +59,7 @@ def main():
     parser.add_argument('--date', default=None)
     parser.add_argument('--fp-cap', type=float, default=0.35)
     parser.add_argument('--recall-min', type=float, default=0.8)
-    parser.add_argument('--output', default='config/model_thresholds.json')
+    parser.add_argument('--output', default='config/model_thresholds.yaml')
     args = parser.parse_args()
 
     base = Path(args.dir)
@@ -79,7 +80,7 @@ def main():
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open('w', encoding='utf-8') as f:
-        json.dump(thresholds, f, indent=2, sort_keys=True)
+        yaml.safe_dump(thresholds, f, sort_keys=True)
 
 
 if __name__ == '__main__':
