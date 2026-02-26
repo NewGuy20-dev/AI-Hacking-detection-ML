@@ -10,5 +10,11 @@ TARGET = ROOT / "src/data/generators/generate_500k_benign_test.py"
 if not TARGET.exists():
     raise SystemExit(f"Target script not found: {TARGET}")
 
-sys.path.insert(0, str(ROOT))
-runpy.run_path(str(TARGET), run_name="__main__")
+
+def main() -> None:
+    sys.path.insert(0, str(ROOT))
+    runpy.run_path(str(TARGET), run_name="__main__")
+
+
+if __name__ == "__main__":
+    main()

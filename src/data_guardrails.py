@@ -27,7 +27,9 @@ def assert_allowed_training_path(path: PathLike, context: str = "training input"
                 f"Blocked {context}: {resolved}. "
                 f"Do not train on {blocked.as_posix()}."
             )
-        if blocked_abs.is_dir() and blocked_abs in resolved.parents:
+
+        is_blocked_dir = blocked.suffix == ""
+        if is_blocked_dir and blocked_abs in resolved.parents:
             raise ValueError(
                 f"Blocked {context}: {resolved}. "
                 f"Do not train on any data inside {blocked.as_posix()}/."
