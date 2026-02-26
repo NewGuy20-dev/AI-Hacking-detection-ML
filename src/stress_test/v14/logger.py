@@ -1,8 +1,12 @@
 """JSON logger for per-scenario logging in V1.4 stress test suite."""
 import json
+import os
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict
+
+import numpy as np
+
 from .scenarios import ScenarioResult
 
 
@@ -21,6 +25,7 @@ class JSONLogger:
         self.stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.difficulty_stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.total_logged = 0
+        self.include_input_summary = os.getenv("STRESS_LOG_INPUT_SUMMARY", "0") == "1"
         
     def __enter__(self):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -54,6 +59,10 @@ class JSONLogger:
             'timestamp': result.timestamp,
             'error': result.error
         }
+        if self.include_input_summary:
+            summary = self._summarize_input(result.scenario.input_data)
+            if summary is not None:
+                record['input_summary'] = summary
         
         self.file.write(json.dumps(record) + '\n')
         self.file.flush()
@@ -83,6 +92,28 @@ class JSONLogger:
             return f"[array shape: {input_data.shape}]"
         else:
             return f"[{type(input_data).__name__}]"
+
+    def _summarize_input(self, input_data):
+        """Optional compact numeric summary for debugging/profiling."""
+        arr = None
+        if isinstance(input_data, np.ndarray):
+            arr = input_data.astype(np.float32, copy=False)
+        elif isinstance(input_data, (list, tuple)):
+            try:
+                arr = np.asarray(input_data, dtype=np.float32)
+            except (TypeError, ValueError):
+                return None
+        if arr is None or arr.size == 0:
+            return None
+        flat = arr.reshape(-1)
+        return {
+            "shape": list(arr.shape),
+            "min": float(flat.min()),
+            "max": float(flat.max()),
+            "mean": float(flat.mean()),
+            "std": float(flat.std()),
+            "p95": float(np.percentile(flat, 95)),
+        }
     
     def get_category_accuracy(self) -> Dict[str, float]:
         """Returns accuracy per category for adaptive scheduling."""

@@ -52,6 +52,7 @@ from src.torch_models.timeseries_lstm import TimeSeriesLSTM
 from src.data.streaming_dataset import StreamingDataset, BalancedStreamingDataset
 from src.data.url_dataset import RealURLDataset
 from src.training.checkpoint_manager import CheckpointManager
+from src.data_guardrails import assert_allowed_training_paths
 from src.training.transfer_learning import (
     freeze_embeddings, unfreeze_all, count_trainable_params,
     GradualUnfreezer, get_transfer_learning_schedule,
@@ -386,11 +387,14 @@ def get_data_files(config: TrainingConfig, model_type: str):
                 benign_files.extend(d.rglob('*.jsonl'))
                 benign_files.extend(d.rglob('*.txt'))
         
-        # Additional benign
-        for f in ['benign_5m.jsonl', 'fp_test_500k.jsonl']:
+        # Additional benign (explicitly excludes fp_test_500k.jsonl)
+        for f in ['benign_5m.jsonl']:
             p = config.data_dir / f
             if p.exists():
                 benign_files.append(p)
+
+    assert_allowed_training_paths(malicious_files, context=f"{model_type} malicious training source")
+    assert_allowed_training_paths(benign_files, context=f"{model_type} benign training source")
     
     return malicious_files, benign_files
 

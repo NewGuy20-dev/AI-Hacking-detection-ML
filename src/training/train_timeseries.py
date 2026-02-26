@@ -16,6 +16,7 @@ from src.torch_models.timeseries_lstm import TimeSeriesLSTM
 from src.torch_models.datasets import TimeSeriesDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
 from src.training.checkpoint import CheckpointManager
+from src.data_guardrails import assert_allowed_training_paths
 
 
 def generate_normal_traffic(n_samples=10000, seq_len=60, n_features=8):
@@ -166,6 +167,10 @@ def train():
     live_benign_path = base_path / 'datasets' / 'live_benign' / 'timeseries_benign.npy'
     synth_attack_path = base_path / 'datasets' / 'timeseries' / 'attack_traffic_expansion.npy'
     synth_normal_path = base_path / 'datasets' / 'timeseries' / 'normal_traffic_expansion.npy'
+    assert_allowed_training_paths(
+        [live_benign_path, synth_attack_path, synth_normal_path],
+        context="timeseries training data source",
+    )
     
     if live_benign_path.exists():
         print(f"Loading live benign from {live_benign_path}")

@@ -7,11 +7,16 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
+from src.data_guardrails import assert_allowed_training_paths
 
 def main():
     base = Path(__file__).parent.parent
     synth_path = base / "datasets/fraud_detection/synthetic_500k.jsonl"
     live_benign_path = base / "datasets/live_benign/fraud_benign.jsonl"
+    assert_allowed_training_paths(
+        [synth_path, live_benign_path],
+        context="fraud training data source",
+    )
     
     print("Loading data...")
     samples = []

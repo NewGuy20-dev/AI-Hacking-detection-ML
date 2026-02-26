@@ -7,7 +7,7 @@ from pathlib import Path
 from src.api.schemas import PayloadRequest, URLRequest, BatchRequest, PredictResponse, BatchResponse
 from src.api import server
 from src.input_validator import ValidationError
-from src.benign_filter import get_filter
+from src.prefilters.benign_pre_filter import get_filter
 from src.stress_test.v14.shadow_logger import ShadowLogger
 from src.stress_test.v14.models import ModelWrapper
 import logging
@@ -42,10 +42,37 @@ async def predict_payload(request: PayloadRequest):
     start = time.perf_counter()
 
     predictor = server.get_predictor()
+    benign_filter = get_filter()
     
     if not predictor:
         raise HTTPException(status_code=503, detail="Models not loaded")
     
+    is_benign, benign_confidence, _ = benign_filter.is_benign(request.payload)
+    if is_benign:
+        confidence = max(0.0, 1.0 - float(benign_confidence))
+        latency_ms = (time.perf_counter() - start) * 1000
+        if shadow_logger:
+            try:
+                shadow_logger.log(
+                    model=predictor.active_model if hasattr(predictor, 'active_model') else 'payload',
+                    route='payload',
+                    input_data=request.payload,
+                    prediction=0,
+                    confidence=confidence,
+                    latency_ms=latency_ms,
+                    version=getattr(predictor, 'version', ''),
+                    error=None,
+                )
+            except Exception as e:
+                logger.warning("shadow_logger.log failed for route='payload': %s", e)
+        return PredictResponse(
+            is_attack=False,
+            confidence=confidence,
+            attack_type=None,
+            severity="LOW",
+            processing_time_ms=latency_ms,
+        )
+
     try:
         result = predictor.predict_batch({'payloads': [request.payload]})
     except ValidationError as e:

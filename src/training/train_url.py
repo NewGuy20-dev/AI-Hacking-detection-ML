@@ -16,6 +16,10 @@ from tqdm import tqdm
 from src.torch_models.url_cnn import URLCNN
 from src.torch_models.datasets import URLDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.data_guardrails import (
+    assert_allowed_training_path,
+    assert_allowed_training_paths,
+)
 from training.checkpoint import CheckpointManager
 
 
@@ -24,6 +28,7 @@ def _load_hard_examples(file_path: str, model: str = "url"):
     if not file_path:
         return []
     path = Path(file_path)
+    assert_allowed_training_path(path, context="url hard examples source")
     if not path.exists():
         print(f"Warning: hard examples file not found: {path}")
         return []
@@ -123,6 +128,11 @@ def load_url_data(base_path, hard_examples_file=None):
     urls, labels = [], []
     
     url_dir = Path(base_path) / 'datasets' / 'url_analysis'
+    live_benign_dir = Path(base_path) / 'datasets' / 'live_benign'
+    assert_allowed_training_paths(
+        [url_dir, live_benign_dir],
+        context="url training data source",
+    )
     
     # === REAL MALICIOUS URLs ===
     
@@ -168,7 +178,6 @@ def load_url_data(base_path, hard_examples_file=None):
     # === REAL BENIGN URLs ===
     
     # Load Common Crawl URLs from live_benign (NEW - up to 50M)
-    live_benign_dir = Path(base_path) / 'datasets' / 'live_benign'
     cc_urls = live_benign_dir / 'common_crawl_urls.jsonl'
     if cc_urls.exists():
         ben_before = len(urls) - mal_count
