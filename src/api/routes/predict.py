@@ -36,6 +36,12 @@ def _classify_attack(text: str) -> str:
     return "UNKNOWN"
 
 
+def _resolve_is_attack(result: dict, index: int, confidence: float, threshold: float) -> bool:
+    predicted = result.get("is_attack")
+    if predicted is not None and len(predicted) > index:
+        return bool(predicted[index])
+    return confidence >= threshold
+
 @router.post("/payload", response_model=PredictResponse)
 async def predict_payload(request: PayloadRequest):
     """Analyze payload for attacks."""
@@ -83,7 +89,7 @@ async def predict_payload(request: PayloadRequest):
     confidence = raw_confidence
     thresholds = ModelWrapper._load_thresholds()
     attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
-    is_attack = confidence >= attack_threshold
+    is_attack = _resolve_is_attack(result, 0, confidence, attack_threshold)
     
     latency_ms = (time.perf_counter() - start) * 1000
 
@@ -128,7 +134,7 @@ async def predict_url(request: URLRequest):
     confidence = float(result['confidence'][0])
     thresholds = ModelWrapper._load_thresholds()
     url_threshold = float(thresholds.get('url', 0.5))
-    is_attack = confidence >= url_threshold
+    is_attack = _resolve_is_attack(result, 0, confidence, url_threshold)
     
     latency_ms = (time.perf_counter() - start) * 1000
 
@@ -205,7 +211,7 @@ async def predict_batch(request: BatchRequest):
             confidence = float(payload_confidences[i])
             thresholds = ModelWrapper._load_thresholds()
             attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
-            is_attack = confidence >= attack_threshold
+            is_attack = _resolve_is_attack(payload_result, i, confidence, attack_threshold)
             results[idx] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,
@@ -225,7 +231,7 @@ async def predict_batch(request: BatchRequest):
             confidence = float(raw_confidence)
             thresholds = ModelWrapper._load_thresholds()
             url_threshold = float(thresholds.get('url', 0.5))
-            is_attack = confidence >= url_threshold
+            is_attack = _resolve_is_attack(url_result, i, confidence, url_threshold)
             results[base_idx + i] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,

@@ -26,7 +26,6 @@ class BenignPreFilter:
         re.compile(r"\$\(", re.IGNORECASE),
     ]
 
-    SUSPICIOUS_CHARS = set("<>;`|${}[]")
 
     def is_obviously_benign(self, payload: str) -> bool:
         text = str(payload).strip()
@@ -45,12 +44,6 @@ class BenignPreFilter:
 
         if self.is_obviously_benign(text):
             return True, 0.98, "safe_pattern"
-
-        if len(text) < 20 and not any(ch in self.SUSPICIOUS_CHARS for ch in text):
-            return True, 0.96, "short_clean"
-
-        if len(text) < 64 and text.replace(" ", "").isalnum():
-            return True, 0.93, "short_alnum"
 
         return False, 0.0, None
 

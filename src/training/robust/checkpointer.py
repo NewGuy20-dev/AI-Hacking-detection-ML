@@ -2,6 +2,7 @@
 import os
 import glob
 import logging
+import re
 from pathlib import Path
 from typing import Optional, Dict, Any, Set, List
 
@@ -99,10 +100,17 @@ class RobustCheckpointManager:
                     self.logger.warning(f"Failed to remove checkpoint {old_path}: {e}")
     
     def _list_checkpoints(self) -> List[Path]:
-        """List all checkpoints sorted by modification time."""
+        """List all checkpoints sorted by epoch/batch, then by mtime."""
         pattern = str(self.checkpoint_dir / f"{self.model_name}_e*_b*.pt")
         paths = [Path(p) for p in glob.glob(pattern)]
-        return sorted(paths, key=lambda p: p.stat().st_mtime)
+
+        def _checkpoint_key(path: Path) -> tuple[int, int, float]:
+            match = re.search(r"_e(\d+)_b(\d+)\.pt$", path.name)
+            if match:
+                return (int(match.group(1)), int(match.group(2)), path.stat().st_mtime)
+            return (-1, -1, path.stat().st_mtime)
+
+        return sorted(paths, key=_checkpoint_key)
     
     def find_latest(self) -> Optional[Path]:
         """Find the most recent checkpoint."""
@@ -115,7 +123,7 @@ class RobustCheckpointManager:
         optimizer: torch.optim.Optimizer,
         scheduler=None,
         scaler=None,
-        device: str = 'cuda',
+        device: Optional[str] = None,
         restore_rng: bool = True,
     ) -> Dict[str, Any]:
         """Load latest checkpoint and restore state.
@@ -135,7 +143,18 @@ class RobustCheckpointManager:
             }
         
         self.logger.info(f"Loading checkpoint: {path}")
-        checkpoint = torch.load(path, map_location=device, weights_only=False)
+
+        if device is None:
+            map_location = 'cuda' if torch.cuda.is_available() else 'cpu'
+        else:
+            map_location = device
+            if map_location.startswith('cuda') and not torch.cuda.is_available():
+                self.logger.warning(
+                    "CUDA requested for checkpoint load, but CUDA is unavailable. Falling back to CPU."
+                )
+                map_location = 'cpu'
+
+        checkpoint = torch.load(path, map_location=map_location, weights_only=False)
         
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
