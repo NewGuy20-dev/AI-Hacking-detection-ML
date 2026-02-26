@@ -17,6 +17,10 @@ from tqdm import tqdm
 from src.torch_models.payload_cnn import PayloadCNN
 from src.torch_models.datasets import PayloadDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.data_guardrails import (
+    assert_allowed_training_path,
+    assert_allowed_training_paths,
+)
 
 
 def _load_hard_examples(file_path: str, model: str = "payload"):
@@ -24,6 +28,7 @@ def _load_hard_examples(file_path: str, model: str = "payload"):
     if not file_path:
         return []
     path = Path(file_path)
+    assert_allowed_training_path(path, context="payload hard examples source")
     if not path.exists():
         print(f"Warning: hard examples file not found: {path}")
         return []
@@ -54,6 +59,10 @@ def load_payload_data(base_path, hard_examples_file=None):
     payloads_dir = base / 'datasets' / 'security_payloads'
     curated_dir = base / 'datasets' / 'curated_benign'
     adversarial_dir = curated_dir / 'adversarial'
+    assert_allowed_training_paths(
+        [payloads_dir, curated_dir, adversarial_dir],
+        context="payload training data source",
+    )
     
     records = []
     
@@ -99,24 +108,6 @@ def load_payload_data(base_path, hard_examples_file=None):
             except: pass
         print(f"Loaded {sum(1 for _, label, _ in records if label == 0) - adv_count_before} adversarial benign samples")
     
-    # Load 500k FP test dataset (JSONL format)
-    fp_test_file = base / 'datasets' / 'fp_test_500k.jsonl'
-    fp_count_before = sum(1 for _, label, _ in records if label == 0)
-    if fp_test_file.exists():
-        try:
-            with open(fp_test_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    try:
-                        obj = json.loads(line.strip())
-                        text = obj.get('text', '').strip()
-                        if text and len(text) > 2:
-                            records.append((text, 0, False))
-                    except json.JSONDecodeError:
-                        continue
-            print(f"Loaded {sum(1 for _, label, _ in records if label == 0) - fp_count_before} samples from fp_test_500k.jsonl")
-        except Exception as e:
-            print(f"Warning: Could not load fp_test_500k.jsonl: {e}")
-
     # Load hard examples from feedback loop output
     hard_records = _load_hard_examples(hard_examples_file, model="payload")
     if hard_records:

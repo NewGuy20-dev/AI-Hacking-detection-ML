@@ -7,7 +7,7 @@ from pathlib import Path
 from src.api.schemas import PayloadRequest, URLRequest, BatchRequest, PredictResponse, BatchResponse
 from src.api import server
 from src.input_validator import ValidationError
-from src.benign_filter import get_filter
+from src.prefilters.benign_pre_filter import get_filter
 from src.stress_test.v14.shadow_logger import ShadowLogger
 from src.stress_test.v14.models import ModelWrapper
 import logging
@@ -36,16 +36,49 @@ def _classify_attack(text: str) -> str:
     return "UNKNOWN"
 
 
+def _resolve_is_attack(result: dict, index: int, confidence: float, threshold: float) -> bool:
+    predicted = result.get("is_attack")
+    if predicted is not None and len(predicted) > index:
+        return bool(predicted[index])
+    return confidence >= threshold
+
 @router.post("/payload", response_model=PredictResponse)
 async def predict_payload(request: PayloadRequest):
     """Analyze payload for attacks."""
     start = time.perf_counter()
 
     predictor = server.get_predictor()
+    benign_filter = get_filter()
     
     if not predictor:
         raise HTTPException(status_code=503, detail="Models not loaded")
     
+    is_benign, benign_confidence, _ = benign_filter.is_benign(request.payload)
+    if is_benign:
+        confidence = max(0.0, 1.0 - float(benign_confidence))
+        latency_ms = (time.perf_counter() - start) * 1000
+        if shadow_logger:
+            try:
+                shadow_logger.log(
+                    model=predictor.active_model if hasattr(predictor, 'active_model') else 'payload',
+                    route='payload',
+                    input_data=request.payload,
+                    prediction=0,
+                    confidence=confidence,
+                    latency_ms=latency_ms,
+                    version=getattr(predictor, 'version', ''),
+                    error=None,
+                )
+            except Exception as e:
+                logger.warning("shadow_logger.log failed for route='payload': %s", e)
+        return PredictResponse(
+            is_attack=False,
+            confidence=confidence,
+            attack_type=None,
+            severity="LOW",
+            processing_time_ms=latency_ms,
+        )
+
     try:
         result = predictor.predict_batch({'payloads': [request.payload]})
     except ValidationError as e:
@@ -56,7 +89,7 @@ async def predict_payload(request: PayloadRequest):
     confidence = raw_confidence
     thresholds = ModelWrapper._load_thresholds()
     attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
-    is_attack = confidence >= attack_threshold
+    is_attack = _resolve_is_attack(result, 0, confidence, attack_threshold)
     
     latency_ms = (time.perf_counter() - start) * 1000
 
@@ -101,7 +134,7 @@ async def predict_url(request: URLRequest):
     confidence = float(result['confidence'][0])
     thresholds = ModelWrapper._load_thresholds()
     url_threshold = float(thresholds.get('url', 0.5))
-    is_attack = confidence >= url_threshold
+    is_attack = _resolve_is_attack(result, 0, confidence, url_threshold)
     
     latency_ms = (time.perf_counter() - start) * 1000
 
@@ -178,7 +211,7 @@ async def predict_batch(request: BatchRequest):
             confidence = float(payload_confidences[i])
             thresholds = ModelWrapper._load_thresholds()
             attack_threshold = float(thresholds.get('attack', thresholds.get('payload', 0.5)))
-            is_attack = confidence >= attack_threshold
+            is_attack = _resolve_is_attack(payload_result, i, confidence, attack_threshold)
             results[idx] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,
@@ -198,7 +231,7 @@ async def predict_batch(request: BatchRequest):
             confidence = float(raw_confidence)
             thresholds = ModelWrapper._load_thresholds()
             url_threshold = float(thresholds.get('url', 0.5))
-            is_attack = confidence >= url_threshold
+            is_attack = _resolve_is_attack(url_result, i, confidence, url_threshold)
             results[base_idx + i] = PredictResponse(
                 is_attack=is_attack,
                 confidence=confidence,

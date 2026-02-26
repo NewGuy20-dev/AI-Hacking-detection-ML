@@ -25,9 +25,12 @@ except Exception:  # pragma: no cover - optional dependency
     ConfidenceCalibrator = None
 
 try:
-    from benign_filter import get_filter
+    from src.prefilters.benign_pre_filter import get_filter
 except Exception:  # pragma: no cover - optional dependency
-    get_filter = None
+    try:
+        from benign_filter import get_filter
+    except Exception:  # pragma: no cover - optional dependency
+        get_filter = None
 
 
 class ModelWrapper:

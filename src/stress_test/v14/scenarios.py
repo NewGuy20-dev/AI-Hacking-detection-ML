@@ -890,9 +890,31 @@ class AnomalyGenerator(TabularGenerator):
 
 
 class MetaGenerator(DynamicGenerator):
-    """Generate meta-classifier input vectors (simulated model outputs)."""
+    """Generate meta-classifier inputs from real base-model score distributions."""
 
     DEFAULT_MALICIOUS_WEIGHTS = {'combined': 1.0}
+    MODEL_NAMES = ['payload', 'url', 'timeseries', 'network', 'host']
+    DIFFICULTY_NOISE = {
+        'easy': 0.05,
+        'medium': 0.12,
+        'hard': 0.22,
+        'adversarial': 0.35,
+    }
+    DEFAULT_DISTRIBUTIONS = {
+        'payload': {'benign': {'mean': 0.30, 'std': 0.20}, 'attack': {'mean': 0.85, 'std': 0.15}},
+        'url': {'benign': {'mean': 0.25, 'std': 0.20}, 'attack': {'mean': 0.80, 'std': 0.15}},
+        'timeseries': {'benign': {'mean': 0.10, 'std': 0.12}, 'attack': {'mean': 0.75, 'std': 0.22}},
+        'network': {'benign': {'mean': 0.10, 'std': 0.10}, 'attack': {'mean': 0.85, 'std': 0.12}},
+        'host': {'benign': {'mean': 0.05, 'std': 0.08}, 'attack': {'mean': 0.90, 'std': 0.08}},
+    }
+
+    def __init__(self, seed: int = None, distributions_path: str = 'configs/score_distributions.json'):
+        super().__init__(seed)
+        self.distributions_path = Path(distributions_path)
+        if not self.distributions_path.is_absolute():
+            project_root = Path(__file__).resolve().parents[3]
+            self.distributions_path = project_root / self.distributions_path
+        self.score_distributions = self._load_score_distributions()
     
     def generate(self, count: int, category_weights: Dict[str, float], benign_ratio: float = 0.7) -> List[Scenario]:
         """Generate 5-element vectors simulating outputs from 6 base models."""
@@ -940,35 +962,60 @@ class MetaGenerator(DynamicGenerator):
         
         return scenarios
 
-    @staticmethod
-    def _sample_meta_vector(label: int, difficulty: str) -> np.ndarray:
-        """
-        Sample overlapping probability vectors that mimic real base-model outputs.
-        Hard/adversarial tiers intentionally overlap to avoid trivial separation.
-        """
-        if label == 0:
-            ranges = {
-                'easy': (0.02, 0.20),
-                'medium': (0.05, 0.35),
-                'hard': (0.10, 0.55),
-                'adversarial': (0.20, 0.65),
-            }
-        else:
-            ranges = {
-                'easy': (0.70, 0.98),
-                'medium': (0.60, 0.92),
-                'hard': (0.45, 0.88),
-                'adversarial': (0.35, 0.85),
-            }
+    def _load_score_distributions(self) -> Dict[str, Dict[str, Dict[str, float]]]:
+        distributions = {}
+        if self.distributions_path.exists():
+            try:
+                with open(self.distributions_path, encoding='utf-8') as f:
+                    loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    distributions = loaded
+            except (OSError, ValueError):
+                distributions = {}
 
-        low, high = ranges.get(difficulty, (0.10, 0.60))
-        base = np.random.uniform(low, high)
-        noise = np.random.normal(0.0, 0.08, 5)
-        # Correlate model outputs while keeping per-model variance.
-        vector = np.clip(base + noise, 0.0, 1.0).astype(np.float32)
-        # Add slight asymmetry to mimic model disagreement.
-        jitter = np.random.uniform(-0.06, 0.06, 5)
-        return np.clip(vector + jitter, 0.0, 1.0).astype(np.float32)
+        merged = {}
+        for model_name in self.MODEL_NAMES:
+            default = self.DEFAULT_DISTRIBUTIONS[model_name]
+            current = distributions.get(model_name, {})
+            merged[model_name] = {
+                'benign': {
+                    'mean': float(current.get('benign', {}).get('mean', default['benign']['mean'])),
+                    'std': float(current.get('benign', {}).get('std', default['benign']['std'])),
+                    'p10': float(current.get('benign', {}).get('p10', 0.01)),
+                    'p90': float(current.get('benign', {}).get('p90', 0.99)),
+                },
+                'attack': {
+                    'mean': float(current.get('attack', {}).get('mean', default['attack']['mean'])),
+                    'std': float(current.get('attack', {}).get('std', default['attack']['std'])),
+                    'p10': float(current.get('attack', {}).get('p10', 0.01)),
+                    'p90': float(current.get('attack', {}).get('p90', 0.99)),
+                },
+            }
+        return merged
+
+    def _sample_base_score(self, model_name: str, expected_label: int) -> float:
+        dist_key = 'attack' if expected_label == 1 else 'benign'
+        dist = self.score_distributions[model_name][dist_key]
+        raw = np.random.normal(dist['mean'], max(dist['std'], 1e-3))
+        bounded = np.clip(raw, dist.get('p10', 0.01), dist.get('p90', 0.99))
+        return float(np.clip(bounded, 0.01, 0.99))
+
+    def _sample_meta_vector(self, label: int, difficulty: str) -> np.ndarray:
+        """Sample model-score vectors using observed score distributions."""
+        noise_std = self.DIFFICULTY_NOISE.get(difficulty, 0.12)
+        scores = []
+        for model_name in self.MODEL_NAMES:
+            base = self._sample_base_score(model_name, label)
+            score = base + np.random.normal(0.0, noise_std)
+            scores.append(float(np.clip(score, 0.01, 0.99)))
+
+        if difficulty == 'adversarial':
+            disagree_idx = np.random.choice(len(self.MODEL_NAMES), 2, replace=False)
+            for idx in disagree_idx:
+                flipped = 1.0 - scores[idx] + np.random.normal(0.0, 0.05)
+                scores[idx] = float(np.clip(flipped, 0.01, 0.99))
+
+        return np.array(scores, dtype=np.float32)
 
 
 class BenignAdversarialGenerator(DynamicGenerator):
