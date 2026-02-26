@@ -26,7 +26,7 @@ This system implements a hybrid ML/DL approach for detecting cyber attacks inclu
 
 ## 📊 Current Dataset Status
 
-- **Total Dataset Size**: ~40GB+ (100M+ samples across all categories)
+- **Total Dataset Size**: ~94.8GB (100M+ samples across all categories)
 - **Live Benign Data**: 35GB+ (Wikipedia, GitHub, StackOverflow, Reddit, Enron emails, MAWI network)
 - **Synthetic Data**: 5M+ malicious URLs, 500k network/fraud/host samples
 - **FP Test Dataset**: 500k diverse benign samples
@@ -78,7 +78,7 @@ This system implements a hybrid ML/DL approach for detecting cyber attacks inclu
 Input Data → Feature Engineering → Specialized Models → Calibration → Ensemble Voting → Explainability → Triage → Alert
 ```
 
-## 🆕 Latest Features (v2.1 - January 2026)
+## 🆕 Latest Features (v2.1 - February 2026)
 
 ### V1.4 Stress Test Framework
 - **Comprehensive Testing**: 60 domain-specific scenarios per model
@@ -414,7 +414,7 @@ These are acceptable trade-offs for security - the model errs on the side of cau
 │   ├── host_behavior_model.pkl (223KB)
 │   ├── timeseries_lstm.pt (564KB)
 │   └── meta_classifier.pt (16KB)
-├── datasets/                      # Training datasets (40GB+)
+├── datasets/                      # Training datasets (94.8GB)
 │   ├── network_intrusion/        # NSL-KDD, CICIDS2017, etc.
 │   ├── url_analysis/             # Malicious URLs, Tranco
 │   ├── security_payloads/        # Wordlists, payloads
@@ -531,6 +531,4 @@ For issues and questions:
 
 **Built for cybersecurity professionals by cybersecurity professionals** 🛡️
 
-Last Updated: January 13, 2026
-
-Last Updated: December 21, 2025
+Last Updated: February 21, 2026

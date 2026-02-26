@@ -9,6 +9,10 @@ from pathlib import Path
 from data_loader import preprocess_network_data, NSL_KDD_COLS
 from feature_engineering import extract_url_features_batch, ContentFeatureExtractor
 from ensemble import EnsembleDetector
+try:
+    from benign_filter import get_filter
+except Exception:
+    get_filter = None
 
 
 class HackingDetector:
@@ -51,12 +55,14 @@ class HackingDetector:
             X = self.network_scaler.transform(X)
         
         probs = self.ensemble.predict_proba_network(X)
-        preds = (probs >= 0.5).astype(int)
+        threshold = self.ensemble.get_threshold("network")
+        preds = (probs >= threshold).astype(int)
         
         return {
             'predictions': preds.tolist(),
             'probabilities': probs.tolist(),
-            'detector': 'network'
+            'detector': 'network',
+            'threshold': float(threshold),
         }
     
     def predict_url(self, urls: list) -> dict:
@@ -66,13 +72,15 @@ class HackingDetector:
         
         X = extract_url_features_batch(urls)
         probs = self.ensemble.predict_proba_url(X)
-        preds = (probs >= 0.5).astype(int)
+        threshold = self.ensemble.get_threshold("url_cnn")
+        preds = (probs >= threshold).astype(int)
         
         return {
             'predictions': preds.tolist(),
             'probabilities': probs.tolist(),
             'urls': urls,
-            'detector': 'url'
+            'detector': 'url',
+            'threshold': float(threshold),
         }
     
     def predict_content(self, texts: list) -> dict:
@@ -80,18 +88,30 @@ class HackingDetector:
         if self.ensemble.content_model is None:
             return {'error': 'Content model not loaded'}
         
+        threshold = self.ensemble.get_threshold("payload_cnn")
         if self.content_vectorizer:
             X = self.content_vectorizer.transform(texts)
         else:
             return {'error': 'Content vectorizer not loaded'}
-        
+
         probs = self.ensemble.predict_proba_content(X)
-        preds = (probs >= 0.5).astype(int)
+        preds = (probs >= threshold).astype(int)
+
+        if get_filter is not None:
+            prefilter = get_filter()
+            for idx, text in enumerate(texts):
+                if not isinstance(text, str):
+                    continue
+                is_benign, benign_conf, _reason = prefilter.is_benign(text)
+                if is_benign:
+                    probs[idx] = max(0.0, 1.0 - float(benign_conf))
+                    preds[idx] = 0
         
         return {
             'predictions': preds.tolist(),
             'probabilities': probs.tolist(),
-            'detector': 'content'
+            'detector': 'content',
+            'threshold': float(threshold),
         }
     
     def predict_combined(self, network_data: pd.DataFrame = None, 
@@ -114,6 +134,8 @@ class HackingDetector:
             X = self.content_vectorizer.transform(texts)
             content_probs = self.ensemble.predict_proba_content(X)
         
+        if threshold is None:
+            threshold = self.ensemble.get_threshold("ensemble")
         result = self.ensemble.predict(network_probs, url_probs, content_probs, threshold)
         
         return {

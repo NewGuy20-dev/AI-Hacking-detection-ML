@@ -223,7 +223,7 @@ def create_gitkeep_files():
 
 
 def setup_live_benign() -> bool:
-    """Download live benign data for all models (~35-40GB)."""
+    """Download live benign data for all models (~35GB+)."""
     print("\n[8/8] Live Benign Data (for high precision/low FP)")
     
     script_path = BASE_DIR / "scripts" / "collect_live_data" / "download_all.py"
@@ -232,7 +232,7 @@ def setup_live_benign() -> bool:
         return False
     
     print("  Running live benign data collector...")
-    print("  This downloads ~35-40GB of benign samples for all models.")
+    print("  This downloads ~35GB+ of benign samples for all models.")
     print("  Sources: Wikipedia, GitHub, Common Crawl, MAWI, etc.")
     
     try:
@@ -339,7 +339,7 @@ def main():
     parser = argparse.ArgumentParser(description="Download datasets for AI-Hacking-Detection-ML")
     parser.add_argument("--minimal", action="store_true", help="Download only essential datasets")
     parser.add_argument("--skip-large", action="store_true", help="Skip datasets >100MB")
-    parser.add_argument("--with-live-benign", action="store_true", help="Also download live benign data (~35-40GB)")
+    parser.add_argument("--with-live-benign", action="store_true", help="Also download live benign data (~35GB+)")
     parser.add_argument("--count-only", action="store_true", help="Only count existing samples, no downloads")
     args = parser.parse_args()
     
@@ -397,7 +397,7 @@ def main():
         print("   You can re-run this script to retry failed downloads.")
     
     if not args.with_live_benign:
-        print("\n💡 Tip: Run with --with-live-benign to download ~35-40GB of")
+        print("\n💡 Tip: Run with --with-live-benign to download ~35GB+ of")
         print("   additional benign data for high precision / low FP training.")
     
     return 0 if success == total else 1

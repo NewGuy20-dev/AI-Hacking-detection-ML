@@ -1,7 +1,7 @@
 """Unified model wrapper for all V1.4 stress test models."""
 import time
 from pathlib import Path
-from typing import Any, Tuple, Dict
+from typing import Any, Tuple, Dict, List
 from urllib.parse import quote, urlsplit, urlunsplit
 
 import numpy as np
@@ -18,6 +18,16 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - environment dependent
     torch = None
     nn = None
+
+try:
+    from confidence import ConfidenceCalibrator
+except Exception:  # pragma: no cover - optional dependency
+    ConfidenceCalibrator = None
+
+try:
+    from benign_filter import get_filter
+except Exception:  # pragma: no cover - optional dependency
+    get_filter = None
 
 
 class ModelWrapper:
@@ -38,6 +48,7 @@ class ModelWrapper:
         self.scaler = None
         self.timeseries_norm = None
         self.device = 'cuda' if torch is not None and torch.cuda.is_available() else 'cpu'
+        self.calibrator = None
 
     @staticmethod
     def _load_thresholds() -> Dict[str, float]:
@@ -53,6 +64,28 @@ class ModelWrapper:
                         thresholds = {k: float(v) for k, v in data.items() if isinstance(v, (int, float))}
                 except Exception:
                     thresholds = {}
+            # Overlay with inference thresholds when available
+            inference_path = Path(__file__).parent.parent.parent.parent / 'configs' / 'inference' / 'optimal_thresholds.json'
+            if inference_path.exists():
+                try:
+                    import json
+                    data = json.loads(inference_path.read_text(encoding='utf-8'))
+                    thresh = data.get('thresholds', {}) if isinstance(data, dict) else {}
+                    mapping = {
+                        'payload': 'payload_cnn',
+                        'url': 'url_cnn',
+                        'timeseries': 'timeseries',
+                        'network': 'network',
+                        'fraud': 'fraud',
+                        'meta': 'meta',
+                        'host': 'host',
+                        'anomaly': 'anomaly',
+                    }
+                    for model_name, key in mapping.items():
+                        if key in thresh:
+                            thresholds[model_name] = float(thresh[key])
+                except Exception:
+                    pass
             ModelWrapper._threshold_cache = thresholds
         return ModelWrapper._threshold_cache
 
@@ -71,6 +104,7 @@ class ModelWrapper:
             self._load_pytorch()
         else:
             self._load_sklearn()
+        self._load_calibration()
         return self
 
     def _load_pytorch(self):
@@ -149,6 +183,21 @@ class ModelWrapper:
                 self.model = artifact
                 self.scaler = joblib.load(scaler_path)
 
+        # Allow sklearn estimators with n_jobs to use all cores at inference
+        if hasattr(self.model, 'n_jobs') and self.model.n_jobs is not None:
+            try:
+                self.model.n_jobs = -1
+            except Exception:
+                pass
+
+    def _load_calibration(self):
+        if ConfidenceCalibrator is None:
+            return
+        cal_path = self.models_dir / 'calibration' / f"{self.model_name}_calibration.json"
+        if cal_path.exists():
+            self.calibrator = ConfidenceCalibrator()
+            self.calibrator.load(cal_path)
+
     @staticmethod
     def _normalize_url_text(url: str) -> str:
         """Normalize URL to ASCII-safe form while preserving IDN semantics."""
@@ -226,6 +275,13 @@ class ModelWrapper:
         start = time.perf_counter()
 
         try:
+            if self.model_name == 'payload' and isinstance(input_data, str) and get_filter is not None:
+                prefilter = get_filter()
+                is_benign, benign_conf, _reason = prefilter.is_benign(input_data)
+                if is_benign:
+                    latency = (time.perf_counter() - start) * 1000
+                    attack_prob = max(0.0, 1.0 - float(benign_conf))
+                    return 0, float(attack_prob), latency
             processed = self.preprocess(input_data)
 
             if nn is not None and isinstance(self.model, nn.Module):
@@ -261,8 +317,48 @@ class ModelWrapper:
                 threshold = self._get_threshold()
                 prediction = 1 if prob > threshold else 0
 
+            if self.calibrator is not None:
+                prob = float(self.calibrator.calibrate(np.array([prob]))[0])
+                threshold = self._get_threshold()
+                prediction = 1 if prob > threshold else 0
+
             latency = (time.perf_counter() - start) * 1000
             return prediction, float(prob), latency
 
         except Exception as exc:
             raise RuntimeError(f"Prediction failed for {self.model_name}: {exc}") from exc
+
+    def predict_batch(self, inputs: List[Any]) -> Tuple[np.ndarray, np.ndarray, float]:
+        """
+        Batch prediction for tabular sklearn models to speed up stress tests.
+
+        Returns:
+            (predictions, probabilities, latency_ms_total)
+        """
+        start = time.perf_counter()
+
+        # Only vectorize for tabular sklearn models
+        if self.model_name not in self.SKLEARN_MODELS:
+            preds, probs = [], []
+            for item in inputs:
+                pred, prob, _ = self.predict(item)
+                preds.append(pred)
+                probs.append(prob)
+            latency = (time.perf_counter() - start) * 1000
+            return np.asarray(preds), np.asarray(probs), latency
+
+        arr = np.array(inputs, dtype=np.float32)
+        if arr.ndim == 1:
+            arr = arr.reshape(1, -1)
+
+        if self.scaler is not None:
+            arr = self.scaler.transform(arr)
+
+        prob_vec = self.model.predict_proba(arr)[:, 1]
+        if self.calibrator is not None:
+            prob_vec = self.calibrator.calibrate(prob_vec)
+
+        threshold = self._get_threshold()
+        preds = (prob_vec > threshold).astype(int)
+        latency = (time.perf_counter() - start) * 1000
+        return preds, prob_vec.astype(float), latency

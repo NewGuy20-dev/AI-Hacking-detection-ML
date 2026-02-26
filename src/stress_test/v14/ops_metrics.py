@@ -110,6 +110,13 @@ class OpsMetricsState:
         accuracy = (self.tp + self.tn) / total if total else 0.0
         f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
         lat = self._latency_stats()
+        sanity = []
+        if total > 0 and self.fp == 0 and self.fn == 0 and accuracy == 1.0:
+            sanity.append("perfect_accuracy_no_errors")
+        if pos > 0 and self.tp == 0:
+            sanity.append("zero_true_positives")
+        if neg > 0 and self.tn == 0:
+            sanity.append("zero_true_negatives")
         return {
             'counts': {'tp': self.tp, 'tn': self.tn, 'fp': self.fp, 'fn': self.fn, 'total': total},
             'metrics': {
@@ -124,4 +131,5 @@ class OpsMetricsState:
             'latency': lat,
             'per_category': self.per_category,
             'per_difficulty': self.per_difficulty,
+            'sanity': sanity,
         }

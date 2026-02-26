@@ -1,9 +1,8 @@
-attack: 0.5
-payload: 0.5
-url: 0.5
-timeseries: 0.5
-meta: 0.5
-fraud: 0.5
-host: 0.5
-network: 0.5
-anomaly: 0.5
+fraud: 0.75
+host: 0.90
+meta: 0.60
+network: 0.70
+payload: 0.85
+timeseries: 0.50
+url: 0.80
+anomaly: 0.70

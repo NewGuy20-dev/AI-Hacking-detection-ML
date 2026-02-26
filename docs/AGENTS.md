@@ -288,7 +288,7 @@ AI-Hacking-detection-ML/
 ├── dashboard/                    # Next.js frontend
 │   └── src/app/                  # App router pages
 ├── models/                       # Trained models (.pkl, .pt)
-├── datasets/                     # Training data (40GB+)
+├── datasets/                     # Training data (94.8GB)
 ├── checkpoints/                  # Training checkpoints
 ├── configs/                      # Configuration files
 ├── evaluation/                   # Evaluation reports

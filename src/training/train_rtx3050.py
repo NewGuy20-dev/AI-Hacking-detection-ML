@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
 import torch
+from typing import Optional
 
 # Graceful shutdown handling (for thermal guardian)
 _shutdown_requested = False
@@ -30,7 +31,8 @@ signal.signal(signal.SIGINT, _handle_shutdown)
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torch.amp import autocast, GradScaler
+from torch.amp.autocast_mode import autocast
+from torch.amp.grad_scaler import GradScaler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingWarmRestarts
 from tqdm import tqdm
@@ -48,6 +50,7 @@ from src.torch_models.payload_cnn import PayloadCNN
 from src.torch_models.url_cnn import URLCNN
 from src.torch_models.timeseries_lstm import TimeSeriesLSTM
 from src.data.streaming_dataset import StreamingDataset, BalancedStreamingDataset
+from src.data.url_dataset import RealURLDataset
 from src.training.checkpoint_manager import CheckpointManager
 from src.training.transfer_learning import (
     freeze_embeddings, unfreeze_all, count_trainable_params,
@@ -113,6 +116,7 @@ try:
     import requests
     HAS_REQUESTS = True
 except ImportError:
+    requests = None
     HAS_REQUESTS = False
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1452715933398466782/Ajftu5_fHelFqifTRcZN3S7fCDddXPs89p9w8dTHX8pF1xUO59ckac_DyCTQsRKC1H8O"
@@ -128,7 +132,7 @@ class DiscordNotifier:
         self.enabled = HAS_REQUESTS and webhook_url
     
     def _send(self, embed: dict) -> bool:
-        if not self.enabled:
+        if not self.enabled or requests is None:
             return False
         try:
             requests.post(self.webhook_url, json={"embeds": [embed]}, timeout=10)
@@ -136,7 +140,7 @@ class DiscordNotifier:
         except:
             return False
     
-    def training_started(self, model_type: str, config, gpu_name: str = None):
+    def training_started(self, model_type: str, config, gpu_name: Optional[str] = None):
         """🚀 Training started notification."""
         embed = {
             "title": "🚀 Training Started",
@@ -187,7 +191,7 @@ class DiscordNotifier:
         }
         return self._send(embed)
     
-    def training_error(self, model_type: str, error: str, epoch: int = None):
+    def training_error(self, model_type: str, error: str, epoch: Optional[int] = None):
         """❌ Training error notification."""
         embed = {
             "title": "❌ Training Error!",
@@ -251,6 +255,8 @@ class TrainingConfig:
     # Checkpointing
     checkpoint_every = 1000
     val_every = 5000
+    resume = False
+    retrain = False
     
     # Paths
     data_dir = Path('datasets')
@@ -492,7 +498,9 @@ def train_model(model_type: str, config: TrainingConfig):
     
     # Check if already completed
     final_model_path = Path(config.model_dir) / f"{model_type}_cnn.pth"
-    if final_model_path.exists() and not (hasattr(config, 'resume') and config.resume):
+    if (final_model_path.exists()
+            and not (hasattr(config, 'resume') and config.resume)
+            and not getattr(config, 'retrain', False)):
         print(f"\n✓ {model_type.upper()} already trained, skipping...")
         return
     
@@ -541,9 +549,6 @@ def train_model(model_type: str, config: TrainingConfig):
             malicious_files, benign_files = train_mal, train_ben
             print(f"Train - Malicious: {len(train_mal)}, Benign: {len(train_ben)}")
             print(f"Val - Malicious: {len(val_mal)}, Benign: {len(val_ben)}")
-            
-            # Import RealURLDataset for URL training
-            from src.data.url_dataset import RealURLDataset
             use_real_url_dataset = True
         else:
             malicious_files, benign_files = get_data_files(config, model_type)
@@ -734,7 +739,7 @@ def train_sklearn_model(model_type: str, config: TrainingConfig):
     
     # Check if already completed
     checkpoint_file = config.checkpoint_dir / f"{model_type}_sklearn_complete.json"
-    if checkpoint_file.exists():
+    if checkpoint_file.exists() and not getattr(config, 'retrain', False):
         print(f"  ✓ {model_type.upper()} already trained (checkpoint found)")
         return True
     
@@ -750,7 +755,7 @@ def train_sklearn_model(model_type: str, config: TrainingConfig):
         print(f"  The script will handle data loading and model training")
         
         # Determine which script to call
-        base_path = Path(__file__).parent.parent  # Project root
+        base_path = Path(__file__).resolve().parents[2]  # Project root
         scripts_map = {
             'network': base_path / 'src' / 'train_network_intrusion.py',
             'fraud': base_path / 'src' / 'train_fraud_detection.py',
@@ -820,6 +825,7 @@ def main():
     parser.add_argument('--freeze-epochs', type=int, default=2)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--resume', action='store_true', help='Resume from checkpoint')
+    parser.add_argument('--retrain', action='store_true', help='Force full retrain (ignore existing models)')
     # Validation flags
     parser.add_argument('--validate', action='store_true', help='Run validation after training (Tier 1-2)')
     parser.add_argument('--full', action='store_true', help='Run full validation (Tier 1-4)')
@@ -836,6 +842,10 @@ def main():
     config.freeze_epochs = args.freeze_epochs
     config.lr = args.lr
     config.resume = args.resume
+    config.retrain = args.retrain
+    if config.retrain:
+        # Retrain implies start fresh; ignore resume checkpoints.
+        config.resume = False
     
     # Print dataset overview
     print("=" * 80)
@@ -885,7 +895,7 @@ def main():
                     # Timeseries uses numpy arrays - call dedicated script
                     print_data_mapping(model_type)
                     import subprocess
-                    script_path = Path(__file__).parent.parent / "src" / "training" / "train_timeseries.py"
+                    script_path = Path(__file__).parent / "train_timeseries.py"
                     result = subprocess.run([sys.executable, str(script_path)])
                     results[model_type] = result.returncode == 0
                     
@@ -928,7 +938,7 @@ def main():
                 # Step 1: Collect model outputs
                 print("\n[1/2] Collecting model outputs...")
                 import subprocess
-                collect_script = Path(__file__).parent / 'collect_model_outputs.py'
+                collect_script = Path(__file__).parent.parent / 'inference' / 'collect_model_outputs.py'
                 result = subprocess.run([sys.executable, str(collect_script)])
                 
                 if result.returncode == 0:
@@ -1015,7 +1025,7 @@ def run_validation_pipeline(args, config):
     # Generate report
     generate_report(
         training_results, sanity_results, holdout_results,
-        stress_results, fp_results, output_dir=eval_dir
+        stress_results or {}, fp_results or {}, output_dir=eval_dir
     )
     
     # Exit code

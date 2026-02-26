@@ -37,8 +37,14 @@ class DashboardGenerator:
         models = ['payload', 'url', 'timeseries', 'meta', 'fraud', 'host', 'network', 'anomaly']
         all_results = {}
         
+        # Check date-based subfolder first, fallback to root
+        date_folder = self.logs_dir / run_date
+        
         for model in models:
-            log_path = self.logs_dir / f"{model}_{run_date}.jsonl"
+            log_path = date_folder / f"{model}_{run_date}.jsonl"
+            if not log_path.exists():
+                log_path = self.logs_dir / f"{model}_{run_date}.jsonl"
+            
             if log_path.exists():
                 results = []
                 with open(log_path, encoding='utf-8') as f:
@@ -73,7 +79,12 @@ class DashboardGenerator:
             # Ops metrics (sidecar if present)
             metrics_block = {}
             latency_block = {}
-            ops_path = self.logs_dir / f"{model}_{run_date}_ops.json"
+            # Check date-based subfolder first, fallback to root
+            date_folder = self.logs_dir / run_date
+            ops_path = date_folder / f"{model}_{run_date}_ops.json"
+            if not ops_path.exists():
+                ops_path = self.logs_dir / f"{model}_{run_date}_ops.json"
+            
             if ops_path.exists():
                 try:
                     ops = json.loads(ops_path.read_text(encoding='utf-8'))

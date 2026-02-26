@@ -3,8 +3,19 @@ import joblib
 import pickle
 import numpy as np
 import math
+import json
 from pathlib import Path
 from urllib.parse import urlparse
+
+try:
+    from confidence import ConfidenceCalibrator
+except Exception:
+    ConfidenceCalibrator = None
+
+try:
+    from benign_filter import get_filter
+except Exception:
+    get_filter = None
 
 
 class ModelRouter:
@@ -14,6 +25,8 @@ class ModelRouter:
         default_root = Path(__file__).resolve().parents[1]
         self.models_dir = Path(models_dir) if models_dir else default_root / 'models'
         self.models = {}
+        self.thresholds = self._load_thresholds()
+        self.calibrators = {}
         self._load_models()
     
     def _load_models(self):
@@ -29,6 +42,7 @@ class ModelRouter:
             if path.exists():
                 self.models[name] = joblib.load(path)
                 print(f"Loaded {name} model")
+                self._load_calibrator(name)
         
         # Load payload classifier
         payload_path = self.models_dir / 'payload_classifier.pkl'
@@ -36,6 +50,39 @@ class ModelRouter:
             with open(payload_path, 'rb') as f:
                 self.models['payload'] = pickle.load(f)
             print("Loaded payload model")
+            self._load_calibrator('payload')
+
+    def _load_calibrator(self, model_name: str):
+        if ConfidenceCalibrator is None:
+            return
+        cal_path = self.models_dir / 'calibration' / f"{model_name}_calibration.json"
+        if cal_path.exists():
+            cal = ConfidenceCalibrator()
+            cal.load(cal_path)
+            self.calibrators[model_name] = cal
+
+    def _load_thresholds(self) -> dict:
+        config_path = Path(__file__).resolve().parents[1] / 'configs' / 'inference' / 'optimal_thresholds.json'
+        thresholds = {'default': 0.5}
+        if config_path.exists():
+            try:
+                data = json.loads(config_path.read_text(encoding='utf-8'))
+                if isinstance(data, dict) and isinstance(data.get('thresholds'), dict):
+                    thresholds.update(data['thresholds'])
+            except Exception:
+                pass
+        return thresholds
+
+    def _get_threshold(self, model_type: str) -> float:
+        mapping = {
+            'payload': 'payload_cnn',
+            'url': 'url_cnn',
+            'network': 'network',
+            'fraud': 'fraud',
+            'host': 'host',
+        }
+        key = mapping.get(model_type, model_type)
+        return float(self.thresholds.get(key, self.thresholds.get('default', 0.5)))
     
     def detect_input_type(self, data) -> str:
         """Auto-detect input type."""
@@ -72,21 +119,40 @@ class ModelRouter:
         
         # Handle payload model separately
         if model_type == 'payload':
+            if get_filter is not None and isinstance(data, str):
+                prefilter = get_filter()
+                is_benign, benign_conf, reason = prefilter.is_benign(data)
+                if is_benign:
+                    attack_prob = max(0.0, 1.0 - float(benign_conf))
+                    return {
+                        'model_type': 'payload',
+                        'prediction': 0,
+                        'probability': float(attack_prob),
+                        'is_threat': False,
+                        'confidence': float(1.0 - attack_prob),
+                        'prefilter_reason': reason,
+                        'prefiltered': True,
+                    }
             m = self.models['payload']
             X = m['vectorizer'].transform([str(data)])
             proba = m['classifier'].predict_proba(X)[0]
             prob = proba[1] if len(proba) > 1 else proba[0]
+            if model_type in self.calibrators:
+                prob = float(self.calibrators[model_type].calibrate(np.array([prob]))[0])
+            threshold = self._get_threshold('payload')
             return {
                 'model_type': 'payload',
-                'prediction': 1 if prob > 0.5 else 0,
+                'prediction': 1 if prob > threshold else 0,
                 'probability': float(prob),
-                'is_threat': prob > 0.5,
-                'confidence': float(prob) if prob > 0.5 else float(1 - prob)
+                'is_threat': prob > threshold,
+                'confidence': float(prob) if prob > threshold else float(1 - prob),
+                'threshold_used': threshold,
+                'prefiltered': False,
             }
         
         model_data = self.models[model_type]
-        model = model_data['model']
-        scaler = model_data['scaler']
+        model = model_data['model'] if isinstance(model_data, dict) and 'model' in model_data else model_data
+        scaler = model_data.get('scaler') if isinstance(model_data, dict) else None
         
         # Prepare features based on model type
         if model_type == 'url':
@@ -97,16 +163,24 @@ class ModelRouter:
             features = np.array(data).reshape(1, -1) if isinstance(data, list) else data
         
         # Scale and predict
-        features_scaled = scaler.transform(features.reshape(1, -1) if features.ndim == 1 else features)
-        pred = model.predict(features_scaled)
-        prob = model.predict_proba(features_scaled)
+        if scaler is not None:
+            features_scaled = scaler.transform(features.reshape(1, -1) if features.ndim == 1 else features)
+        else:
+            features_scaled = features.reshape(1, -1) if features.ndim == 1 else features
+        prob_vec = model.predict_proba(features_scaled)
+        prob = float(prob_vec[0, 1]) if prob_vec.shape[1] > 1 else float(prob_vec[0, 0])
+        if model_type in self.calibrators:
+            prob = float(self.calibrators[model_type].calibrate(np.array([prob]))[0])
+        threshold = self._get_threshold(model_type)
+        pred = int(prob > threshold)
         
         return {
             'model_type': model_type,
-            'prediction': int(pred[0]),
-            'probability': float(prob[0].max()),
-            'is_threat': bool(pred[0] == 1),
-            'confidence': float(prob[0][pred[0]])
+            'prediction': int(pred),
+            'probability': float(prob),
+            'is_threat': bool(pred == 1),
+            'confidence': float(prob) if pred == 1 else float(1 - prob),
+            'threshold_used': threshold,
         }
     
     def _extract_url_features(self, url: str) -> np.ndarray:

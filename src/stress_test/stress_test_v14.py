@@ -100,6 +100,12 @@ Examples:
                         help='Skip dashboard generation')
     parser.add_argument('--checkpoint-interval', type=int, default=500,
                         help='Log progress every N scenarios (default: 500)')
+    parser.add_argument('--batch-size', type=int, default=2000,
+                        help='Dynamic scenario batch size for non-tabular models (default: 2000)')
+    parser.add_argument('--batch-size-tabular', type=int, default=1500,
+                        help='Dynamic scenario batch size for tabular models (default: 1500)')
+    parser.add_argument('--progress-step', type=int, default=500,
+                        help='Progress bar update step (default: 500)')
     parser.add_argument('--seed', type=int, default=None,
                         help='Random seed for deterministic dynamic scenario generation')
     args = parser.parse_args()
@@ -151,6 +157,9 @@ Examples:
             config = {
                 'target_duration_min': args.duration,
                 'checkpoint_interval': args.checkpoint_interval,
+                'batch_size': args.batch_size,
+                'batch_size_tabular': args.batch_size_tabular,
+                'progress_step': args.progress_step,
                 'models_dir': args.models_dir,
                 'scenarios_dir': args.scenarios_dir,
                 'output_dir': args.output_dir,
@@ -175,7 +184,9 @@ Examples:
             print("  GENERATING UNIFIED DASHBOARD")
             print(f"{'='*70}")
             
-            dashboard_path = output_dir / f"dashboard_{run_date}.html"
+            # Save dashboard in date-based subfolder
+            date_folder = output_dir / run_date
+            dashboard_path = date_folder / f"dashboard_{run_date}.html"
             try:
                 generator = dashboard_cls(output_dir, dashboard_path)
                 generator.generate(run_date)

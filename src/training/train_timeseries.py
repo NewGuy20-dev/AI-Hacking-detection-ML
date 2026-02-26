@@ -15,7 +15,7 @@ from tqdm import tqdm
 from src.torch_models.timeseries_lstm import TimeSeriesLSTM
 from src.torch_models.datasets import TimeSeriesDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
-from training.checkpoint import CheckpointManager
+from src.training.checkpoint import CheckpointManager
 
 
 def generate_normal_traffic(n_samples=10000, seq_len=60, n_features=8):

@@ -10,8 +10,10 @@ class JSONLogger:
     """Per-scenario JSONL logger with real-time category stats."""
     
     def __init__(self, output_dir: Path, model_name: str, run_date: str, run_seed: int = None):
-        self.output_path = output_dir / f"{model_name}_{run_date}.jsonl"
-        self.failure_path = output_dir / f"{model_name}_{run_date}_failures.jsonl"
+        # Create date-based subfolder
+        date_folder = output_dir / run_date
+        self.output_path = date_folder / f"{model_name}_{run_date}.jsonl"
+        self.failure_path = date_folder / f"{model_name}_{run_date}_failures.jsonl"
         self.model_name = model_name
         self.run_seed = run_seed
         self.file = None

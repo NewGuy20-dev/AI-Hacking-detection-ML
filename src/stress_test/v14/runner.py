@@ -92,6 +92,14 @@ class StressTestRunner:
         self.model_name = model_name
         self.target_duration_min = config.get('target_duration_min', 45)
         self.checkpoint_interval = config.get('checkpoint_interval', 500)
+        # Base batch sizes; slow tabular models run smaller batches to avoid runtime overruns
+        self.batch_size = config.get('batch_size', 2000)
+        self.batch_size_tabular = config.get('batch_size_tabular', 1500)
+        self.batch_size_map = config.get('batch_size_map', {
+            'host': 500,
+            'network': 500,
+        })
+        self.progress_step = config.get('progress_step', 500)
         self.models_dir = Path(config.get('models_dir', 'models'))
         self.scenarios_dir = Path(config.get('scenarios_dir', 'configs/stress_test/scenarios_v14'))
         self.output_dir = Path(config.get('output_dir', 'evaluation/stress_test_v14'))
@@ -155,33 +163,69 @@ class StressTestRunner:
                     weights = scheduler.compute_weights(malicious_accuracy)
                     
                     # Generate batch
-                    if self.model_name in ['fraud', 'host', 'network', 'anomaly']:
-                        batch = generator.generate(self.model_name, 100, weights)
+                    # Choose model-specific batch size with a guard to avoid long tail overruns
+                    base_batch = self.batch_size_tabular if self.model_name in ['fraud', 'host', 'network', 'anomaly'] else self.batch_size
+                    base_batch = self.batch_size_map.get(self.model_name, base_batch)
+
+                    elapsed_min = (time.time() - start_time) / 60
+                    remaining_min = max(0.0, self.target_duration_min - elapsed_min)
+
+                    # If we're near the target time, shrink the next batch to avoid overshoot
+                    if remaining_min < 0.5:
+                        effective_batch = min(base_batch, 500)
+                    elif remaining_min < 1.0:
+                        effective_batch = min(base_batch, 1000)
                     else:
-                        batch = generator.generate(100, weights)
-                    
-                    for scenario in batch:
-                        result = self._run_scenario(model, scenario)
-                        metrics.update(
-                            expected=scenario.expected_label,
-                            predicted=result.prediction,
-                            confidence=result.confidence,
-                            latency_ms=result.latency_ms,
-                            category=scenario.category,
-                            difficulty=scenario.difficulty,
-                        )
-                        logger.log(result)
-                        dynamic_count += 1
-                        pbar.update(1)
+                        effective_batch = base_batch
+
+                    if self.model_name in ['fraud', 'host', 'network', 'anomaly']:
+                        batch = generator.generate(self.model_name, effective_batch, weights)
+                    else:
+                        batch = generator.generate(effective_batch, weights)
+
+                    if self.model_name in ['fraud', 'host', 'network', 'anomaly']:
+                        self._run_batch_tabular(model, batch, metrics, logger)
+                        dynamic_count += len(batch)
+                        if self.progress_step <= 1:
+                            pbar.update(len(batch))
+                        else:
+                            steps = dynamic_count // self.progress_step
+                            pbar.n = steps * self.progress_step
+                            pbar.refresh()
+                    else:
+                        for scenario in batch:
+                            result = self._run_scenario(model, scenario)
+                            metrics.update(
+                                expected=scenario.expected_label,
+                                predicted=result.prediction,
+                                confidence=result.confidence,
+                                latency_ms=result.latency_ms,
+                                category=scenario.category,
+                                difficulty=scenario.difficulty,
+                            )
+                            logger.log(result)
+                            dynamic_count += 1
+                            if self.progress_step <= 1:
+                                pbar.update(1)
+                            elif dynamic_count % self.progress_step == 0:
+                                pbar.update(self.progress_step)
                         
-                        if dynamic_count % self.checkpoint_interval == 0:
-                            elapsed = (time.time() - start_time) / 60
-                            acc = logger.get_summary()['accuracy']
-                            pbar.set_postfix({
-                                'elapsed': f'{elapsed:.1f}m',
-                                'acc': f'{acc*100:.1f}%'
-                            })
+                            if dynamic_count % self.checkpoint_interval == 0:
+                                elapsed = (time.time() - start_time) / 60
+                                acc = logger.get_summary()['accuracy']
+                                pbar.set_postfix({
+                                    'elapsed': f'{elapsed:.1f}m',
+                                    'acc': f'{acc*100:.1f}%'
+                                })
+
+                    # Stop immediately if we have reached or exceeded the target duration
+                    if (time.time() - start_time) / 60 >= self.target_duration_min:
+                        break
                 
+                if self.progress_step > 1:
+                    remainder = dynamic_count % self.progress_step
+                    if remainder:
+                        pbar.update(remainder)
                 pbar.close()
             else:
                 dynamic_count = 0
@@ -191,11 +235,21 @@ class StressTestRunner:
             total_duration = (time.time() - start_time) / 60 if generator else 0
             ops = metrics.summary()
 
-            ops_path = self.output_dir / f"{self.model_name}_{run_date}_ops.json"
+            # Save ops.json in date-based subfolder
+            date_folder = self.output_dir / run_date
+            ops_path = date_folder / f"{self.model_name}_{run_date}_ops.json"
             try:
                 ops_path.write_text(json.dumps(ops, indent=2), encoding='utf-8')
             except Exception:
                 pass
+
+            if ops.get('sanity'):
+                print(f"  Sanity warnings: {', '.join(ops['sanity'])}")
+                if self.model_name == 'meta' and 'perfect_accuracy_no_errors' in ops['sanity']:
+                    raise RuntimeError(
+                        "Meta stress test produced perfect accuracy with zero errors. "
+                        "Generator output is likely trivial; aborting run."
+                    )
             
             print(f"\n✓ Test complete!")
             print(f"  Static: {len(static_scenarios)} scenarios")
@@ -227,7 +281,7 @@ class StressTestRunner:
                 'accuracy_by_difficulty': summary.get('accuracy_by_difficulty', {}),
                 'difficulty_breakdown': summary.get('difficulty_breakdown', {}),
                 'final_stats': summary['categories'],
-                'failure_log': str((self.output_dir / f"{self.model_name}_{run_date}_failures.jsonl")),
+                'failure_log': str((date_folder / f"{self.model_name}_{run_date}_failures.jsonl")),
                 'ops_metrics': ops,
                 'replay_command': (
                     f"python src/stress_test/stress_test_v14.py --model {self.model_name} "
@@ -283,3 +337,45 @@ class StressTestRunner:
                 timestamp=datetime.now().isoformat(),
                 error=str(e)
             )
+
+    def _run_batch_tabular(self, model: ModelWrapper, scenarios: list, metrics: OpsMetricsState, logger: JSONLogger):
+        """Vectorized inference path for tabular models to improve throughput."""
+        try:
+            preds, probs, latency_ms = model.predict_batch([s.input_data for s in scenarios])
+        except Exception:
+            # Fallback to per-scenario on failure
+            for s in scenarios:
+                result = self._run_scenario(model, s)
+                metrics.update(
+                    expected=s.expected_label,
+                    predicted=result.prediction,
+                    confidence=result.confidence,
+                    latency_ms=result.latency_ms,
+                    category=s.category,
+                    difficulty=s.difficulty,
+                )
+                logger.log(result)
+            return
+
+        per_sample_latency = latency_ms / max(len(scenarios), 1)
+        now = datetime.now().isoformat()
+        for s, pred, prob in zip(scenarios, preds, probs):
+            passed = (pred == s.expected_label)
+            result = ScenarioResult(
+                scenario=s,
+                prediction=int(pred),
+                confidence=float(prob),
+                passed=passed,
+                latency_ms=per_sample_latency,
+                timestamp=now,
+                error=None
+            )
+            metrics.update(
+                expected=s.expected_label,
+                predicted=result.prediction,
+                confidence=result.confidence,
+                latency_ms=result.latency_ms,
+                category=s.category,
+                difficulty=s.difficulty,
+            )
+            logger.log(result)

@@ -903,9 +903,8 @@ class MetaGenerator(DynamicGenerator):
         
         # Generate benign samples
         for i in range(benign_count):
-            # Normal: low probabilities (0.0-0.3)
-            features = np.random.uniform(0.0, 0.3, 5).astype(np.float32)
             difficulty = random.choice(difficulties)
+            features = self._sample_meta_vector(label=0, difficulty=difficulty)
             scenarios.append(Scenario(
                 id=f"meta_benign_{i}_{random.randint(1000,9999)}",
                 model='meta',
@@ -925,9 +924,8 @@ class MetaGenerator(DynamicGenerator):
         
         for i in range(malicious_count):
             category = random.choices(categories, weights=weights)[0]
-            # Attack: high probabilities (0.7-1.0)
-            features = np.random.uniform(0.7, 1.0, 5).astype(np.float32)
             difficulty = random.choice(difficulties)
+            features = self._sample_meta_vector(label=1, difficulty=difficulty)
             scenarios.append(Scenario(
                 id=f"meta_mal_{i}_{random.randint(1000,9999)}",
                 model='meta',
@@ -941,6 +939,36 @@ class MetaGenerator(DynamicGenerator):
             ))
         
         return scenarios
+
+    @staticmethod
+    def _sample_meta_vector(label: int, difficulty: str) -> np.ndarray:
+        """
+        Sample overlapping probability vectors that mimic real base-model outputs.
+        Hard/adversarial tiers intentionally overlap to avoid trivial separation.
+        """
+        if label == 0:
+            ranges = {
+                'easy': (0.02, 0.20),
+                'medium': (0.05, 0.35),
+                'hard': (0.10, 0.55),
+                'adversarial': (0.20, 0.65),
+            }
+        else:
+            ranges = {
+                'easy': (0.70, 0.98),
+                'medium': (0.60, 0.92),
+                'hard': (0.45, 0.88),
+                'adversarial': (0.35, 0.85),
+            }
+
+        low, high = ranges.get(difficulty, (0.10, 0.60))
+        base = np.random.uniform(low, high)
+        noise = np.random.normal(0.0, 0.08, 5)
+        # Correlate model outputs while keeping per-model variance.
+        vector = np.clip(base + noise, 0.0, 1.0).astype(np.float32)
+        # Add slight asymmetry to mimic model disagreement.
+        jitter = np.random.uniform(-0.06, 0.06, 5)
+        return np.clip(vector + jitter, 0.0, 1.0).astype(np.float32)
 
 
 class BenignAdversarialGenerator(DynamicGenerator):

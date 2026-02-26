@@ -51,6 +51,8 @@ def main():
     parser.add_argument('--max-lines', type=int, default=200000)
     parser.add_argument('--retrain-hours', type=float, default=None,
                         help='Estimated retrain time in hours for ETA printout (optional)')
+    parser.add_argument('--retrain', action='store_true',
+                        help='Force full retrain (ignore existing models)')
     parser.add_argument('--skip-train', action='store_true')
     parser.add_argument('--skip-label-check', action='store_true')
     parser.add_argument('--skip-profiles', action='store_true')
@@ -93,7 +95,10 @@ def main():
             run([python, 'check_labels.py'])
 
     if not args.skip_train:
-        run([python, 'scripts/train_rtx3050.py'])
+        cmd = [python, 'scripts/train_rtx3050.py']
+        if args.retrain:
+            cmd.append('--retrain')
+        run(cmd)
 
     if not args.skip_profiles:
         run([
