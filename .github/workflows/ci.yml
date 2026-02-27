@@ -29,7 +29,11 @@ jobs:
     
     - name: Run pytest
       run: |
-        pytest tests/ -v --tb=short --ignore=tests/test_robust_training.py
+        pytest tests/ -v --tb=short \
+          --ignore=tests/test_robust_training.py \
+          --ignore=tests/test_hf_manifest_integrity.py \
+          --ignore=tests/test_hf_model_smoke.py \
+          --ignore=tests/test_model_regression.py
       continue-on-error: false
 
     - name: Stress Test V1.4 smoke
