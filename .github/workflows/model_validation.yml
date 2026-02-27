@@ -1,0 +1,89 @@
+name: Model Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  model-validation:
+    runs-on: ubuntu-latest
+    env:
+      HF_REPO_ID: GRK2012/ai-hacking-detection-system
+      HF_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov huggingface_hub
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Check HF token availability
+        id: hf_token_check
+        shell: bash
+        run: |
+          if [[ -n "${HF_TOKEN}" ]]; then
+            echo "run_hf=true" >> "${GITHUB_OUTPUT}"
+            echo "Hugging Face validation enabled."
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            echo "run_hf=false" >> "${GITHUB_OUTPUT}"
+            echo "HF_TOKEN unavailable for fork PR. HF model validation tests will be skipped."
+            exit 0
+          fi
+
+          echo "::error::HF_TOKEN is required for Hugging Face model validation."
+          exit 1
+
+      - name: Login to Hugging Face
+        if: steps.hf_token_check.outputs.run_hf == 'true'
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import login
+
+          token = os.environ.get("HF_TOKEN", "").strip()
+          if not token:
+              raise SystemExit("HF_TOKEN is empty.")
+          login(token=token, add_to_git_credential=False)
+          print("Hugging Face authentication configured.")
+          PY
+
+      - name: Artifact Integrity Validation
+        if: steps.hf_token_check.outputs.run_hf == 'true'
+        run: |
+          pytest -x -q tests/test_hf_manifest_integrity.py
+
+      - name: Smoke Tests (HF Models)
+        if: steps.hf_token_check.outputs.run_hf == 'true'
+        run: |
+          pytest -x -q tests/test_hf_model_smoke.py
+
+      - name: Mini Deterministic Benchmark
+        if: steps.hf_token_check.outputs.run_hf == 'true'
+        run: |
+          pytest -x -q tests/test_model_regression.py
+
+      - name: Skip message for fork PRs
+        if: steps.hf_token_check.outputs.run_hf != 'true'
+        run: |
+          echo "Skipping HF download/hash/smoke/regression checks because HF_TOKEN is unavailable."
+
+      - name: Run full test suite
+        run: |
+          pytest tests/ -x -v --tb=short
