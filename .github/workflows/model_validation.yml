@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HF_REPO_ID: GRK2012/ai-hacking-detection-system
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
 
     steps:
       - name: Checkout
@@ -85,4 +85,3 @@ jobs:
       - name: Run full test suite
         run: |
           pytest tests/ -x -v --tb=short
-
