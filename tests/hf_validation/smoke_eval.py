@@ -97,19 +97,62 @@ def _extract_state_dict(load_obj: Any) -> dict[str, torch.Tensor]:
     raise ValueError("Unsupported torch artifact format. Expected state_dict-compatible checkpoint.")
 
 
-def _load_torch_weights(model: torch.nn.Module, model_path: Path) -> None:
-    loaded = torch.load(model_path, map_location="cpu")
+def _is_torchscript_module(obj: Any) -> bool:
+    """Return True if object looks like a TorchScript module."""
+    return obj.__class__.__name__ in {"RecursiveScriptModule", "ScriptModule"}
+
+
+def _load_torch_runtime_model(
+    *,
+    model_name: str,
+    config: dict[str, Any],
+    model_path: Path,
+) -> torch.nn.Module:
+    """
+    Load a runtime model from HF artifact.
+
+    Supports:
+    - state_dict checkpoints (preferred, loaded into reconstructed architecture)
+    - TorchScript archives (.pt scripted/traced module)
+    """
+    architecture_model = _instantiate_model(model_name, config)
+
+    try:
+        loaded = torch.load(model_path, map_location="cpu", weights_only=False)
+    except TypeError:
+        # Compatibility with older torch versions without weights_only kwarg.
+        loaded = torch.load(model_path, map_location="cpu")
+
+    if isinstance(loaded, torch.nn.Module) or _is_torchscript_module(loaded):
+        # Prefer rebuilding from state_dict to avoid TorchScript runtime/device traps
+        # (for example, archives traced with CUDA hidden states).
+        try:
+            scripted_state = loaded.state_dict()
+            result = architecture_model.load_state_dict(dict(scripted_state), strict=False)
+            matched_any = len(result.missing_keys) < len(architecture_model.state_dict())
+            if matched_any:
+                architecture_model.eval()
+                return architecture_model
+        except Exception:
+            # Fall back to using the scripted module directly if state_dict transfer fails.
+            pass
+
+        loaded.eval()
+        return loaded
+
     state_dict = _extract_state_dict(loaded)
     if not state_dict:
         raise ValueError(f"Empty state_dict loaded from {model_path}")
 
-    result = model.load_state_dict(state_dict, strict=False)
-    matched_any = len(result.missing_keys) < len(model.state_dict())
+    result = architecture_model.load_state_dict(state_dict, strict=False)
+    matched_any = len(result.missing_keys) < len(architecture_model.state_dict())
     if not matched_any:
         raise ValueError(
             f"Loaded state_dict from {model_path} did not match architecture keys "
             f"(unexpected={len(result.unexpected_keys)}, missing={len(result.missing_keys)})."
         )
+    architecture_model.eval()
+    return architecture_model
 
 
 def _instantiate_model(model_name: str, config: dict[str, Any]) -> torch.nn.Module:
@@ -168,9 +211,11 @@ def run_smoke_validation(artifacts: DownloadedArtifacts) -> dict[str, SmokeResul
         config = _load_json(artifacts.path_for(f"{model_name}/config.json"))
         _resolve_threshold(artifacts.path_for(f"{model_name}/threshold.yaml"))
 
-        model = _instantiate_model(model_name, config)
-        _load_torch_weights(model, artifacts.path_for(f"{model_name}/model.pt"))
-        model.eval()
+        model = _load_torch_runtime_model(
+            model_name=model_name,
+            config=config,
+            model_path=artifacts.path_for(f"{model_name}/model.pt"),
+        )
 
         sample = _synthetic_input(model_name, config)
         with torch.inference_mode():
@@ -206,9 +251,11 @@ def load_torch_models_for_eval(artifacts: DownloadedArtifacts) -> dict[str, tupl
     loaded: dict[str, tuple[torch.nn.Module, float]] = {}
     for model_name in TORCH_MODELS:
         config = _load_json(artifacts.path_for(f"{model_name}/config.json"))
-        model = _instantiate_model(model_name, config)
-        _load_torch_weights(model, artifacts.path_for(f"{model_name}/model.pt"))
-        model.eval()
+        model = _load_torch_runtime_model(
+            model_name=model_name,
+            config=config,
+            model_path=artifacts.path_for(f"{model_name}/model.pt"),
+        )
         threshold = _resolve_threshold(artifacts.path_for(f"{model_name}/threshold.yaml"))
         loaded[model_name] = (model, threshold)
     return loaded

@@ -178,7 +178,9 @@ def hf_repo_id() -> str:
 @pytest.fixture(scope="session")
 def hf_token() -> str:
     """Resolve HF auth token for CI model validation tests."""
-    token = os.getenv("HF_TOKEN", "").strip()
+    from tests.hf_validation.hf_loader import normalize_token
+
+    token = normalize_token(os.getenv("HF_TOKEN", ""))
     if not token:
         pytest.skip("HF_TOKEN not set; skipping Hugging Face model validation tests.")
     return token

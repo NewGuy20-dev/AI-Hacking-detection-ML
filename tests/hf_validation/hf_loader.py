@@ -58,6 +58,14 @@ REQUIRED_REPO_FILES: tuple[str, ...] = (
 )
 
 
+def normalize_token(raw_token: str) -> str:
+    """Normalize token text by trimming whitespace and optional wrapping quotes."""
+    token = raw_token.strip()
+    if len(token) >= 2 and token[0] == token[-1] and token[0] in {"'", '"'}:
+        token = token[1:-1].strip()
+    return token
+
+
 @dataclass(frozen=True)
 class DownloadedArtifacts:
     """Locally downloaded Hugging Face repo artifacts."""
@@ -84,7 +92,7 @@ def resolve_repo_id() -> str:
 
 def get_hf_token() -> str:
     """Get HF token from environment."""
-    token = os.getenv(HF_TOKEN_ENV, "").strip()
+    token = normalize_token(os.getenv(HF_TOKEN_ENV, ""))
     if not token:
         raise RuntimeError(
             "HF_TOKEN is not set. Configure GitHub secret HF_TOKEN for Hugging Face access."
@@ -101,7 +109,7 @@ def download_required_artifacts(
 ) -> DownloadedArtifacts:
     """Download all required files from the Hugging Face model repository."""
     resolved_repo_id = repo_id or resolve_repo_id()
-    resolved_token = token or get_hf_token()
+    resolved_token = normalize_token(token) if token is not None else get_hf_token()
     local_dir.mkdir(parents=True, exist_ok=True)
 
     downloaded: dict[str, Path] = {}
