@@ -1,4 +1,5 @@
 """Shared pytest fixtures for AI-Hacking-Detection-ML tests."""
+import os
 import tempfile
 import shutil
 from pathlib import Path
@@ -166,3 +167,34 @@ def sample_prediction():
             'timeseries': [0.5]
         }
     }
+
+
+@pytest.fixture(scope="session")
+def hf_repo_id() -> str:
+    """Resolve HF repository id used for CI model validation tests."""
+    return os.getenv("HF_REPO_ID", "GRK2012/ai-hacking-detection-system")
+
+
+@pytest.fixture(scope="session")
+def hf_token() -> str:
+    """Resolve HF auth token for CI model validation tests."""
+    token = os.getenv("HF_TOKEN", "").strip()
+    if not token:
+        pytest.skip("HF_TOKEN not set; skipping Hugging Face model validation tests.")
+    return token
+
+
+@pytest.fixture(scope="session")
+def hf_artifacts(tmp_path_factory, hf_repo_id: str, hf_token: str):
+    """Download required HF model repo artifacts once per test session."""
+    try:
+        from tests.hf_validation.hf_loader import download_required_artifacts
+    except ImportError as exc:
+        pytest.skip(f"huggingface_hub not available in test environment: {exc}")
+
+    local_dir = tmp_path_factory.mktemp("hf_models")
+    return download_required_artifacts(
+        local_dir=local_dir,
+        repo_id=hf_repo_id,
+        token=hf_token,
+    )
