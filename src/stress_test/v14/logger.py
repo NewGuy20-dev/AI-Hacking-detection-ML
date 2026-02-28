@@ -63,11 +63,12 @@ class JSONLogger:
             summary = self._summarize_input(result.scenario.input_data)
             if summary is not None:
                 record['input_summary'] = summary
-        
-        self.file.write(json.dumps(record) + '\n')
+
+        serialized = json.dumps(record, default=self._json_default)
+        self.file.write(serialized + '\n')
         self.file.flush()
         if not result.passed and self.failure_file:
-            self.failure_file.write(json.dumps(record) + '\n')
+            self.failure_file.write(serialized + '\n')
             self.failure_file.flush()
         
         # Update category stats
@@ -114,6 +115,17 @@ class JSONLogger:
             "std": float(flat.std()),
             "p95": float(np.percentile(flat, 95)),
         }
+
+    @staticmethod
+    def _json_default(value):
+        """Serialize numpy/path-like values to JSON-compatible Python types."""
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        if isinstance(value, Path):
+            return str(value)
+        raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
     
     def get_category_accuracy(self) -> Dict[str, float]:
         """Returns accuracy per category for adaptive scheduling."""

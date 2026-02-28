@@ -360,10 +360,11 @@ class StressTestRunner:
         per_sample_latency = latency_ms / max(len(scenarios), 1)
         now = datetime.now().isoformat()
         for s, pred, prob in zip(scenarios, preds, probs):
-            passed = (pred == s.expected_label)
+            pred_int = int(pred)
+            passed = bool(pred_int == int(s.expected_label))
             result = ScenarioResult(
                 scenario=s,
-                prediction=int(pred),
+                prediction=pred_int,
                 confidence=float(prob),
                 passed=passed,
                 latency_ms=per_sample_latency,

@@ -6,8 +6,15 @@ import numpy as np
 
 from src.stress_test.v14.models import ModelWrapper
 from src.stress_test.v14.runner import AdaptiveScheduler, StressTestRunner
-from src.stress_test.v14.scenarios import URLGenerator, TimeSeriesGenerator, TabularGenerator
+from src.stress_test.v14.scenarios import (
+    Scenario,
+    ScenarioResult,
+    URLGenerator,
+    TimeSeriesGenerator,
+    TabularGenerator,
+)
 from src.stress_test.v14.difficulty import DifficultyMixin
+from src.stress_test.v14.logger import JSONLogger
 
 
 def test_runner_filters_non_malicious_categories():
@@ -131,3 +138,34 @@ def test_model_wrapper_anomaly_predict_path_without_disk_load():
     assert pred == 1
     assert 0.0 <= conf <= 1.0
     assert latency >= 0.0
+
+
+def test_json_logger_serializes_numpy_scalar_fields(tmp_path):
+    """Logger must serialize numpy scalar booleans/ints without crashing."""
+    scenario = Scenario(
+        id="network_mal_1",
+        model="network",
+        category="dos",
+        subcategory="dynamic",
+        input_data=np.asarray([1.0, 2.0, 3.0], dtype=np.float32),
+        expected_label=1,
+        difficulty="hard",
+        description="test",
+        source="dynamic",
+    )
+    result = ScenarioResult(
+        scenario=scenario,
+        prediction=int(np.int64(1)),
+        confidence=float(np.float32(0.91)),
+        passed=np.bool_(True),
+        latency_ms=float(np.float32(1.25)),
+        timestamp="2026-02-27T00:00:00",
+        error=None,
+    )
+
+    with JSONLogger(tmp_path, "network", "2026-02-27", run_seed=10) as logger:
+        logger.log(result)
+
+    output_path = tmp_path / "2026-02-27" / "network_2026-02-27.jsonl"
+    line = output_path.read_text(encoding="utf-8").strip()
+    assert '"passed": true' in line
