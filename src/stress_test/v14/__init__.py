@@ -29,3 +29,9 @@ try:
     __all__.append('ModelWrapper')
 except Exception:
     pass
+
+try:
+    from .gates import GateEvaluator
+    __all__.append('GateEvaluator')
+except Exception:
+    pass

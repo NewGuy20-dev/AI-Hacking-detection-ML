@@ -235,17 +235,33 @@ class ModelWrapper:
                 return torch.tensor([indices], dtype=torch.long, device=self.device)
 
         elif self.model_name == 'timeseries':
-            if isinstance(input_data, np.ndarray):
+            if isinstance(input_data, (list, tuple, np.ndarray)):
                 if torch is None:
                     raise ModuleNotFoundError("PyTorch is required for timeseries preprocessing")
-                if input_data.shape == (60, 8):
-                    input_data = input_data[np.newaxis, :]
+                arr = np.asarray(input_data, dtype=np.float32)
+                if arr.ndim == 2 and arr.shape[1] == 8:
+                    if arr.shape[0] < 60:
+                        pad_rows = 60 - arr.shape[0]
+                        pad = np.zeros((pad_rows, 8), dtype=np.float32)
+                        arr = np.vstack([arr, pad])
+                    elif arr.shape[0] > 60:
+                        arr = arr[:60, :]
+                    arr = arr[np.newaxis, :, :]
+                elif arr.ndim == 3 and arr.shape[2] == 8:
+                    if arr.shape[1] < 60:
+                        pad_rows = 60 - arr.shape[1]
+                        pad = np.zeros((arr.shape[0], pad_rows, 8), dtype=np.float32)
+                        arr = np.concatenate([arr, pad], axis=1)
+                    elif arr.shape[1] > 60:
+                        arr = arr[:, :60, :]
+                else:
+                    raise ValueError(f"Invalid timeseries shape: {arr.shape}. Expected [60, 8] or [N, 60, 8].")
                 if self.timeseries_norm:
                     mins = self.timeseries_norm['mins']
                     maxs = self.timeseries_norm['maxs']
-                    input_data = (input_data - mins) / (maxs - mins + 1e-8)
-                    input_data = np.clip(input_data, 0.0, 1.0)
-                return torch.tensor(input_data, dtype=torch.float32, device=self.device)
+                    arr = (arr - mins) / (maxs - mins + 1e-8)
+                    arr = np.clip(arr, 0.0, 1.0)
+                return torch.tensor(arr, dtype=torch.float32, device=self.device)
 
         elif self.model_name == 'meta':
             if isinstance(input_data, (list, np.ndarray)):

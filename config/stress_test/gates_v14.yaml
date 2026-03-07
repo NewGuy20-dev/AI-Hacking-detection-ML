@@ -1,0 +1,65 @@
+version: "v1.4-gates-2026-02-28"
+
+defaults:
+  require_run_seed: true
+  min_static_scenarios: 1
+  min_recall: 0.90
+  max_fpr: 0.05
+  max_latency_p95_ms: 250.0
+  max_ece: 0.30
+  adversarial_max_fpr: 0.05
+  critical_sanity_flags:
+    - zero_true_positives
+    - zero_true_negatives
+
+models:
+  payload:
+    high_risk_categories:
+      - sqli
+      - xss
+    benign_categories:
+      - benign
+
+  url:
+    high_risk_categories:
+      - phishing
+    benign_categories:
+      - benign
+
+  timeseries:
+    high_risk_categories:
+      - ddos
+    benign_categories:
+      - normal
+
+  meta:
+    high_risk_categories:
+      - combined
+    benign_categories:
+      - normal
+    adversarial_max_fpr: 0.10
+
+  fraud:
+    high_risk_categories:
+      - card_not_present
+    benign_categories:
+      - normal
+
+  host:
+    high_risk_categories:
+      - ransomware
+    benign_categories:
+      - normal
+
+  network:
+    high_risk_categories:
+      - dos
+    benign_categories:
+      - normal
+    adversarial_max_fpr: 0.10
+
+  anomaly:
+    high_risk_categories:
+      - zero_day
+    benign_categories:
+      - normal

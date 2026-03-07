@@ -1,5 +1,21 @@
 # Anomaly detector scenarios - mostly generated dynamically
 scenarios:
+  - id: anomaly_static_zero_day_001
+    category: zero_day
+    subcategory: fixture
+    input_file: "fixtures/anomaly_zero_day.json"
+    expected: 1
+    difficulty: hard
+    description: "Static fixture zero-day anomaly vector"
+
+  - id: anomaly_static_normal_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/anomaly_normal.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture benign baseline vector"
+
   - id: anomaly_001
     category: zero_day
     subcategory: unknown_signature

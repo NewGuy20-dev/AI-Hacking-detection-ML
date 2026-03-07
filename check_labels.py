@@ -12,10 +12,10 @@ def _expand(globs):
 def _summarize(label, globs):
     files = _expand(globs)
     if not files:
-        print(f"  ✗ {label}: NOT FOUND")
+        print(f"  [MISSING] {label}: NOT FOUND")
         return
     total_bytes = sum(p.stat().st_size for p in files)
-    print(f"  ✓ {label}: {len(files)} file(s), {total_bytes / (1024**3):.2f} GB")
+    print(f"  [OK] {label}: {len(files)} file(s), {total_bytes / (1024**3):.2f} GB")
 
 
 print("Checking training dataset inputs (paths used by training scripts)...\n")
@@ -54,6 +54,7 @@ print()
 print("=== timeseries (LSTM) ===")
 _summarize("timeseries benign", [
     "datasets/live_benign/timeseries_benign.npy",
+    "datasets/timeseries/normal_traffic_expansion.npy",
 ])
 _summarize("timeseries malicious/normal", [
     "datasets/timeseries/*.npy",

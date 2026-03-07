@@ -1,5 +1,21 @@
 # Fraud detection scenarios - primarily generated dynamically
 scenarios:
+  - id: fraud_static_cnp_001
+    category: card_not_present
+    subcategory: fixture
+    input_file: "fixtures/fraud_cnp.json"
+    expected: 1
+    difficulty: hard
+    description: "Static fixture card-not-present fraud vector"
+
+  - id: fraud_static_normal_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/fraud_normal.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture normal transaction vector"
+
   - id: fraud_001
     category: card_not_present
     subcategory: online_fraud

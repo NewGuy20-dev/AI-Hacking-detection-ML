@@ -9,6 +9,7 @@ from src.stress_test.v14.runner import AdaptiveScheduler, StressTestRunner
 from src.stress_test.v14.scenarios import (
     Scenario,
     ScenarioResult,
+    ScenarioRegistry,
     URLGenerator,
     TimeSeriesGenerator,
     TabularGenerator,
@@ -169,3 +170,33 @@ def test_json_logger_serializes_numpy_scalar_fields(tmp_path):
     output_path = tmp_path / "2026-02-27" / "network_2026-02-27.jsonl"
     line = output_path.read_text(encoding="utf-8").strip()
     assert '"passed": true' in line
+
+
+def test_scenario_registry_loads_file_backed_static_fixture(tmp_path):
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir(parents=True, exist_ok=True)
+    (fixtures / "ts.json").write_text(
+        "[[1,2,3,4,5,6,7,8],[2,3,4,5,6,7,8,9]]",
+        encoding="utf-8",
+    )
+    (tmp_path / "timeseries.yaml").write_text(
+        "\n".join(
+            [
+                "scenarios:",
+                "  - id: ts_fixture_001",
+                "    category: ddos",
+                "    subcategory: fixture",
+                "    input_file: fixtures/ts.json",
+                "    expected: 1",
+                "    difficulty: medium",
+                "    description: fixture",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    registry = ScenarioRegistry(tmp_path)
+    scenarios = registry.load_static("timeseries")
+    assert len(scenarios) == 1
+    assert isinstance(scenarios[0].input_data, np.ndarray)
+    assert scenarios[0].input_data.shape == (2, 8)

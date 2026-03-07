@@ -89,14 +89,17 @@ class OpsMetricsState:
                 'p99_ms': 0.0,
                 'mean_ms': 0.0,
                 'throughput_sps': 0.0,
+                'model_throughput_sps': 0.0,
             }
         arr = np.array(self.latency, dtype=float)
+        throughput = float(len(arr) / (np.sum(arr) / 1000.0)) if arr.sum() > 0 else 0.0
         return {
             'p50_ms': float(np.percentile(arr, 50)),
             'p95_ms': float(np.percentile(arr, 95)),
             'p99_ms': float(np.percentile(arr, 99)),
             'mean_ms': float(np.mean(arr)),
-            'throughput_sps': float(len(arr) / (np.sum(arr) / 1000.0)) if arr.sum() > 0 else 0.0,
+            'throughput_sps': throughput,
+            'model_throughput_sps': throughput,
         }
 
     def summary(self) -> Dict:
@@ -105,10 +108,14 @@ class OpsMetricsState:
         neg = self.tn + self.fp
         precision = self.tp / (self.tp + self.fp) if (self.tp + self.fp) else 0.0
         recall = self.tp / pos if pos else 0.0
+        specificity = self.tn / neg if neg else 0.0
         fpr = self.fp / neg if neg else 0.0
         fnr = self.fn / pos if pos else 0.0
         accuracy = (self.tp + self.tn) / total if total else 0.0
         f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+        balanced_accuracy = (recall + specificity) / 2.0
+        denom = math.sqrt((self.tp + self.fp) * (self.tp + self.fn) * (self.tn + self.fp) * (self.tn + self.fn))
+        mcc = ((self.tp * self.tn) - (self.fp * self.fn)) / denom if denom else 0.0
         lat = self._latency_stats()
         sanity = []
         if total > 0 and self.fp == 0 and self.fn == 0 and accuracy == 1.0:
@@ -123,7 +130,10 @@ class OpsMetricsState:
                 'accuracy': accuracy,
                 'precision': precision,
                 'recall': recall,
+                'specificity': specificity,
                 'f1': f1,
+                'balanced_accuracy': balanced_accuracy,
+                'mcc': mcc,
                 'fp_rate': fpr,
                 'fn_rate': fnr,
                 'ece': self._ece(),

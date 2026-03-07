@@ -62,6 +62,10 @@ def run_loop(args) -> int:
     config = _load_config(config_path)
 
     models = _parse_models(args.model)
+    print(f"[feedback-loop] repo_root={repo_root}")
+    print(f"[feedback-loop] models={','.join(models)} dry_run={bool(args.dry_run)} promote={bool(args.promote)}")
+    print(f"[feedback-loop] input_dir={repo_root / args.input_dir} run_date={args.run_date or 'auto-latest'}")
+
     threshold_cfg = config.get("gating", {})
     thresholds = GatingThresholds(
         min_targeted_recall_delta=float(threshold_cfg.get("min_targeted_recall_delta", 0.02)),
@@ -72,6 +76,7 @@ def run_loop(args) -> int:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     output_dir = (repo_root / args.output_dir / run_id).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[feedback-loop] output_dir={output_dir}")
 
     ingest = ingest_failures(
         input_dir=repo_root / args.input_dir,
@@ -80,6 +85,8 @@ def run_loop(args) -> int:
         max_failures_per_category=args.max_failures_per_category,
     )
     records = ingest["records"]
+    print(f"[feedback-loop] source_files={json.dumps(ingest.get('source_files', {}), indent=2)}")
+    print(f"[feedback-loop] ingested_records={len(records)}")
 
     if not records:
         summary = {
@@ -90,10 +97,12 @@ def run_loop(args) -> int:
             "message": "No failure records found for selected models.",
         }
         write_summary(output_dir, summary)
+        print(f"[feedback-loop] no failures found. wrote summary: {output_dir / 'loop_summary.json'}")
         return 0
 
     generator = HardExampleGenerator(seed=args.seed, variants_per_failure=args.variants_per_failure)
     generated = generator.generate(records)
+    print(f"[feedback-loop] generated_hard_examples={len(generated)}")
 
     model_outputs: Dict[str, Dict] = {}
     manifest = {
@@ -125,8 +134,13 @@ def run_loop(args) -> int:
             "stats": replay["stats"],
         }
         manifest["datasets"][model] = model_outputs[model]
+        print(
+            f"[feedback-loop] model={model} replay_samples={replay['stats'].get('total_samples', len(replay['samples']))} "
+            f"dataset={dataset_path}"
+        )
 
     manifest_path = write_manifest(output_dir, manifest)
+    print(f"[feedback-loop] manifest={manifest_path}")
 
     if args.dry_run:
         summary = {
@@ -138,6 +152,7 @@ def run_loop(args) -> int:
             "generated_total": len(generated),
         }
         write_summary(output_dir, summary)
+        print(f"[feedback-loop] dry-run complete. summary={output_dir / 'loop_summary.json'}")
         return 0
 
     # Snapshot current models before retraining
@@ -146,6 +161,7 @@ def run_loop(args) -> int:
 
     training_results = []
     for model in models:
+        print(f"[feedback-loop] retraining model={model} ...")
         result = run_retraining(
             model=model,
             hard_examples_file=model_outputs[model]["dataset"],
@@ -153,6 +169,10 @@ def run_loop(args) -> int:
             timeout_seconds=args.training_timeout_seconds,
         )
         training_results.append(result.to_dict())
+        print(
+            f"[feedback-loop] retraining model={model} status={result.status} "
+            f"returncode={result.returncode} duration={result.duration_seconds:.1f}s"
+        )
         if result.status != "completed":
             restore_models(repo_root / args.models_dir, snapshot_dir, models)
             summary = {
@@ -161,7 +181,16 @@ def run_loop(args) -> int:
                 "models": models,
                 "training_results": training_results,
             }
-            write_summary(output_dir, summary)
+            summary_path = write_summary(output_dir, summary)
+            stderr_tail = (result.stderr or "")[-1200:]
+            stdout_tail = (result.stdout or "")[-1200:]
+            if stderr_tail:
+                print("[feedback-loop] training stderr tail:")
+                print(stderr_tail)
+            elif stdout_tail:
+                print("[feedback-loop] training stdout tail:")
+                print(stdout_tail)
+            print(f"[feedback-loop] training failed. summary={summary_path}")
             return 1
 
     # Strict gate evaluation
@@ -184,6 +213,7 @@ def run_loop(args) -> int:
         all_passed = all_passed and model_gate["passed"]
 
     write_summary(output_dir, gate_report, filename="gating_report.json")
+    print(f"[feedback-loop] gate_report={output_dir / 'gating_report.json'}")
 
     promoted = False
     if args.promote and all_passed:
@@ -201,6 +231,7 @@ def run_loop(args) -> int:
         "manifest": str(manifest_path),
     }
     write_summary(output_dir, summary)
+    print(f"[feedback-loop] completed. summary={output_dir / 'loop_summary.json'} promoted={promoted}")
 
     return 0 if (not args.promote or promoted) else 1
 

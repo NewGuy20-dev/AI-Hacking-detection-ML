@@ -11,13 +11,18 @@ def _read_lines(path: Path, max_lines: int = 20000) -> List[str]:
     out: List[str] = []
     if not path.exists():
         return out
-    with open(path, "r", encoding="utf-8", errors="ignore") as handle:
-        for idx, line in enumerate(handle):
-            if idx >= max_lines:
-                break
-            line = line.strip()
-            if line:
-                out.append(line)
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+            for idx, line in enumerate(handle):
+                if idx >= max_lines:
+                    break
+                line = line.strip()
+                if line:
+                    out.append(line)
+    except (OSError, PermissionError):
+        # Skip filesystem objects that are not readable in the current OS/runtime
+        # (for example symlinks/reparse points from mixed Windows/WSL datasets).
+        return []
     return out
 
 
@@ -34,7 +39,12 @@ def load_baseline_samples(base_dir: str | Path, model: str, max_samples: int = 3
         # Malicious payload seeds
         for folder in ["injection", "fuzzing", "misc"]:
             for file in (mal_dir / folder).rglob("*"):
-                if not file.is_file() or file.suffix not in ("", ".txt", ".lst", ".list"):
+                try:
+                    is_file = file.is_file()
+                    is_symlink = file.is_symlink()
+                except OSError:
+                    continue
+                if (not is_file) or is_symlink or file.suffix not in ("", ".txt", ".lst", ".list"):
                     continue
                 for line in _read_lines(file, max_lines=1000):
                     if len(line) > 3:
@@ -87,19 +97,22 @@ def load_previous_hard_examples(history_dir: str | Path, model: str, max_samples
     out: List[Dict] = []
     files = sorted(root.glob("**/hard_examples_*.jsonl"))
     for file in files:
-        with open(file, "r", encoding="utf-8") as handle:
-            for line in handle:
-                try:
-                    item = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if item.get("model") != model:
-                    continue
-                if "text" not in item or "label" not in item:
-                    continue
-                out.append(item)
-                if len(out) >= max_samples:
-                    return out
+        try:
+            with open(file, "r", encoding="utf-8") as handle:
+                for line in handle:
+                    try:
+                        item = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if item.get("model") != model:
+                        continue
+                    if "text" not in item or "label" not in item:
+                        continue
+                    out.append(item)
+                    if len(out) >= max_samples:
+                        return out
+        except (OSError, PermissionError):
+            continue
     return out
 
 

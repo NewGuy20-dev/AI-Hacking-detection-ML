@@ -1,5 +1,21 @@
 # Network intrusion scenarios - primarily generated dynamically
 scenarios:
+  - id: net_static_dos_001
+    category: dos
+    subcategory: fixture
+    input_file: "fixtures/network_dos.json"
+    expected: 1
+    difficulty: medium
+    description: "Static fixture DoS network vector"
+
+  - id: net_static_normal_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/network_normal.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture normal network vector"
+
   - id: net_001
     category: dos
     subcategory: syn_flood

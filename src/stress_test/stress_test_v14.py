@@ -4,6 +4,9 @@ import argparse
 import sys
 from pathlib import Path
 from datetime import date
+import json
+import hashlib
+import random
 from typing import Any, Optional, Tuple, Type
 
 # Add parent to path
@@ -67,6 +70,29 @@ def _resolve_runtime_components(require_dashboard: bool = True) -> Tuple[Optiona
     return runner_cls, dashboard_cls, None
 
 
+def _resolve_run_seed(seed_arg: Optional[str]) -> int:
+    """Resolve CLI seed input into a concrete non-null integer."""
+    if seed_arg is None:
+        return random.SystemRandom().randint(1, 2**31 - 1)
+    value = str(seed_arg).strip().lower()
+    if value in {"", "auto"}:
+        return random.SystemRandom().randint(1, 2**31 - 1)
+    parsed = int(value)
+    if parsed < 0:
+        raise ValueError("Seed must be >= 0.")
+    return parsed
+
+
+def _hash_file(path: Path) -> Optional[str]:
+    if not path.exists() or not path.is_file():
+        return None
+    hasher = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(8192), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='V1.4 Comprehensive Stress Test Suite',
@@ -106,8 +132,17 @@ Examples:
                         help='Dynamic scenario batch size for tabular models (default: 1500)')
     parser.add_argument('--progress-step', type=int, default=500,
                         help='Progress bar update step (default: 500)')
-    parser.add_argument('--seed', type=int, default=None,
-                        help='Random seed for deterministic dynamic scenario generation')
+    parser.add_argument('--seed', type=str, default='auto',
+                        help='Random seed integer or "auto" for deterministic run seed generation')
+    parser.add_argument('--gate-profile', type=str, default='config/stress_test/gates_v14.yaml',
+                        help='Path to YAML gate profile for policy enforcement')
+    parser.add_argument('--no-enforce-gates', action='store_true',
+                        help='Use legacy accuracy-only final exit behavior')
+    parser.add_argument('--fail-on-sanity', dest='fail_on_sanity', action='store_true',
+                        help='Force gate failure when critical sanity flags are present')
+    parser.add_argument('--no-fail-on-sanity', dest='fail_on_sanity', action='store_false',
+                        help='Allow critical sanity flags without forcing gate failure')
+    parser.set_defaults(fail_on_sanity=None)
     args = parser.parse_args()
 
     runner_cls, dashboard_cls, import_error = _resolve_runtime_components(require_dashboard=not args.no_dashboard)
@@ -118,6 +153,16 @@ Examples:
         print("ERROR: Failed to resolve runtime components.")
         sys.exit(2)
     assert runner_cls is not None
+
+    try:
+        run_seed = _resolve_run_seed(args.seed)
+    except ValueError as exc:
+        print(f"ERROR: Invalid --seed value: {exc}")
+        sys.exit(1)
+
+    enforce_gates = not args.no_enforce_gates
+    fail_on_sanity = True if args.fail_on_sanity is None else bool(args.fail_on_sanity)
+    gate_profile = Path(args.gate_profile)
     
     # Setup dual logging to terminal and test.log
     log_file = Path('test.log')
@@ -147,6 +192,10 @@ Examples:
         print(f"  Target: {args.duration} min/model")
         print(f"  Output: {output_dir}")
         print(f"  Date: {run_date}")
+        print(f"  Run Seed: {run_seed}")
+        print(f"  Gate Profile: {gate_profile}")
+        print(f"  Gate Enforcement: {'ON' if enforce_gates else 'OFF'}")
+        print(f"  Fail On Sanity: {'ON' if fail_on_sanity else 'OFF'}")
         print("=" * 70)
         
         # Run tests
@@ -163,7 +212,10 @@ Examples:
                 'models_dir': args.models_dir,
                 'scenarios_dir': args.scenarios_dir,
                 'output_dir': args.output_dir,
-                'seed': args.seed,
+                'seed': run_seed,
+                'gate_profile_path': str(gate_profile),
+                'enforce_gates': enforce_gates,
+                'fail_on_sanity': fail_on_sanity,
             }
             
             try:
@@ -214,16 +266,50 @@ Examples:
                 print(f"  ❌ {model:12s}: ERROR - {r['error']}")
             else:
                 acc = r.get('accuracy', 0)
-                status = "✅" if acc >= 0.95 else "⚠️" if acc >= 0.90 else "❌"
-                print(f"  {status} {model:12s}: {acc*100:5.1f}% accuracy "
-                      f"({r.get('total_scenarios', 0):,} scenarios, {r.get('total_duration_min', 0):.1f} min)")
+                if enforce_gates:
+                    gate_pass = bool(r.get('gate_pass', False))
+                    status = "✅" if gate_pass else "❌"
+                    label = "gate pass" if gate_pass else "gate fail"
+                    failures = ", ".join((r.get('gate_failures') or [])[:3])
+                    suffix = f" | failures: {failures}" if (failures and not gate_pass) else ""
+                    print(
+                        f"  {status} {model:12s}: {acc*100:5.1f}% accuracy, {label} "
+                        f"({r.get('total_scenarios', 0):,} scenarios, {r.get('total_duration_min', 0):.1f} min){suffix}"
+                    )
+                else:
+                    status = "✅" if acc >= 0.95 else "⚠️" if acc >= 0.90 else "❌"
+                    print(
+                        f"  {status} {model:12s}: {acc*100:5.1f}% accuracy "
+                        f"({r.get('total_scenarios', 0):,} scenarios, {r.get('total_duration_min', 0):.1f} min)"
+                    )
         
         print(f"\n{'='*70}")
+
+        # Save run manifest for traceability and replay
+        date_folder = output_dir / run_date
+        date_folder.mkdir(parents=True, exist_ok=True)
+        manifest = {
+            'run_date': run_date,
+            'run_seed': run_seed,
+            'models': models,
+            'target_duration_min': args.duration,
+            'gate_profile_path': str(gate_profile),
+            'gate_profile_sha256': _hash_file(gate_profile),
+            'enforce_gates': enforce_gates,
+            'fail_on_sanity': fail_on_sanity,
+            'results': results,
+        }
+        manifest_path = date_folder / f"run_manifest_{run_date}.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+        print(f"  Run Manifest: {manifest_path}")
         
         # Exit code based on results
         successful = [r for r in results.values() if 'error' not in r]
         has_errors = any('error' in r for r in results.values())
-        all_passed = bool(successful) and not has_errors and all(r.get('accuracy', 0) >= 0.90 for r in successful)
+        if enforce_gates:
+            all_passed = bool(successful) and not has_errors and all(r.get('gate_pass', False) for r in successful)
+        else:
+            all_passed = bool(successful) and not has_errors and all(r.get('accuracy', 0) >= 0.90 for r in successful)
     
     finally:
         # Restore stdout and close log file

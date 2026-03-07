@@ -54,23 +54,61 @@ class ScenarioRegistry:
         
         scenarios = []
         for item in data.get('scenarios', []):
-            # Skip DYNAMIC placeholders
-            if item.get('input') == 'DYNAMIC':
+            input_data = item.get('input')
+            input_file = item.get('input_file')
+            if input_file:
+                input_data = self._load_input_file(model_name, str(input_file))
+            elif input_data == 'DYNAMIC':
+                # Skip generator placeholders when no explicit static fixture exists.
                 continue
+            input_data = self._coerce_static_input(model_name, input_data)
                 
             scenarios.append(Scenario(
                 id=item['id'],
                 model=model_name,
                 category=item['category'],
                 subcategory=item['subcategory'],
-                input_data=item['input'],
+                input_data=input_data,
                 expected_label=item['expected'],
                 difficulty=item['difficulty'],
                 description=item['description'],
-                source='static'
+                source='static',
+                tags=item.get('tags', []),
             ))
         
         return scenarios
+
+    def _load_input_file(self, model_name: str, input_file: str) -> Any:
+        path = Path(input_file)
+        if not path.is_absolute():
+            path = self.scenarios_dir / path
+        if not path.exists():
+            raise FileNotFoundError(f"Static fixture file not found for {model_name}: {path}")
+        suffix = path.suffix.lower()
+        if suffix == '.json':
+            with open(path, 'r', encoding='utf-8') as handle:
+                return json.load(handle)
+        if suffix in {'.txt', '.payload', '.url'}:
+            return path.read_text(encoding='utf-8').strip()
+        if suffix == '.npy':
+            return np.load(path, allow_pickle=False)
+        return path.read_text(encoding='utf-8').strip()
+
+    @staticmethod
+    def _coerce_static_input(model_name: str, input_data: Any) -> Any:
+        if isinstance(input_data, dict) and 'input' in input_data:
+            input_data = input_data['input']
+
+        if model_name == 'timeseries':
+            if isinstance(input_data, np.ndarray):
+                return input_data.astype(np.float32, copy=False)
+            if isinstance(input_data, list):
+                return np.asarray(input_data, dtype=np.float32)
+            return input_data
+
+        if model_name in {'fraud', 'host', 'network', 'anomaly', 'meta'} and isinstance(input_data, np.ndarray):
+            return input_data.astype(np.float32, copy=False).tolist()
+        return input_data
 
 
 # Dynamic Generators

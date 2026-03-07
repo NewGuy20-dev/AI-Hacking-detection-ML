@@ -1,5 +1,21 @@
 # Host behavior scenarios - primarily generated dynamically
 scenarios:
+  - id: host_static_ransomware_001
+    category: ransomware
+    subcategory: fixture
+    input_file: "fixtures/host_ransomware.json"
+    expected: 1
+    difficulty: hard
+    description: "Static fixture ransomware host vector"
+
+  - id: host_static_normal_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/host_normal.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture normal host vector"
+
   - id: host_001
     category: ransomware
     subcategory: file_encryption

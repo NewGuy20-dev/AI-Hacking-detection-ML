@@ -52,13 +52,32 @@ def _extract_date_token(path: Path) -> str:
 
 def _select_failure_file(input_dir: Path, model: str, run_date: Optional[str]) -> Optional[Path]:
     if run_date:
-        candidate = input_dir / f"{model}_{run_date}_failures.jsonl"
-        return candidate if candidate.exists() else None
+        direct = input_dir / f"{model}_{run_date}_failures.jsonl"
+        dated = input_dir / run_date / f"{model}_{run_date}_failures.jsonl"
+        if direct.exists():
+            return direct
+        if dated.exists():
+            return dated
+        # Fallback for alternative folder structures
+        recursive = sorted(input_dir.rglob(f"{model}_{run_date}_failures.jsonl"))
+        return recursive[-1] if recursive else None
 
-    matches = sorted(input_dir.glob(f"{model}_*_failures.jsonl"))
+    # Support both flat and date-subfolder layouts
+    matches = sorted(input_dir.rglob(f"{model}_*_failures.jsonl"))
     if not matches:
         return None
-    matches.sort(key=lambda p: _extract_date_token(p))
+
+    def _date_hint(path: Path) -> str:
+        token = _extract_date_token(path)
+        if token:
+            return token
+        parent = path.parent.name
+        # common date folder format: YYYY-MM-DD
+        if len(parent) == 10 and parent[4] == "-" and parent[7] == "-":
+            return parent
+        return ""
+
+    matches.sort(key=lambda p: (_date_hint(p), p.stat().st_mtime))
     return matches[-1]
 
 

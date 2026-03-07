@@ -1,6 +1,22 @@
 # Timeseries scenarios - primarily generated dynamically
 # Static scenarios serve as templates for dynamic generation
 scenarios:
+  - id: ts_static_ddos_001
+    category: ddos
+    subcategory: fixture
+    input_file: "fixtures/timeseries_ddos.json"
+    expected: 1
+    difficulty: medium
+    description: "Static fixture DDoS sequence"
+
+  - id: ts_static_normal_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/timeseries_normal.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture normal sequence"
+
   - id: ts_ddos_001
     category: ddos
     subcategory: syn_flood

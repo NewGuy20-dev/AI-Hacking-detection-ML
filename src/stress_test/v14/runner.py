@@ -20,6 +20,7 @@ from .scenarios import (
 from .ops_metrics import OpsMetricsState
 from .models import ModelWrapper
 from .logger import JSONLogger
+from .gates import GateEvaluator
 
 
 # Risk-weighted base distributions
@@ -104,6 +105,10 @@ class StressTestRunner:
         self.scenarios_dir = Path(config.get('scenarios_dir', 'configs/stress_test/scenarios_v14'))
         self.output_dir = Path(config.get('output_dir', 'evaluation/stress_test_v14'))
         self.seed = config.get('seed')
+        self.gate_profile_path = config.get('gate_profile_path', 'config/stress_test/gates_v14.yaml')
+        self.enforce_gates = bool(config.get('enforce_gates', True))
+        self.fail_on_sanity = bool(config.get('fail_on_sanity', True))
+        self.gate_evaluator = GateEvaluator.from_path(self.gate_profile_path)
         
     def run(self) -> Dict:
         """Run complete stress test for this model."""
@@ -234,6 +239,28 @@ class StressTestRunner:
             summary = logger.get_summary()
             total_duration = (time.time() - start_time) / 60 if generator else 0
             ops = metrics.summary()
+            ops['model'] = self.model_name
+            ops['run_seed'] = self.seed
+            ops['static_count'] = len(static_scenarios)
+            if 'throughput_sps' in ops.get('latency', {}):
+                ops['latency']['model_throughput_sps'] = float(ops['latency']['throughput_sps'])
+            ops['latency']['wall_clock_throughput_sps'] = (
+                float(summary['total_scenarios']) / max(total_duration * 60.0, 1e-9)
+                if total_duration > 0
+                else 0.0
+            )
+            gate_report = self.gate_evaluator.evaluate(
+                model_name=self.model_name,
+                ops=ops,
+                static_count=len(static_scenarios),
+                run_seed=self.seed,
+                fail_on_sanity=self.fail_on_sanity,
+            )
+            ops['gate_profile_version'] = gate_report['profile_version']
+            ops['gate_profile_path'] = gate_report['profile_path']
+            ops['gate_pass'] = bool(gate_report['passed'])
+            ops['gates'] = gate_report['checks']
+            ops['critical_failures'] = gate_report['critical_failures']
 
             # Save ops.json in date-based subfolder
             date_folder = self.output_dir / run_date
@@ -245,11 +272,12 @@ class StressTestRunner:
 
             if ops.get('sanity'):
                 print(f"  Sanity warnings: {', '.join(ops['sanity'])}")
-                if self.model_name == 'meta' and 'perfect_accuracy_no_errors' in ops['sanity']:
-                    raise RuntimeError(
-                        "Meta stress test produced perfect accuracy with zero errors. "
-                        "Generator output is likely trivial; aborting run."
-                    )
+            critical_sanity_failed = any(
+                (check.get('id') == 'critical_sanity_flags' and not check.get('passed', True))
+                for check in gate_report['checks']
+            )
+            if critical_sanity_failed and self.fail_on_sanity:
+                print("  Gate impact: critical sanity flags force gate failure")
             
             print(f"\n✓ Test complete!")
             print(f"  Static: {len(static_scenarios)} scenarios")
@@ -260,6 +288,14 @@ class StressTestRunner:
             print(f"  Passed: {summary['passed']}/{summary['total_scenarios']}")
             print(f"  Precision: {ops['metrics']['precision']*100:.1f}%  Recall: {ops['metrics']['recall']*100:.1f}%  FPR: {ops['metrics']['fp_rate']*100:.2f}%  FNR: {ops['metrics']['fn_rate']*100:.2f}%")
             print(f"  ECE: {ops['metrics']['ece']:.3f}  Latency p95: {ops['latency']['p95_ms']:.2f} ms")
+            gate_passed_count = sum(1 for check in gate_report['checks'] if check.get('passed'))
+            print(f"  Gates: {'PASS' if ops['gate_pass'] else 'FAIL'} ({gate_passed_count}/{len(gate_report['checks'])} checks)")
+            if not ops['gate_pass']:
+                failed_checks = [check for check in gate_report['checks'] if not check.get('passed')]
+                preview = ", ".join(check['id'] for check in failed_checks[:4])
+                if len(failed_checks) > 4:
+                    preview += ", ..."
+                print(f"  Gate failures: {preview}")
             
             # Display per-difficulty accuracy
             if summary.get('accuracy_by_difficulty'):
@@ -283,6 +319,9 @@ class StressTestRunner:
                 'final_stats': summary['categories'],
                 'failure_log': str((date_folder / f"{self.model_name}_{run_date}_failures.jsonl")),
                 'ops_metrics': ops,
+                'gate_pass': bool(ops.get('gate_pass', False)),
+                'gate_failures': [check['id'] for check in gate_report['checks'] if not check.get('passed')],
+                'gate_profile_version': gate_report['profile_version'],
                 'replay_command': (
                     f"python src/stress_test/stress_test_v14.py --model {self.model_name} "
                     f"--seed {self.seed if self.seed is not None else 42} "

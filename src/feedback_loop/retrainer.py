@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import time
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -108,12 +109,17 @@ def run_retraining(
 
     start = time.time()
     try:
+        env = os.environ.copy()
+        # Avoid Windows cp1252 console crashes when training scripts print symbols like "✓".
+        env.setdefault("PYTHONIOENCODING", "utf-8")
+        env.setdefault("PYTHONUTF8", "1")
         result = subprocess.run(
             command,
             cwd=str(root),
             capture_output=True,
             text=True,
             timeout=timeout_seconds,
+            env=env,
         )
         duration = time.time() - start
         status = "completed" if result.returncode == 0 else "failed"

@@ -1,5 +1,21 @@
 # Meta classifier scenarios - primarily generated dynamically
 scenarios:
+  - id: meta_static_mal_001
+    category: combined
+    subcategory: fixture
+    input_file: "fixtures/meta_malicious.json"
+    expected: 1
+    difficulty: medium
+    description: "Static fixture malicious ensemble vector"
+
+  - id: meta_static_benign_001
+    category: normal
+    subcategory: fixture
+    input_file: "fixtures/meta_benign.json"
+    expected: 0
+    difficulty: easy
+    description: "Static fixture benign ensemble vector"
+
   - id: meta_001
     category: combined
     subcategory: ensemble

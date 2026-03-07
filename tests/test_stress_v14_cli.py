@@ -25,6 +25,9 @@ def test_cli_accepts_anomaly_model(monkeypatch, tmp_path):
                 'total_scenarios': 1,
                 'total_duration_min': 0.0,
                 'accuracy': 0.95,
+                'gate_pass': True,
+                'gate_failures': [],
+                'gate_profile_version': 'test',
             }
 
     monkeypatch.setattr(cli, 'StressTestRunner', FakeRunner)
@@ -64,6 +67,9 @@ def test_cli_default_all_excludes_anomaly(monkeypatch, tmp_path):
                 'total_scenarios': 1,
                 'total_duration_min': 0.0,
                 'accuracy': 0.95,
+                'gate_pass': True,
+                'gate_failures': [],
+                'gate_profile_version': 'test',
             }
 
     monkeypatch.setattr(cli, 'StressTestRunner', FakeRunner)
@@ -81,3 +87,40 @@ def test_cli_default_all_excludes_anomaly(monkeypatch, tmp_path):
     assert exc.value.code == 0
     assert seen_models == cli.DEFAULT_MODELS
     assert 'anomaly' not in seen_models
+
+
+def test_cli_auto_seed_is_resolved(monkeypatch, tmp_path):
+    """Auto seed should be converted into a deterministic integer passed to runner."""
+    observed_seeds = []
+
+    class FakeRunner:
+        def __init__(self, _model_name, config):
+            observed_seeds.append(config.get('seed'))
+
+        def run(self):
+            return {
+                'model': 'payload',
+                'total_scenarios': 1,
+                'total_duration_min': 0.0,
+                'accuracy': 0.95,
+                'gate_pass': True,
+                'gate_failures': [],
+                'gate_profile_version': 'test',
+            }
+
+    monkeypatch.setattr(cli, 'StressTestRunner', FakeRunner)
+    monkeypatch.setattr(cli, 'DashboardGenerator', object)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        cli.sys,
+        'argv',
+        ['stress_test_v14.py', '--model', 'payload', '--duration', '0', '--no-dashboard', '--seed', 'auto'],
+    )
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+
+    assert exc.value.code == 0
+    assert len(observed_seeds) == 1
+    assert isinstance(observed_seeds[0], int)
+    assert observed_seeds[0] >= 0
