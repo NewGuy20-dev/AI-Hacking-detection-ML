@@ -10,13 +10,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset
 from torch.amp import GradScaler
 from tqdm import tqdm
 
 from src.torch_models.payload_cnn import PayloadCNN
 from src.torch_models.datasets import PayloadDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.training.training_utils import (
+    binary_metrics,
+    load_operational_threshold,
+    stratified_index_split,
+    write_training_manifest,
+)
 from src.data_guardrails import (
     assert_allowed_training_path,
     assert_allowed_training_paths,
@@ -182,9 +188,9 @@ def train():
     
     # Create dataset and split
     dataset = PayloadDataset(texts, labels, max_len=500)
-    train_size = int(0.8 * len(dataset))
-    val_size = len(dataset) - train_size
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    train_idx, val_idx = stratified_index_split(labels, test_size=0.2, seed=42)
+    train_ds = Subset(dataset, train_idx.tolist())
+    val_ds = Subset(dataset, val_idx.tolist())
     
     train_loader = DataLoader(train_ds, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=64, shuffle=False, num_workers=0, pin_memory=True)
@@ -203,13 +209,14 @@ def train():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, factor=0.5)
     scaler = GradScaler()
     early_stop = EarlyStopping(patience=5)
+    eval_threshold = load_operational_threshold("payload", default=0.85)
     
     # Label smoothing factor
     label_smoothing = 0.1
     
     # Training loop
     print("\n--- Training ---")
-    best_val_acc = 0
+    best_metrics = None
     best_state = None
     
     for epoch in range(60):  # Increased from 50
@@ -238,7 +245,8 @@ def train():
         
         # Validate
         model.eval()
-        val_loss, correct, total = 0, 0, 0
+        val_loss = 0
+        all_probs, all_targets = [], []
         with torch.no_grad():
             for batch in val_loader:
                 inputs = batch['input'].to(device)
@@ -247,19 +255,30 @@ def train():
                     outputs = model(inputs)
                     loss = criterion(outputs, targets)
                 val_loss += loss.item()
-                preds = (torch.sigmoid(outputs) > 0.5).float()  # Apply sigmoid for predictions
-                correct += (preds == targets).sum().item()
-                total += targets.size(0)
+                probs = torch.sigmoid(outputs)
+                all_probs.extend(probs.detach().cpu().numpy().tolist())
+                all_targets.extend(targets.detach().cpu().numpy().tolist())
         
         val_loss /= len(val_loader)
-        val_acc = correct / total
+        val_metrics = binary_metrics(all_probs, all_targets, eval_threshold)
         
         scheduler.step(val_loss)
         
-        print(f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, val_acc={val_acc:.2%}")
+        print(
+            f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
+            f"val_f1={val_metrics['f1']:.4f}, val_recall={val_metrics['recall']:.4f}, val_fpr={val_metrics['fpr']:.4f}"
+        )
         
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if best_metrics is None or (
+            val_metrics['f1'],
+            val_metrics['recall'],
+            -val_metrics['fpr'],
+        ) > (
+            best_metrics['f1'],
+            best_metrics['recall'],
+            -best_metrics['fpr'],
+        ):
+            best_metrics = dict(val_metrics)
             best_state = model.state_dict().copy()
         
         if early_stop(val_loss):
@@ -279,9 +298,24 @@ def train():
     
     # Also save state dict
     torch.save(best_state, models_dir / 'payload_cnn.pth')
+    write_training_manifest(
+        models_dir / 'payload_cnn_training_manifest.json',
+        {
+            "model": "payload",
+            "dataset_size": len(dataset),
+            "train_size": len(train_ds),
+            "val_size": len(val_ds),
+            "operational_threshold": eval_threshold,
+            "best_metrics": best_metrics or {},
+            "label_counts": {
+                "malicious": int(sum(labels)),
+                "benign": int(len(labels) - sum(labels)),
+            },
+        },
+    )
     
     print(f"✓ Model saved to models/payload_cnn.pt")
-    print(f"✓ Best validation accuracy: {best_val_acc:.2%}")
+    print(f"✓ Best validation F1: {(best_metrics or {}).get('f1', 0.0):.4f}")
 
 
 if __name__ == "__main__":

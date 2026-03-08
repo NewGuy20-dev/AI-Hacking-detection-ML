@@ -8,6 +8,8 @@ import urllib.parse
 import numpy as np
 import json
 
+from src.timeseries_synthetic import generate_stress_aligned_normal_sequence
+
 
 @dataclass
 class Scenario:
@@ -34,6 +36,7 @@ class ScenarioResult:
     latency_ms: float
     timestamp: str
     error: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 class ScenarioRegistry:
@@ -202,6 +205,7 @@ class PayloadGenerator(DynamicGenerator):
         for i in range(count):
             payload = random.choice(self.BENIGN_PAYLOADS)
             difficulty = random.choice(difficulties)
+            payload = self.difficulty_mixin.apply_difficulty(payload, difficulty, 'payload')
             scenarios.append(Scenario(
                 id=f"payload_benign_{i}_{random.randint(1000,9999)}",
                 model='payload',
@@ -316,6 +320,7 @@ class URLGenerator(DynamicGenerator):
         for i in range(count):
             url = random.choice(self.BENIGN_URLS)
             difficulty = random.choice(difficulties)
+            url = self.difficulty_mixin.apply_difficulty(url, difficulty, 'url')
             scenarios.append(Scenario(
                 id=f"url_benign_{i}_{random.randint(1000,9999)}",
                 model='url',
@@ -480,6 +485,8 @@ class TimeSeriesGenerator(DynamicGenerator):
         for i in range(benign_count):
             data = self._generate_normal()
             difficulty = random.choice(difficulties)
+            data = self.difficulty_mixin.apply_difficulty(data, difficulty, 'timeseries')
+            data = np.clip(data.astype(np.float32), a_min=0.0, a_max=50000.0)
             scenarios.append(Scenario(
                 id=f"timeseries_benign_{i}_{random.randint(1000,9999)}",
                 model='timeseries',
@@ -619,16 +626,7 @@ class TimeSeriesGenerator(DynamicGenerator):
     
     def _generate_normal(self) -> np.ndarray:
         """Generate normal traffic pattern."""
-        seq = np.zeros((60, 8), dtype=np.float32)
-        t = np.linspace(0, 4*np.pi, 60)
-        
-        seq[:, 0] = 50 + 20 * np.sin(t) + np.random.normal(0, 3, 60)
-        seq[:, 1] = seq[:, 0] * np.random.uniform(800, 1200) + np.random.normal(0, 500, 60)
-        seq[:, 2] = np.random.uniform(20, 80) + np.random.normal(0, 5, 60)
-        seq[:, 3] = np.clip(np.random.exponential(0.02, 60), 0, 0.2)
-        seq[:, 4:] = np.random.uniform(10, 100, (60, 4))
-        
-        return seq
+        return generate_stress_aligned_normal_sequence()
     
     def _generate_generic_attack(self, difficulty: str) -> np.ndarray:
         """Generate generic attack pattern with difficulty-based ramp."""

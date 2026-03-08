@@ -68,12 +68,21 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    distributions: Dict[str, Dict[str, Dict[str, float]]] = {}
+    distributions: Dict[str, Dict[str, Dict[str, float]]] = {
+        "_metadata": {
+            "generated_at_epoch": None,
+            "seed": int(args.seed),
+            "samples_per_model": int(args.samples_per_model),
+            "model_order": list(MODEL_ORDER),
+            "from_logs_dir": str(args.from_logs_dir) if args.from_logs_dir else None,
+        }
+    }
 
     if args.from_logs_dir:
         logs_dir = Path(args.from_logs_dir)
         if not logs_dir.exists():
             raise FileNotFoundError(f"Missing logs directory: {logs_dir}")
+        distributions["_metadata"]["generated_at_epoch"] = logs_dir.stat().st_mtime
         for model_name in MODEL_ORDER:
             log_matches = sorted(logs_dir.glob(f"{model_name}_*.jsonl"))
             if not log_matches:
@@ -99,6 +108,7 @@ def main() -> None:
                 f"attack mean={distributions[model_name]['attack']['mean']:.4f}"
             )
     else:
+        distributions["_metadata"]["generated_at_epoch"] = output_path.parent.stat().st_mtime if output_path.parent.exists() else None
         for model_name in MODEL_ORDER:
             print(f"\n[+] Capturing scores for {model_name}...")
             wrapper = ModelWrapper(model_name).load()

@@ -1,4 +1,5 @@
 """Unified model wrapper for all V1.4 stress test models."""
+import hashlib
 import time
 from pathlib import Path
 from typing import Any, Tuple, Dict, List
@@ -52,6 +53,26 @@ class ModelWrapper:
         self.timeseries_norm = None
         self.device = 'cuda' if torch is not None and torch.cuda.is_available() else 'cpu'
         self.calibrator = None
+        self.artifact_metadata: Dict[str, Any] = {}
+        self.last_prediction_metadata: Dict[str, Any] = {}
+        self.last_batch_metadata: Dict[str, Any] = {}
+
+    @staticmethod
+    def _file_metadata(path: Path) -> Dict[str, Any]:
+        if not path.exists():
+            return {"path": str(path), "exists": False}
+        hasher = hashlib.sha256()
+        with open(path, "rb") as handle:
+            for chunk in iter(lambda: handle.read(8192), b""):
+                hasher.update(chunk)
+        stat = path.stat()
+        return {
+            "path": str(path),
+            "exists": True,
+            "sha256": hasher.hexdigest(),
+            "size_bytes": int(stat.st_size),
+            "mtime_epoch": float(stat.st_mtime),
+        }
 
     @staticmethod
     def _load_thresholds() -> Dict[str, float]:
@@ -145,6 +166,8 @@ class ModelWrapper:
                 'mins': data['mins'].astype(np.float32),
                 'maxs': data['maxs'].astype(np.float32),
             }
+            self.artifact_metadata["timeseries_norm"] = self._file_metadata(norm_path)
+        self.artifact_metadata["model"] = self._file_metadata(model_path)
 
     def _load_sklearn(self):
         """Load sklearn model and optional scaler."""
@@ -185,6 +208,9 @@ class ModelWrapper:
             else:
                 self.model = artifact
                 self.scaler = joblib.load(scaler_path)
+        self.artifact_metadata["model"] = self._file_metadata(model_path)
+        if scaler_path:
+            self.artifact_metadata["scaler"] = self._file_metadata(scaler_path)
 
         # Allow sklearn estimators with n_jobs to use all cores at inference
         if hasattr(self.model, 'n_jobs') and self.model.n_jobs is not None:
@@ -200,6 +226,17 @@ class ModelWrapper:
         if cal_path.exists():
             self.calibrator = ConfidenceCalibrator()
             self.calibrator.load(cal_path)
+            self.artifact_metadata["calibration"] = self._file_metadata(cal_path)
+
+    def consume_last_prediction_metadata(self) -> Dict[str, Any]:
+        metadata = dict(self.last_prediction_metadata)
+        self.last_prediction_metadata = {}
+        return metadata
+
+    def consume_last_batch_metadata(self) -> Dict[str, Any]:
+        metadata = dict(self.last_batch_metadata)
+        self.last_batch_metadata = {}
+        return metadata
 
     @staticmethod
     def _normalize_url_text(url: str) -> str:
@@ -292,6 +329,12 @@ class ModelWrapper:
             (prediction, confidence, latency_ms)
         """
         start = time.perf_counter()
+        metadata = {
+            "model_name": self.model_name,
+            "prefiltered": False,
+            "calibrated": bool(self.calibrator is not None),
+            "model_artifact": dict(self.artifact_metadata),
+        }
 
         try:
             if self.model_name == 'payload' and isinstance(input_data, str) and get_filter is not None:
@@ -300,6 +343,12 @@ class ModelWrapper:
                 if is_benign:
                     latency = (time.perf_counter() - start) * 1000
                     attack_prob = max(0.0, 1.0 - float(benign_conf))
+                    metadata.update({
+                        "prefiltered": True,
+                        "threshold_used": None,
+                        "raw_probability": float(attack_prob),
+                    })
+                    self.last_prediction_metadata = metadata
                     return 0, float(attack_prob), latency
             processed = self.preprocess(input_data)
 
@@ -335,16 +384,23 @@ class ModelWrapper:
                 prob = float(self.model.predict_proba(processed)[0, 1])
                 threshold = self._get_threshold()
                 prediction = 1 if prob > threshold else 0
+            metadata["raw_probability"] = float(prob)
+            metadata["threshold_used"] = float(threshold)
 
             if self.calibrator is not None:
                 prob = float(self.calibrator.calibrate(np.array([prob]))[0])
                 threshold = self._get_threshold()
                 prediction = 1 if prob > threshold else 0
+                metadata["threshold_used"] = float(threshold)
+                metadata["calibrated_probability"] = float(prob)
 
             latency = (time.perf_counter() - start) * 1000
+            self.last_prediction_metadata = metadata
             return prediction, float(prob), latency
 
         except Exception as exc:
+            metadata["error"] = str(exc)
+            self.last_prediction_metadata = metadata
             raise RuntimeError(f"Prediction failed for {self.model_name}: {exc}") from exc
 
     def predict_batch(self, inputs: List[Any]) -> Tuple[np.ndarray, np.ndarray, float]:
@@ -380,4 +436,12 @@ class ModelWrapper:
         threshold = self._get_threshold()
         preds = (prob_vec > threshold).astype(int)
         latency = (time.perf_counter() - start) * 1000
+        self.last_batch_metadata = {
+            "model_name": self.model_name,
+            "threshold_used": float(threshold),
+            "prefiltered": False,
+            "calibrated": bool(self.calibrator is not None),
+            "model_artifact": dict(self.artifact_metadata),
+            "batch_mode": True,
+        }
         return preds, prob_vec.astype(float), latency

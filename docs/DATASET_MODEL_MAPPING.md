@@ -164,13 +164,14 @@ datasets/fraud_detection/
 ### Data (Pre-generated numpy arrays)
 ```
 datasets/timeseries/
-├── normal_traffic_improved.npy   # Normal traffic sequences
-└── attack_traffic_improved.npy   # Attack traffic sequences
+├── normal_traffic_expansion.npy   # Normal traffic sequences, shape [N, 60, 8]
+└── attack_traffic_expansion.npy   # Attack traffic sequences, shape [N, 60, 8]
 ```
 
 **Note**: Currently uses synthetic data. Could be enhanced with:
 - DARPA dataset (`datasets/darpa/`)
 - CICIDS2017 temporal features
+- Optional live benign source: `datasets/live_benign/timeseries_benign.npy` with the same `[N, 60, 8]` contract
 
 ---
 

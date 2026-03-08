@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.stress_test.v14.ops_metrics import OpsMetricsState
+from src.stress_test.v14.runner import StressTestRunner
 from src.stress_test.v14.scenarios import MetaGenerator
 
 
@@ -36,3 +37,25 @@ def test_meta_generator_overlap_adversarial():
     malicious = np.array(malicious)
     # Overlap should exist in adversarial distribution
     assert benign.max() > malicious.min()
+
+
+def test_timeseries_preflight_rejects_collapsed_confidence():
+    class FakeModel:
+        def predict(self, _input):
+            return 0, 0.0, 1.0
+
+        def consume_last_prediction_metadata(self):
+            return {}
+
+    runner = StressTestRunner("timeseries", {"target_duration_min": 1})
+    scenarios = [
+        type("ScenarioStub", (), {"id": "benign", "expected_label": 0, "input_data": [], "category": "normal", "difficulty": "easy"})(),
+        type("ScenarioStub", (), {"id": "attack", "expected_label": 1, "input_data": [], "category": "ddos", "difficulty": "easy"})(),
+    ]
+
+    try:
+        runner._run_preflight(FakeModel(), scenarios)
+    except RuntimeError as exc:
+        assert "collapsed timeseries confidence distribution" in str(exc)
+    else:
+        raise AssertionError("Expected collapsed timeseries preflight to fail")

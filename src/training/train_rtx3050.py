@@ -9,6 +9,7 @@ import argparse
 import traceback
 import json
 import signal
+import platform
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -238,7 +239,7 @@ class TrainingConfig:
     """Training configuration for Intel i5 12th Gen + RTX 3050."""
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     batch_size = 1024
-    num_workers = 6  # 6 workers for i5 12th Gen (6 P-cores)
+    num_workers = 2 if platform.system() == 'Windows' else 6
     pin_memory = True
     prefetch_factor = 4  # Prefetch 4 batches per worker
     use_amp = True
@@ -263,6 +264,22 @@ class TrainingConfig:
     data_dir = Path('datasets')
     model_dir = Path('models')
     checkpoint_dir = Path('checkpoints')
+
+
+def build_dataloader(dataset, config: TrainingConfig, shuffle: bool = False):
+    """Create a DataLoader with worker settings that can be tuned per platform."""
+    loader_kwargs = {
+        'batch_size': config.batch_size,
+        'num_workers': config.num_workers,
+        'pin_memory': config.pin_memory,
+    }
+    if config.num_workers > 0:
+        loader_kwargs['prefetch_factor'] = config.prefetch_factor
+        if platform.system() != 'Windows':
+            loader_kwargs['worker_init_fn'] = worker_init_fn
+    if shuffle:
+        loader_kwargs['shuffle'] = True
+    return DataLoader(dataset, **loader_kwargs)
 
 
 class EarlyStopping:
@@ -507,11 +524,12 @@ def train_model(model_type: str, config: TrainingConfig):
             and not getattr(config, 'retrain', False)):
         print(f"\n✓ {model_type.upper()} already trained, skipping...")
         return
-    
+
     print(f"\n{'='*60}")
     print(f"Training {model_type.upper()} model")
     print(f"Device: {config.device}")
     print(f"Batch size: {config.batch_size}")
+    print(f"DataLoader workers: {config.num_workers}")
     print(f"Samples per epoch: {config.samples_per_epoch:,}")
     print(f"Progressive unfreezing: FC(0-1) → Conv(2) → Embed(3+)")
     print(f"{'='*60}\n")
@@ -635,14 +653,7 @@ def train_model(model_type: str, config: TrainingConfig):
                     vocab_size=128 if model_type == 'url' else 256
                 )
             
-            import platform
-            is_windows = platform.system() == 'Windows'
-            
-            loader = DataLoader(
-                dataset, batch_size=config.batch_size, num_workers=0,
-                pin_memory=config.pin_memory,
-                worker_init_fn=worker_init_fn if not is_windows else None,
-            )
+            loader = build_dataloader(dataset, config)
             
             # Train epoch
             epoch_loss = train_epoch(
@@ -667,7 +678,7 @@ def train_model(model_type: str, config: TrainingConfig):
                     vocab_size=128 if model_type == 'url' else 256
                 )
             
-            val_loader = DataLoader(val_dataset, batch_size=config.batch_size, num_workers=0)
+            val_loader = build_dataloader(val_dataset, config)
             val_loss = validate_epoch(model, val_loader, config)
             del val_loader
             
@@ -786,7 +797,9 @@ def train_sklearn_model(model_type: str, config: TrainingConfig):
         result = subprocess.run(
             [python_exe, str(script_path)],
             cwd=script_path.parent,
-            env=env
+            env=env,
+            capture_output=True,
+            text=True
         )
         
         success = result.returncode == 0
@@ -805,6 +818,10 @@ def train_sklearn_model(model_type: str, config: TrainingConfig):
             print(f"  ✓ {model_type.upper()} training completed in {timedelta(seconds=int(elapsed))}")
         else:
             print(f"  ✗ {model_type.upper()} training failed")
+            if result.stdout:
+                print(result.stdout.rstrip())
+            if result.stderr:
+                print(result.stderr.rstrip())
         
         # Discord: Completed
         discord.training_finished(model_type, elapsed, 0.0, 1, 0)
@@ -825,6 +842,8 @@ def main():
                                'pytorch', 'sklearn', 'all'])
     parser.add_argument('--epochs', type=int, default=5)
     parser.add_argument('--batch-size', type=int, default=1024)
+    parser.add_argument('--num-workers', type=int, default=None,
+                       help='Override DataLoader worker count (Windows default: 2, other platforms: 6)')
     parser.add_argument('--samples-per-epoch', type=int, default=20_000_000)
     parser.add_argument('--freeze-epochs', type=int, default=2)
     parser.add_argument('--lr', type=float, default=1e-3)
@@ -842,6 +861,8 @@ def main():
     config = TrainingConfig()
     config.epochs = args.epochs
     config.batch_size = args.batch_size
+    if args.num_workers is not None:
+        config.num_workers = max(args.num_workers, 0)
     config.samples_per_epoch = args.samples_per_epoch
     config.freeze_epochs = args.freeze_epochs
     config.lr = args.lr
@@ -950,7 +971,7 @@ def main():
                     
                     # Step 2: Train meta-classifier
                     print("\n[2/2] Training meta-classifier...")
-                    meta_script = Path(__file__).parent.parent / 'src' / 'training' / 'train_meta.py'
+                    meta_script = Path(__file__).resolve().parent / 'train_meta.py'
                     result = subprocess.run([sys.executable, str(meta_script), '--hybrid'])
                     
                     if result.returncode == 0:

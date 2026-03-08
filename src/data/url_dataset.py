@@ -106,7 +106,7 @@ class RealURLDataset(IterableDataset):
                     url = data.get('url', data.get('text', ''))
                     if url and len(url) > 3:
                         yield url
-                except:
+                except (json.JSONDecodeError, TypeError, ValueError):
                     continue
     
     def _read_txt(self, path: Path, add_protocol: bool) -> Iterator[str]:

@@ -25,7 +25,7 @@ class JSONLogger:
         self.stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.difficulty_stats = defaultdict(lambda: {'total': 0, 'passed': 0, 'failed': 0})
         self.total_logged = 0
-        self.include_input_summary = os.getenv("STRESS_LOG_INPUT_SUMMARY", "0") == "1"
+        self.include_input_summary = os.getenv("STRESS_LOG_INPUT_SUMMARY", "1") != "0"
         
     def __enter__(self):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -59,6 +59,19 @@ class JSONLogger:
             'timestamp': result.timestamp,
             'error': result.error
         }
+        metadata = result.metadata or {}
+        if "threshold_used" in metadata:
+            record["threshold_used"] = metadata["threshold_used"]
+        if "prefiltered" in metadata:
+            record["prefiltered"] = bool(metadata["prefiltered"])
+        if "calibrated" in metadata:
+            record["calibrated"] = bool(metadata["calibrated"])
+        if metadata.get("model_artifact") is not None:
+            record["model_artifact"] = metadata["model_artifact"]
+        if metadata.get("raw_probability") is not None:
+            record["raw_probability"] = round(float(metadata["raw_probability"]), 6)
+        if metadata.get("calibrated_probability") is not None:
+            record["calibrated_probability"] = round(float(metadata["calibrated_probability"]), 6)
         if self.include_input_summary:
             summary = self._summarize_input(result.scenario.input_data)
             if summary is not None:

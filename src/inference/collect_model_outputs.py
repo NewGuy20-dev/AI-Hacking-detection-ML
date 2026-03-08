@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-"""
-Collect real outputs from trained models for meta-learner training.
-Runs inference on validation data and saves model outputs to .npz file.
-"""
+"""Collect real outputs from trained models for meta-learner training."""
 import sys
 from pathlib import Path
 import numpy as np
 import torch
 import joblib
-import json
 from torch.utils.data import DataLoader
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -43,7 +39,7 @@ def collect_outputs(n_samples: int = 10000, device: str = None):
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    base = Path(__file__).parent.parent
+    base = Path(__file__).resolve().parents[2]
     models_dir = base / 'models'
     data_dir = base / 'datasets'
     
@@ -97,7 +93,7 @@ def collect_outputs(n_samples: int = 10000, device: str = None):
     
     print(f"\nLoaded {total_models} models total")
     
-    # Generate synthetic validation data for all models
+    # Generate validation data from real text corpora where available.
     print("\nGenerating validation data...")
     
     # For PyTorch models (payload/url) - use text data
@@ -136,27 +132,18 @@ def collect_outputs(n_samples: int = 10000, device: str = None):
                     probs = torch.sigmoid(logits).cpu().numpy().flatten()
                     pytorch_outputs[name].extend(probs)
     
-    # Generate synthetic features for sklearn models
     sklearn_outputs = {name: [] for name in sklearn_models}
-    
     if sklearn_models:
-        print("Collecting sklearn model outputs...")
-        n = len(labels) if labels else n_samples
-        
-        for name, config in sklearn_models.items():
-            model = config['model']
-            scaler = config['scaler']
-            
-            # Generate random features matching scaler's expected count
-            n_features = scaler.n_features_in_
-            X = np.random.randn(n, n_features)
-            
-            X_scaled = scaler.transform(X)
-            probs = model.predict_proba(X_scaled)[:, 1]
-            sklearn_outputs[name] = probs.tolist()
+        print("Skipping sklearn score capture without model-native validation data; missing models will be padded later.")
     
-    # Combine all outputs
-    all_outputs = {**pytorch_outputs, **sklearn_outputs}
+    # Combine only captured outputs; missing models are padded later by the trainer.
+    all_outputs = {
+        name: values
+        for name, values in {**pytorch_outputs, **sklearn_outputs}.items()
+        if values
+    }
+    if not all_outputs:
+        raise RuntimeError("No model-native outputs were captured; refusing to write an empty meta dataset.")
     
     # Ensure all have same length
     min_len = min(len(v) for v in all_outputs.values())
@@ -175,6 +162,7 @@ def collect_outputs(n_samples: int = 10000, device: str = None):
     # Convert to numpy arrays
     save_dict = {name: np.array(vals) for name, vals in all_outputs.items()}
     save_dict['labels'] = np.array(labels)
+    save_dict['present_models'] = np.array(list(all_outputs.keys()), dtype=object)
     
     np.savez(output_file, **save_dict)
     

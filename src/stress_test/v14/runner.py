@@ -126,6 +126,9 @@ class StressTestRunner:
         registry = ScenarioRegistry(self.scenarios_dir)
         static_scenarios = registry.load_static(self.model_name)
         print(f"✓ Loaded {len(static_scenarios)} static scenarios")
+        preflight = self._run_preflight(model, static_scenarios)
+        if preflight["checks"]:
+            print("✓ Preflight checks passed")
         
         # Initialize generator and scheduler
         generator = self._get_generator()
@@ -319,6 +322,8 @@ class StressTestRunner:
                 'final_stats': summary['categories'],
                 'failure_log': str((date_folder / f"{self.model_name}_{run_date}_failures.jsonl")),
                 'ops_metrics': ops,
+                'preflight': preflight,
+                'model_artifact': model.artifact_metadata,
                 'gate_pass': bool(ops.get('gate_pass', False)),
                 'gate_failures': [check['id'] for check in gate_report['checks'] if not check.get('passed')],
                 'gate_profile_version': gate_report['profile_version'],
@@ -350,6 +355,41 @@ class StressTestRunner:
         """Keep only categories that belong to this model's malicious base weights."""
         base_categories = set(BASE_WEIGHTS.get(self.model_name, {}).keys())
         return {k: v for k, v in category_accuracy.items() if k in base_categories}
+
+    def _run_preflight(self, model: ModelWrapper, static_scenarios: List[Scenario]) -> Dict[str, List[Dict[str, float]]]:
+        checks: List[Dict[str, float]] = []
+        candidates = []
+        seen_labels = set()
+        for scenario in static_scenarios:
+            if scenario.expected_label in seen_labels:
+                continue
+            candidates.append(scenario)
+            seen_labels.add(scenario.expected_label)
+            if len(seen_labels) == 2:
+                break
+
+        confidences: Dict[int, float] = {}
+        for scenario in candidates:
+            result = self._run_scenario(model, scenario)
+            if result.error:
+                raise RuntimeError(f"Preflight failed for {self.model_name}: {result.error}")
+            confidences[scenario.expected_label] = float(result.confidence)
+            checks.append({
+                "scenario_id": scenario.id,
+                "expected": int(scenario.expected_label),
+                "predicted": int(result.prediction),
+                "confidence": float(result.confidence),
+            })
+
+        if self.model_name == "timeseries" and len(confidences) == 2:
+            benign = confidences.get(0, 0.0)
+            attack = confidences.get(1, 0.0)
+            if abs(benign - attack) < 1e-6 or (max(benign, attack) < 1e-3) or (min(benign, attack) > 0.999):
+                raise RuntimeError(
+                    "Preflight detected collapsed timeseries confidence distribution; "
+                    "benign and malicious fixtures are not separable."
+                )
+        return {"checks": checks}
     
     def _run_scenario(self, model: ModelWrapper, scenario: Scenario) -> ScenarioResult:
         """Run a single scenario."""
@@ -364,7 +404,8 @@ class StressTestRunner:
                 passed=passed,
                 latency_ms=latency,
                 timestamp=datetime.now().isoformat(),
-                error=None
+                error=None,
+                metadata=model.consume_last_prediction_metadata(),
             )
         except Exception as e:
             return ScenarioResult(
@@ -374,7 +415,8 @@ class StressTestRunner:
                 passed=False,
                 latency_ms=0.0,
                 timestamp=datetime.now().isoformat(),
-                error=str(e)
+                error=str(e),
+                metadata=model.consume_last_prediction_metadata(),
             )
 
     def _run_batch_tabular(self, model: ModelWrapper, scenarios: list, metrics: OpsMetricsState, logger: JSONLogger):
@@ -398,6 +440,7 @@ class StressTestRunner:
 
         per_sample_latency = latency_ms / max(len(scenarios), 1)
         now = datetime.now().isoformat()
+        batch_metadata = model.consume_last_batch_metadata()
         for s, pred, prob in zip(scenarios, preds, probs):
             pred_int = int(pred)
             passed = bool(pred_int == int(s.expected_label))
@@ -408,7 +451,8 @@ class StressTestRunner:
                 passed=passed,
                 latency_ms=per_sample_latency,
                 timestamp=now,
-                error=None
+                error=None,
+                metadata=dict(batch_metadata),
             )
             metrics.update(
                 expected=s.expected_label,

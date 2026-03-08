@@ -7,7 +7,7 @@ from datetime import date
 import json
 import hashlib
 import random
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Dict, Optional, Tuple, Type
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -91,6 +91,15 @@ def _hash_file(path: Path) -> Optional[str]:
         for chunk in iter(lambda: handle.read(8192), b""):
             hasher.update(chunk)
     return hasher.hexdigest()
+
+
+def _snapshot_file(path: Path) -> Dict[str, Any]:
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "sha256": _hash_file(path),
+        "content": path.read_text(encoding="utf-8") if path.exists() else None,
+    }
 
 
 def main():
@@ -295,6 +304,10 @@ Examples:
             'target_duration_min': args.duration,
             'gate_profile_path': str(gate_profile),
             'gate_profile_sha256': _hash_file(gate_profile),
+            'threshold_config_snapshot': {
+                'model_thresholds': _snapshot_file(Path('config/model_thresholds.yaml')),
+                'optimal_thresholds': _snapshot_file(Path('configs/inference/optimal_thresholds.json')),
+            },
             'enforce_gates': enforce_gates,
             'fail_on_sanity': fail_on_sanity,
             'results': results,

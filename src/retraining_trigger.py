@@ -3,6 +3,7 @@ import subprocess
 import json
 import threading
 import time
+import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, Optional
@@ -90,7 +91,7 @@ class RetrainingTrigger:
         start_time = time.time()
         try:
             result = subprocess.run(
-                ['python', script],
+                [sys.executable, script],
                 capture_output=True,
                 text=True,
                 timeout=3600 if blocking else 1
@@ -135,7 +136,7 @@ class RetrainingTrigger:
         """Run validation tests on newly trained model."""
         try:
             result = subprocess.run(
-                ['python', 'scripts/validate_realworld.py'],
+                [sys.executable, 'scripts/validate_realworld.py'],
                 capture_output=True,
                 text=True,
                 timeout=300

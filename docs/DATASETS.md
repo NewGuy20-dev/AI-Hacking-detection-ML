@@ -9,7 +9,7 @@
 | Tranco Top 1M Domains | ✅ Have | 22 MB | `datasets/url_analysis/top-1m.csv` |
 | Curated Benign Data | ✅ Have | 1.1 MB | `datasets/curated_benign/` |
 | Synthetic URLs (Hard) | ✅ Have | 3.5 MB | `datasets/url_analysis/synthetic_*.txt` |
-| Time-Series (Improved) | ✅ Have | 57 MB | `datasets/timeseries/*.npy` |
+| Time-Series (Improved) | ✅ Have | 57 MB+ | `datasets/timeseries/*.npy` |
 | NSL-KDD | ❌ LFS Pointer | ~25 MB | Need download |
 | Kaggle Malicious URLs | ❌ Missing | ~65 MB | Optional |
 | HuggingFace Phishing | ❌ Missing | ~50 MB | Optional |

@@ -4,23 +4,31 @@ import argparse
 import json
 from pathlib import Path
 import random
+import urllib.parse
+from typing import Any, Dict, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset
 from torch.amp import GradScaler
 from tqdm import tqdm
 
 from src.torch_models.url_cnn import URLCNN
 from src.torch_models.datasets import URLDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
+from src.training.training_utils import (
+    binary_metrics,
+    load_operational_threshold,
+    stratified_index_split,
+    write_training_manifest,
+)
 from src.data_guardrails import (
     assert_allowed_training_path,
     assert_allowed_training_paths,
 )
-from training.checkpoint import CheckpointManager
+from src.training.checkpoint import CheckpointManager
 
 
 def _load_hard_examples(file_path: str, model: str = "url"):
@@ -58,6 +66,7 @@ def _load_hard_examples(file_path: str, model: str = "url"):
 def generate_malicious_urls(n=50000):
     """Generate synthetic malicious URLs with common attack patterns."""
     urls = []
+    short_domains = ['bit.ly', 'tinyurl.com', 'is.gd', 't.co', 'cutt.ly']
     
     # Phishing patterns
     legit_brands = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'facebook', 'netflix', 'bank']
@@ -91,7 +100,7 @@ def generate_malicious_urls(n=50000):
         urls.append(f"http://site.tk/page?id=<script>alert(1)</script>")
         urls.append(f"http://x.ml/r?u=http://phish.com")
         urls.append(f"http://bit.ly/{random.randint(100000,999999)}")
-    
+
     return urls[:n]
 
 
@@ -123,14 +132,118 @@ def generate_benign_urls(n=50000):
     return urls
 
 
-def load_url_data(base_path, hard_examples_file=None):
+def generate_benign_hard_negative_urls(n=12000):
+    """Generate benign URLs that resemble adversarial stress-test negatives."""
+    urls = []
+    short_domains = ['bit.ly', 'tinyurl.com', 'is.gd', 't.co', 'cutt.ly']
+    safe_paths = [
+        '/home',
+        '/browse',
+        '/wiki/Machine_learning',
+        '/questions/tagged/javascript',
+        '/torvalds/linux',
+        '/iphone',
+        '/watch?v=dQw4w9WgXcQ',
+    ]
+    benign_targets = [
+        'https://www.google.com/search?q=python+tutorial',
+        'https://github.com/torvalds/linux',
+        'https://stackoverflow.com/questions/tagged/javascript',
+        'https://www.wikipedia.org/wiki/Machine_learning',
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        'https://www.apple.com/iphone',
+        'https://news.ycombinator.com/',
+    ]
+
+    while len(urls) < n:
+        ip_host = '.'.join(str(random.randint(1, 223)) for _ in range(4))
+        path = random.choice(safe_paths)
+        target = random.choice(benign_targets)
+        short_domain = random.choice(short_domains)
+        token = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=7))
+
+        urls.append(f"https://{ip_host}{path}")
+        if len(urls) >= n:
+            break
+        urls.append(f"http://{short_domain}/{token}?url={urllib.parse.quote(target, safe='')}")
+        if len(urls) >= n:
+            break
+        urls.append(f"https://{ip_host}/?redirect={urllib.parse.quote(target, safe='')}")
+
+    return urls[:n]
+
+
+def generate_malicious_shortener_urls(n=8000):
+    """Generate malicious shortener URLs that mirror stress-test shortener attacks."""
+    urls = []
+    short_domains = ['bit.ly', 'tinyurl.com', 'is.gd', 't.co', 'cutt.ly']
+
+    while len(urls) < n:
+        token = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=7))
+        target_host = f"malicious-redirect-{random.randint(1000,9999)}.com"
+        target_path = random.choice(['/login', '/security', '/payment', '/auth', '/docs'])
+        target_query = random.choice([
+            '',
+            f"?token={random.randint(10**7, 10**8 - 1):x}",
+            f"?redirect={random.choice(['profile', 'billing', 'verify'])}",
+        ])
+        target = urllib.parse.quote(f"http://{target_host}{target_path}{target_query}", safe='')
+        short_domain = random.choice(short_domains)
+        urls.append(f"http://{short_domain}/{token}?url={target}")
+        if len(urls) >= n:
+            break
+        urls.append(f"http://{short_domain}/{token}?redirect={target}")
+        if len(urls) >= n:
+            break
+        if random.random() < 0.4:
+            homograph_domain = short_domain.replace('o', 'ο', 1) if 'o' in short_domain else short_domain
+            urls.append(f"http://{homograph_domain}/{token}")
+        else:
+            urls.append(f"http://{short_domain}/{token}")
+
+    return urls[:n]
+
+
+def _normalize_url_candidate(raw: Any, default_scheme: str = "http://") -> Optional[str]:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    if text.startswith(("http://", "https://")):
+        return text
+    return f"{default_scheme}{text.lstrip('/')}"
+
+
+def _new_source_bucket() -> Dict[str, int]:
+    return {"total": 0, "malicious": 0, "benign": 0}
+
+
+def _bump_source(summary: Dict[str, Dict[str, int]], source: str, label: int) -> None:
+    bucket = summary.setdefault(source, _new_source_bucket())
+    bucket["total"] += 1
+    if int(label) == 1:
+        bucket["malicious"] += 1
+    else:
+        bucket["benign"] += 1
+
+
+def load_url_data(
+    base_path,
+    hard_examples_file=None,
+    return_summary: bool = False,
+    generated_hard_negative_count: int = 12000,
+    generated_shortener_attack_count: int = 0,
+    curated_adversarial_limit: int = 20000,
+):
     """Load URL data - uses real data + improved synthetic."""
     urls, labels = [], []
-    
+    source_counts: Dict[str, Dict[str, int]] = {}
+    skipped_counts: Dict[str, int] = {}
+
     url_dir = Path(base_path) / 'datasets' / 'url_analysis'
     live_benign_dir = Path(base_path) / 'datasets' / 'live_benign'
+    curated_benign_dir = Path(base_path) / 'datasets' / 'curated_benign' / 'adversarial'
     assert_allowed_training_paths(
-        [url_dir, live_benign_dir],
+        [url_dir, live_benign_dir, curated_benign_dir],
         context="url training data source",
     )
     
@@ -143,6 +256,7 @@ def load_url_data(base_path, hard_examples_file=None):
             if line.strip().startswith('http'):
                 urls.append(line.strip())
                 labels.append(1)
+                _bump_source(source_counts, "urlhaus_real_malicious", 1)
         print(f"Loaded {len(urls)} real malicious URLs (URLhaus)")
     
     # Load Kaggle malicious URLs (has both classes!)
@@ -156,8 +270,14 @@ def load_url_data(base_path, hard_examples_file=None):
             if len(parts) == 2:
                 url, label = parts[0].strip(), parts[1].strip()
                 if url and label in ('0', '1'):
-                    urls.append(url if url.startswith('http') else f"http://{url}")
-                    labels.append(int(label))
+                    normalized = _normalize_url_candidate(url)
+                    if normalized is None:
+                        skipped_counts["kaggle_csv"] = skipped_counts.get("kaggle_csv", 0) + 1
+                        continue
+                    numeric_label = int(label)
+                    urls.append(normalized)
+                    labels.append(numeric_label)
+                    _bump_source(source_counts, "kaggle_csv", numeric_label)
                     if label == '1':
                         kaggle_mal += 1
                     else:
@@ -169,8 +289,13 @@ def load_url_data(base_path, hard_examples_file=None):
     if synth_mal.exists():
         mal_before = sum(labels)
         for line in synth_mal.read_text(encoding='utf-8', errors='ignore').splitlines()[:20000]:
-            urls.append(line.strip())
+            normalized = _normalize_url_candidate(line)
+            if normalized is None:
+                skipped_counts["synthetic_malicious_hard"] = skipped_counts.get("synthetic_malicious_hard", 0) + 1
+                continue
+            urls.append(normalized)
             labels.append(1)
+            _bump_source(source_counts, "synthetic_malicious_hard", 1)
         print(f"Loaded {sum(labels) - mal_before} synthetic malicious URLs")
     
     mal_count = sum(labels)
@@ -188,10 +313,15 @@ def load_url_data(base_path, hard_examples_file=None):
                     break
                 try:
                     data = json.loads(line)
-                    urls.append(data.get('text', ''))
+                    normalized = _normalize_url_candidate(data.get('text', ''))
+                    if normalized is None:
+                        skipped_counts["common_crawl_urls"] = skipped_counts.get("common_crawl_urls", 0) + 1
+                        continue
+                    urls.append(normalized)
                     labels.append(0)
+                    _bump_source(source_counts, "common_crawl_urls", 0)
                 except:
-                    pass
+                    skipped_counts["common_crawl_urls"] = skipped_counts.get("common_crawl_urls", 0) + 1
         print(f"Loaded {len(urls) - mal_count - ben_before} Common Crawl URLs (live_benign)")
     
     # Load Tranco top domains (REAL benign)
@@ -205,8 +335,15 @@ def load_url_data(base_path, hard_examples_file=None):
             if len(parts) >= 2:
                 domain = parts[1].strip()
                 if domain:
-                    urls.append(f"https://{domain}/")
+                    normalized = _normalize_url_candidate(domain, default_scheme="https://")
+                    if normalized is None:
+                        skipped_counts["tranco_top_domains"] = skipped_counts.get("tranco_top_domains", 0) + 1
+                        continue
+                    if not normalized.endswith('/'):
+                        normalized = f"{normalized}/"
+                    urls.append(normalized)
                     labels.append(0)
+                    _bump_source(source_counts, "tranco_top_domains", 0)
         print(f"Loaded {len(urls) - mal_count - ben_before} real benign domains (Tranco)")
     
     # Load synthetic benign (for diversity)
@@ -214,9 +351,51 @@ def load_url_data(base_path, hard_examples_file=None):
     if synth_ben.exists():
         ben_before = len(urls) - mal_count
         for line in synth_ben.read_text(encoding='utf-8', errors='ignore').splitlines()[:20000]:
-            urls.append(line.strip())
+            normalized = _normalize_url_candidate(line)
+            if normalized is None:
+                skipped_counts["synthetic_benign_hard"] = skipped_counts.get("synthetic_benign_hard", 0) + 1
+                continue
+            urls.append(normalized)
             labels.append(0)
+            _bump_source(source_counts, "synthetic_benign_hard", 0)
         print(f"Loaded {len(urls) - mal_count - ben_before} synthetic benign URLs")
+
+    curated_adv_ben = curated_benign_dir / 'url_benign.txt'
+    if curated_adv_ben.exists() and curated_adversarial_limit > 0:
+        ben_before = len(urls) - mal_count
+        for line in curated_adv_ben.read_text(encoding='utf-8', errors='ignore').splitlines()[:curated_adversarial_limit]:
+            normalized = _normalize_url_candidate(line)
+            if normalized is None:
+                skipped_counts["curated_adversarial_url_benign"] = skipped_counts.get("curated_adversarial_url_benign", 0) + 1
+                continue
+            urls.append(normalized)
+            labels.append(0)
+            _bump_source(source_counts, "curated_adversarial_url_benign", 0)
+        print(f"Loaded {len(urls) - mal_count - ben_before} curated adversarial benign URLs")
+
+    if generated_hard_negative_count > 0:
+        ben_before = len(urls) - mal_count
+        for candidate in generate_benign_hard_negative_urls(generated_hard_negative_count):
+            normalized = _normalize_url_candidate(candidate)
+            if normalized is None:
+                skipped_counts["generated_benign_hard_negatives"] = skipped_counts.get("generated_benign_hard_negatives", 0) + 1
+                continue
+            urls.append(normalized)
+            labels.append(0)
+            _bump_source(source_counts, "generated_benign_hard_negatives", 0)
+        print(f"Loaded {len(urls) - mal_count - ben_before} generated benign hard-negative URLs")
+
+    if generated_shortener_attack_count > 0:
+        mal_before = sum(labels)
+        for candidate in generate_malicious_shortener_urls(generated_shortener_attack_count):
+            normalized = _normalize_url_candidate(candidate)
+            if normalized is None:
+                skipped_counts["generated_shortener_attack_urls"] = skipped_counts.get("generated_shortener_attack_urls", 0) + 1
+                continue
+            urls.append(normalized)
+            labels.append(1)
+            _bump_source(source_counts, "generated_shortener_attack_urls", 1)
+        print(f"Loaded {sum(labels) - mal_before} generated malicious shortener URLs")
     
     # Fallback to generated if no data
     if len(urls) < 1000:
@@ -227,6 +406,10 @@ def load_url_data(base_path, hard_examples_file=None):
         labels.extend([1] * len(mal_urls))
         urls.extend(ben_urls)
         labels.extend([0] * len(ben_urls))
+        for _ in mal_urls:
+            _bump_source(source_counts, "generated_malicious_fallback", 1)
+        for _ in ben_urls:
+            _bump_source(source_counts, "generated_benign_fallback", 0)
 
     # Feedback loop hard examples
     hard_examples = _load_hard_examples(hard_examples_file, model="url")
@@ -237,6 +420,7 @@ def load_url_data(base_path, hard_examples_file=None):
             for url, label in hard_examples:
                 urls.append(url)
                 labels.append(label)
+                _bump_source(source_counts, "hard_examples", label)
         hard_mal = sum(1 for _, label in hard_examples if label == 1)
         hard_ben = len(hard_examples) - hard_mal
         print(
@@ -245,7 +429,19 @@ def load_url_data(base_path, hard_examples_file=None):
         )
     
     print(f"Total: {len(urls)} URLs ({sum(labels)} malicious, {len(labels)-sum(labels)} benign)")
-    return urls, labels
+    if not return_summary:
+        return urls, labels
+    summary = {
+        "source_counts": source_counts,
+        "skipped_counts": skipped_counts,
+        "hard_examples_repeat_factor": 3 if hard_examples else 0,
+        "totals": {
+            "total": len(urls),
+            "malicious": int(sum(labels)),
+            "benign": int(len(labels) - sum(labels)),
+        },
+    }
+    return urls, labels, summary
 
 
 def train():
@@ -255,9 +451,19 @@ def train():
     parser.add_argument('--checkpoint-every', type=int, default=500, help='Save checkpoint every N batches')
     parser.add_argument('--hard-examples-file', type=str, default=None,
                         help='Optional JSONL hard examples generated by feedback loop')
+    parser.add_argument('--epochs', type=int, default=60, help='Training epochs (default: 60)')
+    parser.add_argument('--batch-size', type=int, default=128, help='Batch size (default: 128)')
+    parser.add_argument('--num-workers', type=int, default=4, help='Dataloader workers (default: 4)')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducible smoke runs')
+    parser.add_argument('--base-path', type=str, default=None,
+                        help='Optional repo root override for fixture-based smoke tests')
     args = parser.parse_args()
     
-    base_path = Path(__file__).parent.parent.parent
+    base_path = Path(args.base_path) if args.base_path else Path(__file__).parent.parent.parent
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     device = setup_gpu()
     
     # Checkpoint manager
@@ -266,16 +472,38 @@ def train():
     
     # Load data
     print("\n--- Loading Data ---")
-    urls, labels = load_url_data(base_path, hard_examples_file=args.hard_examples_file)
+    urls, labels, data_summary = load_url_data(
+        base_path,
+        hard_examples_file=args.hard_examples_file,
+        return_summary=True,
+        generated_shortener_attack_count=8000,
+    )
     
     # Create dataset and split
     dataset = URLDataset(urls, labels, max_len=200)
-    train_size = int(0.8 * len(dataset))
-    val_size = len(dataset) - train_size
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    train_idx, val_idx = stratified_index_split(labels, test_size=0.2, seed=42)
+    train_ds = Subset(dataset, train_idx.tolist())
+    val_ds = Subset(dataset, val_idx.tolist())
     
-    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
-    val_loader = DataLoader(val_ds, batch_size=128, shuffle=False, num_workers=4, pin_memory=True, timeout=0, persistent_workers=True)
+    persistent_workers = args.num_workers > 0
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=args.num_workers,
+        pin_memory=True,
+        timeout=0,
+        persistent_workers=persistent_workers,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+        pin_memory=True,
+        timeout=0,
+        persistent_workers=persistent_workers,
+    )
     
     print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
     
@@ -291,10 +519,11 @@ def train():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, factor=0.5)
     scaler = GradScaler()
     early_stop = EarlyStopping(patience=5)
+    eval_threshold = load_operational_threshold("url", default=0.80)
     
-    # Resume from checkpoint if requested
+    # Resume from checkpoint only when explicitly requested.
     start_epoch, start_batch, global_step = 0, 0, 0
-    if args.resume or ckpt_mgr.find_latest():
+    if args.resume:
         resume_info = ckpt_mgr.load(model, optimizer, scheduler, scaler, device)
         start_epoch = resume_info['epoch']
         start_batch = resume_info['batch_idx']
@@ -302,13 +531,18 @@ def train():
         if start_batch >= len(train_loader):
             start_epoch += 1
             start_batch = 0
+        if start_epoch >= args.epochs:
+            print(
+                f"Resume point epoch {start_epoch} is at or beyond requested --epochs {args.epochs}; "
+                "saving current state without additional training."
+            )
     
     # Training loop
     print("\n--- Training ---")
-    best_val_acc = 0
-    best_state = None
+    best_metrics = None
+    best_state = model.state_dict().copy()
     
-    for epoch in range(start_epoch, 60):
+    for epoch in range(start_epoch, args.epochs):
         # Train
         model.train()
         train_loss = 0
@@ -351,7 +585,8 @@ def train():
         
         # Validate
         model.eval()
-        val_loss, correct, total = 0, 0, 0
+        val_loss = 0
+        all_probs, all_targets = [], []
         with torch.no_grad():
             for batch in val_loader:
                 inputs = batch['input'].to(device)
@@ -360,19 +595,30 @@ def train():
                     outputs = model(inputs)
                     loss = criterion(outputs, targets)
                 val_loss += loss.item()
-                preds = (torch.sigmoid(outputs) > 0.5).float()
-                correct += (preds == targets).sum().item()
-                total += targets.size(0)
+                probs = torch.sigmoid(outputs)
+                all_probs.extend(probs.detach().cpu().numpy().tolist())
+                all_targets.extend(targets.detach().cpu().numpy().tolist())
         
         val_loss /= len(val_loader)
-        val_acc = correct / total
+        val_metrics = binary_metrics(all_probs, all_targets, eval_threshold)
         
         scheduler.step(val_loss)
         
-        print(f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, val_acc={val_acc:.2%}")
+        print(
+            f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
+            f"val_f1={val_metrics['f1']:.4f}, val_recall={val_metrics['recall']:.4f}, val_fpr={val_metrics['fpr']:.4f}"
+        )
         
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if best_metrics is None or (
+            val_metrics['f1'],
+            val_metrics['recall'],
+            -val_metrics['fpr'],
+        ) > (
+            best_metrics['f1'],
+            best_metrics['recall'],
+            -best_metrics['fpr'],
+        ):
+            best_metrics = dict(val_metrics)
             best_state = model.state_dict().copy()
         
         if early_stop(val_loss):
@@ -389,9 +635,32 @@ def train():
     example = torch.zeros(1, 200, dtype=torch.long).to(device)
     save_model(model, models_dir / 'url_cnn', example)
     torch.save(best_state, models_dir / 'url_cnn.pth')
+    write_training_manifest(
+        models_dir / 'url_cnn_training_manifest.json',
+        {
+            "model": "url",
+            "dataset_size": len(dataset),
+            "train_size": len(train_ds),
+            "val_size": len(val_ds),
+            "operational_threshold": eval_threshold,
+            "best_metrics": best_metrics or {},
+            "label_counts": {
+                "malicious": int(sum(labels)),
+                "benign": int(len(labels) - sum(labels)),
+            },
+            "source_counts": data_summary["source_counts"],
+            "skipped_counts": data_summary["skipped_counts"],
+            "hard_examples_repeat_factor": data_summary["hard_examples_repeat_factor"],
+            "python_executable": sys.executable,
+            "seed": args.seed,
+            "epochs": args.epochs,
+            "batch_size": args.batch_size,
+            "num_workers": args.num_workers,
+        },
+    )
     
     print(f"✓ Model saved to models/url_cnn.pt")
-    print(f"✓ Best validation accuracy: {best_val_acc:.2%}")
+    print(f"✓ Best validation F1: {(best_metrics or {}).get('f1', 0.0):.4f}")
 
 
 if __name__ == "__main__":

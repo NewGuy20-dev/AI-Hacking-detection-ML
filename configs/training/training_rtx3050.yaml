@@ -48,6 +48,6 @@ models:
     max_len: 200
   
   timeseries_lstm:
-    input_size: 10
+    input_size: 8
     hidden_size: 128
     num_layers: 2

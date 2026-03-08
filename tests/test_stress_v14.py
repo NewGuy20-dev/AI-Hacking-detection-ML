@@ -7,6 +7,7 @@ import numpy as np
 from src.stress_test.v14.models import ModelWrapper
 from src.stress_test.v14.runner import AdaptiveScheduler, StressTestRunner
 from src.stress_test.v14.scenarios import (
+    PayloadGenerator,
     Scenario,
     ScenarioResult,
     ScenarioRegistry,
@@ -72,6 +73,26 @@ def test_url_difficulty_obfuscation_stays_parseable():
         parsed = urlsplit(candidate)
         assert parsed.scheme in {'http', 'https'}
         assert parsed.netloc
+
+
+def test_payload_generator_mutates_benign_non_easy_samples():
+    gen = PayloadGenerator(seed=17)
+    scenarios = gen.generate(40, {"sqli": 1.0}, benign_ratio=1.0)
+    mutated = [
+        s for s in scenarios
+        if s.difficulty != "easy" and s.input_data not in PayloadGenerator.BENIGN_PAYLOADS
+    ]
+    assert mutated
+
+
+def test_url_generator_mutates_benign_non_easy_samples():
+    gen = URLGenerator(seed=19)
+    scenarios = gen.generate(40, {"phishing": 1.0}, benign_ratio=1.0)
+    mutated = [
+        s for s in scenarios
+        if s.difficulty != "easy" and s.input_data not in URLGenerator.BENIGN_URLS
+    ]
+    assert mutated
 
 
 def test_timeseries_generator_deterministic_with_seed():
@@ -170,6 +191,44 @@ def test_json_logger_serializes_numpy_scalar_fields(tmp_path):
     output_path = tmp_path / "2026-02-27" / "network_2026-02-27.jsonl"
     line = output_path.read_text(encoding="utf-8").strip()
     assert '"passed": true' in line
+
+
+def test_json_logger_records_runtime_metadata(tmp_path):
+    scenario = Scenario(
+        id="network_benign_1",
+        model="network",
+        category="normal",
+        subcategory="dynamic",
+        input_data=np.asarray([1.0, 2.0, 3.0], dtype=np.float32),
+        expected_label=0,
+        difficulty="adversarial",
+        description="test",
+        source="dynamic",
+    )
+    result = ScenarioResult(
+        scenario=scenario,
+        prediction=1,
+        confidence=0.81,
+        passed=False,
+        latency_ms=1.5,
+        timestamp="2026-02-27T00:00:00",
+        error=None,
+        metadata={
+            "threshold_used": 0.7,
+            "prefiltered": False,
+            "calibrated": True,
+            "model_artifact": {"model": {"path": "models/network_intrusion_model.pkl"}},
+        },
+    )
+
+    with JSONLogger(tmp_path, "network", "2026-02-27", run_seed=10) as logger:
+        logger.log(result)
+
+    output_path = tmp_path / "2026-02-27" / "network_2026-02-27.jsonl"
+    line = output_path.read_text(encoding="utf-8").strip()
+    assert '"threshold_used": 0.7' in line
+    assert '"calibrated": true' in line
+    assert '"input_summary"' in line
 
 
 def test_scenario_registry_loads_file_backed_static_fixture(tmp_path):
