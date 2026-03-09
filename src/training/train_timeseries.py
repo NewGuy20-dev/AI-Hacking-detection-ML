@@ -150,21 +150,24 @@ def generate_stress_aligned_hard_negative_traffic(n_samples=10000):
 
 
 def generate_stress_aligned_attack_traffic(n_samples=10000):
-    """Generate attack samples from the same family used by stress."""
+    """Generate a category-balanced attack supplement from the stress generator."""
     if n_samples <= 0:
         return np.zeros((0, 60, 8), dtype=np.float32)
     from src.stress_test.v14.scenarios import TimeSeriesGenerator
 
     generator = TimeSeriesGenerator()
-    category_weights = {
-        "ddos": 0.30,
-        "portscan": 0.25,
-        "exfiltration": 0.20,
-        "c2": 0.15,
-        "bruteforce": 0.10,
-    }
-    scenarios = generator.generate(n_samples, category_weights=category_weights, benign_ratio=0.0)
-    return np.asarray([scenario.input_data for scenario in scenarios], dtype=np.float32)
+    categories = ["ddos", "portscan", "exfiltration", "c2", "bruteforce"]
+    base, remainder = divmod(int(n_samples), len(categories))
+    sequences = []
+
+    for idx, category in enumerate(categories):
+        count = base + (1 if idx < remainder else 0)
+        if count <= 0:
+            continue
+        scenarios = generator.generate(count, category_weights={category: 1.0}, benign_ratio=0.0)
+        sequences.extend(scenario.input_data for scenario in scenarios)
+
+    return np.asarray(sequences, dtype=np.float32)
 
 
 def _load_or_generate_timeseries_data(
@@ -174,7 +177,7 @@ def _load_or_generate_timeseries_data(
     hard_negative_count: int = 5000,
     stress_benign_count: int = 15000,
     stress_hard_negative_count: int = 10000,
-    stress_attack_count: int = 12000,
+    stress_attack_count: int = 20000,
 ):
     """Load timeseries sources and return sequences, labels, normalization stats, and provenance."""
     source_counts: Dict[str, Dict[str, int]] = {}
@@ -461,7 +464,7 @@ def train():
     parser.add_argument('--hard-negative-count', type=int, default=5000, help='Generated benign hard negatives')
     parser.add_argument('--stress-benign-count', type=int, default=15000, help='Stress-aligned benign sequences')
     parser.add_argument('--stress-hard-negative-count', type=int, default=10000, help='Stress-aligned benign hard negatives')
-    parser.add_argument('--stress-attack-count', type=int, default=12000, help='Stress-aligned attack supplement')
+    parser.add_argument('--stress-attack-count', type=int, default=20000, help='Stress-aligned attack supplement')
     args = parser.parse_args()
     
     base_path = Path(args.base_path) if args.base_path else Path(__file__).parent.parent.parent
