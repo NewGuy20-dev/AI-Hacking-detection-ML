@@ -1,8 +1,8 @@
+anomaly: 0.7
 fraud: 0.75
-host: 0.90
-meta: 0.60
-network: 0.70
+host: 0.9
+meta: 0.6
+network: 0.7
 payload: 0.85
-timeseries: 0.50
-url: 0.80
-anomaly: 0.70
+timeseries: 0.5
+url: 0.8

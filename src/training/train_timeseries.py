@@ -149,13 +149,21 @@ def generate_stress_aligned_hard_negative_traffic(n_samples=10000):
     return np.asarray(sequences, dtype=np.float32)
 
 
-def generate_stress_aligned_attack_traffic(n_samples=10000):
-    """Generate a category-balanced attack supplement from the stress generator."""
+def generate_stress_aligned_attack_traffic(n_samples=10000, category_weights: Optional[Dict[str, float]] = None):
+    """Generate a category-balanced or weighted attack supplement from the stress generator."""
     if n_samples <= 0:
         return np.zeros((0, 60, 8), dtype=np.float32)
     from src.stress_test.v14.scenarios import TimeSeriesGenerator
 
     generator = TimeSeriesGenerator()
+    if category_weights:
+        scenarios = generator.generate(
+            int(n_samples),
+            category_weights=category_weights,
+            benign_ratio=0.0,
+        )
+        return np.asarray([scenario.input_data for scenario in scenarios], dtype=np.float32)
+
     categories = ["ddos", "portscan", "exfiltration", "c2", "bruteforce"]
     base, remainder = divmod(int(n_samples), len(categories))
     sequences = []
@@ -178,6 +186,7 @@ def _load_or_generate_timeseries_data(
     stress_benign_count: int = 15000,
     stress_hard_negative_count: int = 10000,
     stress_attack_count: int = 20000,
+    stress_attack_weights: Optional[Dict[str, float]] = None,
 ):
     """Load timeseries sources and return sequences, labels, normalization stats, and provenance."""
     source_counts: Dict[str, Dict[str, int]] = {}
@@ -286,7 +295,10 @@ def _load_or_generate_timeseries_data(
         )
 
     if stress_attack_count > 0:
-        stress_attack = _ensure_timeseries_shape(generate_stress_aligned_attack_traffic(stress_attack_count), "stress_aligned_attack")
+        stress_attack = _ensure_timeseries_shape(
+            generate_stress_aligned_attack_traffic(stress_attack_count, category_weights=stress_attack_weights),
+            "stress_aligned_attack",
+        )
         _append_source(
             sample_groups,
             label_groups,
@@ -320,6 +332,106 @@ def _load_or_generate_timeseries_data(
         },
     }
     return sequences, labels, mins, maxs, source_names, manifest_sources
+
+
+def _parse_category_weights(raw: Optional[str]) -> Optional[Dict[str, float]]:
+    if not raw:
+        return None
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON for category weights: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Category weights must be a JSON object mapping categories to weights.")
+    return {str(k): float(v) for k, v in payload.items()}
+
+
+def _load_category_weights(path: Optional[str]) -> Optional[Dict[str, float]]:
+    if not path:
+        return None
+    weight_path = Path(path)
+    if not weight_path.exists():
+        raise FileNotFoundError(f"Category weights file not found: {weight_path}")
+    raw = weight_path.read_text(encoding="utf-8-sig")
+    return _parse_category_weights(raw)
+
+
+def _normalize_with_stats(data: np.ndarray, mins: np.ndarray, maxs: np.ndarray) -> np.ndarray:
+    normalized = (data - mins) / (maxs - mins + 1e-8)
+    return np.clip(normalized, 0.0, 1.0)
+
+
+def _build_stress_validation_set(
+    count: int,
+    category_weights: Optional[Dict[str, float]],
+    benign_ratio: float,
+    seed: int,
+) -> Tuple[np.ndarray, np.ndarray]:
+    if count <= 0:
+        return np.zeros((0, 60, 8), dtype=np.float32), np.zeros((0,), dtype=np.float32)
+    from src.stress_test.v14.scenarios import TimeSeriesGenerator
+
+    generator = TimeSeriesGenerator(seed=seed)
+    weights = category_weights or {}
+    scenarios = generator.generate(count, category_weights=weights, benign_ratio=benign_ratio)
+    sequences = np.asarray([scenario.input_data for scenario in scenarios], dtype=np.float32)
+    labels = np.asarray([scenario.expected_label for scenario in scenarios], dtype=np.float32)
+    return sequences, labels
+
+
+def _collect_probs(model: nn.Module, loader: DataLoader, device: torch.device) -> Tuple[list, list]:
+    all_probs: list = []
+    all_targets: list = []
+    with torch.no_grad():
+        for batch in loader:
+            inputs = batch['input'].to(device)
+            targets = batch['target'].to(device)
+            with torch.amp.autocast('cuda'):
+                outputs = model(inputs)
+            probs = torch.sigmoid(outputs)
+            all_probs.extend(probs.detach().cpu().numpy().tolist())
+            all_targets.extend(targets.detach().cpu().numpy().tolist())
+    return all_probs, all_targets
+
+
+def _tune_threshold(
+    probabilities: list,
+    labels: list,
+    min_recall: float = 0.90,
+    max_fpr: float = 0.05,
+    default: float = 0.5,
+) -> Tuple[float, Dict[str, float]]:
+    if not probabilities:
+        return default, {}
+    best_threshold = float(default)
+    best_metrics: Optional[Dict[str, float]] = None
+    thresholds = np.linspace(0.01, 0.99, 99)
+    for threshold in thresholds:
+        metrics = binary_metrics(probabilities, labels, float(threshold))
+        if metrics["recall"] >= min_recall and metrics["fpr"] <= max_fpr:
+            if best_metrics is None:
+                best_metrics = metrics
+                best_threshold = float(threshold)
+            else:
+                candidate = (metrics["recall"], -metrics["fpr"], metrics["f1"])
+                current = (best_metrics["recall"], -best_metrics["fpr"], best_metrics["f1"])
+                if candidate > current:
+                    best_metrics = metrics
+                    best_threshold = float(threshold)
+    if best_metrics is None:
+        best_metrics = binary_metrics(probabilities, labels, float(default))
+    return best_threshold, best_metrics
+
+
+def _write_model_threshold(base_path: Path, model_name: str, threshold: float) -> None:
+    import yaml
+
+    yaml_path = base_path / "config" / "model_thresholds.yaml"
+    data: Dict[str, Any] = {}
+    if yaml_path.exists():
+        data = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
+    data[model_name] = float(threshold)
+    yaml_path.write_text(yaml.safe_dump(data, sort_keys=True), encoding="utf-8")
 
 	
 def generate_normal_traffic(n_samples=10000, seq_len=60, n_features=8):
@@ -465,6 +577,12 @@ def train():
     parser.add_argument('--stress-benign-count', type=int, default=15000, help='Stress-aligned benign sequences')
     parser.add_argument('--stress-hard-negative-count', type=int, default=10000, help='Stress-aligned benign hard negatives')
     parser.add_argument('--stress-attack-count', type=int, default=20000, help='Stress-aligned attack supplement')
+    parser.add_argument('--stress-attack-weights', type=str, default=None, help='JSON dict of stress attack category weights')
+    parser.add_argument('--stress-attack-weights-file', type=str, default=None, help='Path to JSON file for stress attack weights')
+    parser.add_argument('--stress-val-count', type=int, default=20000, help='Stress validation sample count')
+    parser.add_argument('--stress-val-weights', type=str, default=None, help='JSON dict of stress validation category weights')
+    parser.add_argument('--stress-val-weights-file', type=str, default=None, help='Path to JSON file for stress validation weights')
+    parser.add_argument('--stress-val-benign-ratio', type=float, default=0.7, help='Benign ratio for stress validation')
     args = parser.parse_args()
     
     base_path = Path(args.base_path) if args.base_path else Path(__file__).parent.parent.parent
@@ -481,6 +599,19 @@ def train():
     
     # Load or generate data
     print("\n--- Loading/Generating Data ---")
+    if args.stress_attack_weights and args.stress_attack_weights_file:
+        raise ValueError("Provide either --stress-attack-weights or --stress-attack-weights-file, not both.")
+    if args.stress_val_weights and args.stress_val_weights_file:
+        raise ValueError("Provide either --stress-val-weights or --stress-val-weights-file, not both.")
+
+    stress_attack_weights = _load_category_weights(args.stress_attack_weights_file)
+    if stress_attack_weights is None:
+        stress_attack_weights = _parse_category_weights(args.stress_attack_weights)
+
+    stress_val_weights = _load_category_weights(args.stress_val_weights_file)
+    if stress_val_weights is None:
+        stress_val_weights = _parse_category_weights(args.stress_val_weights)
+
     sequences, labels, mins, maxs, source_names, data_summary = _load_or_generate_timeseries_data(
         base_path,
         normal_cap=args.normal_cap,
@@ -489,6 +620,7 @@ def train():
         stress_benign_count=args.stress_benign_count,
         stress_hard_negative_count=args.stress_hard_negative_count,
         stress_attack_count=args.stress_attack_count,
+        stress_attack_weights=stress_attack_weights,
     )
     
     print(f"Total: {len(sequences)} sequences ({sum(labels==0):.0f} normal, {sum(labels==1):.0f} attack)")
@@ -521,6 +653,26 @@ def train():
     )
     
     print(f"Train: {len(train_ds)}, Val: {len(val_ds)}")
+
+    stress_sequences, stress_labels = _build_stress_validation_set(
+        args.stress_val_count,
+        stress_val_weights,
+        args.stress_val_benign_ratio,
+        args.seed,
+    )
+    stress_val_loader = None
+    if len(stress_sequences) > 0:
+        stress_sequences = _normalize_with_stats(stress_sequences, mins, maxs)
+        stress_dataset = TimeSeriesDataset(stress_sequences, stress_labels)
+        stress_val_loader = DataLoader(
+            stress_dataset,
+            batch_size=args.batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+            pin_memory=True,
+            timeout=0,
+            persistent_workers=persistent_workers,
+        )
     
     # Model
     print("\n--- Creating Model ---")
@@ -558,7 +710,15 @@ def train():
     # Training loop
     print("\n--- Training ---")
     best_metrics = None
+    best_stress_metrics: Optional[Dict[str, float]] = None
     best_state = model.state_dict().copy()
+    best_guarded_state = None
+    best_guarded_metrics = None
+    best_guarded_stress_metrics = None
+    best_unconstrained_state = None
+    best_unconstrained_metrics = None
+    best_unconstrained_stress_metrics = None
+    stress_fpr_guard = 0.05
     
     for epoch in range(start_epoch, args.epochs):
         # Train
@@ -624,30 +784,89 @@ def train():
         
         scheduler.step(val_loss)
         
-        print(
-            f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
-            f"val_f1={val_metrics['f1']:.4f}, val_recall={val_metrics['recall']:.4f}, val_fpr={val_metrics['fpr']:.4f}"
-        )
+        stress_metrics = None
+        if stress_val_loader is not None:
+            stress_probs, stress_targets = _collect_probs(model, stress_val_loader, device)
+            stress_metrics = binary_metrics(stress_probs, stress_targets, eval_threshold)
+
+        if stress_metrics:
+            print(
+                f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
+                f"val_f1={val_metrics['f1']:.4f}, val_recall={val_metrics['recall']:.4f}, val_fpr={val_metrics['fpr']:.4f}, "
+                f"stress_recall={stress_metrics['recall']:.4f}, stress_fpr={stress_metrics['fpr']:.4f}"
+            )
+        else:
+            print(
+                f"Epoch {epoch+1}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
+                f"val_f1={val_metrics['f1']:.4f}, val_recall={val_metrics['recall']:.4f}, val_fpr={val_metrics['fpr']:.4f}"
+            )
         
-        current_score = (
-            val_metrics['f1'],
-            val_metrics['recall'],
-            -val_metrics['fpr'],
-        )
-        best_score = (
-            best_metrics['f1'],
-            best_metrics['recall'],
-            -best_metrics['fpr'],
-        ) if best_metrics is not None else None
-        if best_metrics is None or current_score > best_score:
-            best_metrics = dict(val_metrics)
-            best_state = model.state_dict().copy()
+        if stress_metrics:
+            current_score = (
+                stress_metrics['recall'],
+                -stress_metrics['fpr'],
+                val_metrics['f1'],
+            )
+            if best_unconstrained_metrics is None or best_unconstrained_stress_metrics is None:
+                best_unconstrained_metrics = dict(val_metrics)
+                best_unconstrained_stress_metrics = dict(stress_metrics)
+                best_unconstrained_state = model.state_dict().copy()
+            else:
+                best_unconstrained_score = (
+                    best_unconstrained_stress_metrics['recall'],
+                    -best_unconstrained_stress_metrics['fpr'],
+                    best_unconstrained_metrics['f1'],
+                )
+                if current_score > best_unconstrained_score:
+                    best_unconstrained_metrics = dict(val_metrics)
+                    best_unconstrained_stress_metrics = dict(stress_metrics)
+                    best_unconstrained_state = model.state_dict().copy()
+
+            if stress_metrics['fpr'] <= stress_fpr_guard:
+                if best_guarded_metrics is None or best_guarded_stress_metrics is None:
+                    best_guarded_metrics = dict(val_metrics)
+                    best_guarded_stress_metrics = dict(stress_metrics)
+                    best_guarded_state = model.state_dict().copy()
+                else:
+                    best_guarded_score = (
+                        best_guarded_stress_metrics['recall'],
+                        -best_guarded_stress_metrics['fpr'],
+                        best_guarded_metrics['f1'],
+                    )
+                    if current_score > best_guarded_score:
+                        best_guarded_metrics = dict(val_metrics)
+                        best_guarded_stress_metrics = dict(stress_metrics)
+                        best_guarded_state = model.state_dict().copy()
+        else:
+            current_score = (
+                val_metrics['f1'],
+                val_metrics['recall'],
+                -val_metrics['fpr'],
+            )
+            best_score = (
+                best_metrics['f1'],
+                best_metrics['recall'],
+                -best_metrics['fpr'],
+            ) if best_metrics is not None else None
+            if best_metrics is None or current_score > best_score:
+                best_metrics = dict(val_metrics)
+                best_state = model.state_dict().copy()
         
         if early_stop(val_loss):
             print("Early stopping triggered")
             break
     
     # Save best model
+    if best_guarded_state is not None:
+        best_state = best_guarded_state
+        best_metrics = best_guarded_metrics
+        best_stress_metrics = best_guarded_stress_metrics
+    elif best_unconstrained_state is not None:
+        best_state = best_unconstrained_state
+        best_metrics = best_unconstrained_metrics
+        best_stress_metrics = best_unconstrained_stress_metrics
+        print("WARNING: No stress checkpoint met FPR <= 0.05; falling back to best stress score without guard.")
+
     print("\n--- Saving Model ---")
     model.load_state_dict(best_state)
     models_dir = base_path / 'models'
@@ -659,6 +878,24 @@ def train():
     torch.save(best_state, models_dir / 'timeseries_lstm.pth')
     # Save normalization stats for inference parity
     np.savez(models_dir / 'timeseries_norm_v1.npz', mins=mins, maxs=maxs)
+    tuned_threshold = eval_threshold
+    tuned_metrics: Dict[str, float] = {}
+    if stress_val_loader is not None:
+        stress_probs, stress_targets = _collect_probs(model, stress_val_loader, device)
+        tuned_threshold, tuned_metrics = _tune_threshold(
+            stress_probs,
+            stress_targets,
+            min_recall=0.90,
+            max_fpr=0.05,
+            default=eval_threshold,
+        )
+        _write_model_threshold(base_path, "timeseries", tuned_threshold)
+        print(
+            f"✓ Tuned threshold set to {tuned_threshold:.3f} "
+            f"(stress_recall={tuned_metrics.get('recall', 0.0):.3f}, "
+            f"stress_fpr={tuned_metrics.get('fpr', 0.0):.3f})"
+        )
+
     write_training_manifest(
         models_dir / 'timeseries_lstm_training_manifest.json',
         {
@@ -667,7 +904,10 @@ def train():
             "train_size": len(train_ds),
             "val_size": len(val_ds),
             "operational_threshold": eval_threshold,
+            "tuned_threshold": tuned_threshold,
+            "tuned_threshold_metrics": tuned_metrics,
             "best_metrics": best_metrics or {},
+            "best_stress_metrics": best_stress_metrics or {},
             "label_counts": {
                 "malicious": int(labels.sum()),
                 "benign": int(len(labels) - labels.sum()),
@@ -685,6 +925,12 @@ def train():
             "stress_benign_count": args.stress_benign_count,
             "stress_hard_negative_count": args.stress_hard_negative_count,
             "stress_attack_count": args.stress_attack_count,
+            "stress_attack_weights": stress_attack_weights or {},
+            "stress_val_count": args.stress_val_count,
+            "stress_val_weights": stress_val_weights or {},
+            "stress_val_benign_ratio": args.stress_val_benign_ratio,
+            "stress_attack_weights_file": args.stress_attack_weights_file,
+            "stress_val_weights_file": args.stress_val_weights_file,
             "validation_sources": {
                 "train": {source: int(np.sum(source_names[train_idx] == source)) for source in np.unique(source_names)},
                 "val": {source: int(np.sum(source_names[val_idx] == source)) for source in np.unique(source_names)},

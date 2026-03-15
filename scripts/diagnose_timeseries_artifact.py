@@ -8,9 +8,10 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT))
 
-from stress_test.v14.models import ModelWrapper
+from src.stress_test.v14.models import ModelWrapper
+from src.stress_test.v14.scenarios import TimeSeriesGenerator
 
 
 def _load_fixture(path: Path) -> np.ndarray:
@@ -19,6 +20,15 @@ def _load_fixture(path: Path) -> np.ndarray:
     if arr.ndim != 2 or arr.shape[1] != 8:
         raise ValueError(f"Unexpected fixture shape for {path}: {arr.shape}")
     return arr
+
+
+def _parse_category_weights(raw: str | None) -> dict[str, float]:
+    if not raw:
+        return {}
+    payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        raise ValueError("Category weights must be a JSON object.")
+    return {str(k): float(v) for k, v in payload.items()}
 
 
 def main() -> None:
@@ -35,6 +45,9 @@ def main() -> None:
         default="configs/stress_test/scenarios_v14/fixtures/timeseries_normal.json",
     )
     parser.add_argument("--epsilon", type=float, default=1e-3)
+    parser.add_argument("--stress-sample-count", type=int, default=0)
+    parser.add_argument("--stress-benign-ratio", type=float, default=0.7)
+    parser.add_argument("--stress-weights", type=str, default=None)
     args = parser.parse_args()
 
     wrapper = ModelWrapper("timeseries", Path(args.models_dir)).load()
@@ -69,6 +82,36 @@ def main() -> None:
         },
         "confidence_gap": float(abs(ddos_conf - normal_conf)),
     }
+
+    if args.stress_sample_count > 0:
+        weights = _parse_category_weights(args.stress_weights)
+        generator = TimeSeriesGenerator(seed=42)
+        scenarios = generator.generate(
+            args.stress_sample_count,
+            category_weights=weights,
+            benign_ratio=args.stress_benign_ratio,
+        )
+        stress_summary: dict[str, dict[str, float]] = {}
+        for scenario in scenarios:
+            pred, conf, _ = wrapper.predict(scenario.input_data)
+            key = f"{scenario.category}:{scenario.expected_label}"
+            bucket = stress_summary.setdefault(key, {"count": 0, "conf_sum": 0.0, "predicted_attack": 0})
+            bucket["count"] += 1
+            bucket["conf_sum"] += float(conf)
+            bucket["predicted_attack"] += int(pred == 1)
+        report["stress_probe"] = {
+            "sample_count": int(args.stress_sample_count),
+            "benign_ratio": float(args.stress_benign_ratio),
+            "weights": weights,
+            "categories": {
+                key: {
+                    "count": int(stats["count"]),
+                    "mean_confidence": float(stats["conf_sum"] / max(stats["count"], 1)),
+                    "predicted_attack_rate": float(stats["predicted_attack"] / max(stats["count"], 1)),
+                }
+                for key, stats in sorted(stress_summary.items())
+            },
+        }
     print(json.dumps(report, indent=2))
 
     if (
