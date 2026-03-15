@@ -286,4 +286,5 @@ def main() -> None:
     print(f"Combined log: {log_path}")
 
 
-if __na
+if __name__ == "__main__":
+    main()
