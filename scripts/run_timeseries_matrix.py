@@ -116,15 +116,20 @@ def main() -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     log_path = run_dir / "matrix.log"
 
-    focus_weights_path = run_dir / "weights_focus.json"
-    focus_exfil_path = run_dir / "weights_focus_exfil_c2.json"
+    focus_light_path = run_dir / "weights_focus_light.json"
+    focus_medium_path = run_dir / "weights_focus_medium.json"
+    focus_strong_path = run_dir / "weights_focus_strong.json"
     _write_weights(
-        focus_weights_path,
+        focus_light_path,
+        {"ddos": 0.20, "portscan": 0.18, "exfiltration": 0.22, "c2": 0.22, "bruteforce": 0.18},
+    )
+    _write_weights(
+        focus_medium_path,
         {"ddos": 0.15, "portscan": 0.15, "exfiltration": 0.25, "c2": 0.25, "bruteforce": 0.20},
     )
     _write_weights(
-        focus_exfil_path,
-        {"ddos": 0.10, "portscan": 0.10, "exfiltration": 0.30, "c2": 0.30, "bruteforce": 0.20},
+        focus_strong_path,
+        {"ddos": 0.12, "portscan": 0.12, "exfiltration": 0.28, "c2": 0.28, "bruteforce": 0.20},
     )
 
     base_args = [
@@ -141,54 +146,8 @@ def main() -> None:
     ]
 
     runs = [
-        ("run1_baseline", []),
         (
-            "run2_stress60k",
-            [
-                "--stress-attack-count",
-                "60000",
-                "--stress-benign-count",
-                "30000",
-                "--stress-hard-negative-count",
-                "20000",
-                "--stress-val-count",
-                "20000",
-            ],
-        ),
-        (
-            "run3_stress60k_focus",
-            [
-                "--stress-attack-count",
-                "60000",
-                "--stress-benign-count",
-                "30000",
-                "--stress-hard-negative-count",
-                "20000",
-                "--stress-val-count",
-                "20000",
-                "--stress-attack-weights-file",
-                str(focus_weights_path),
-                "--stress-val-weights-file",
-                str(focus_weights_path),
-            ],
-        ),
-        (
-            "run4_stress100k_attackcap50k",
-            [
-                "--stress-attack-count",
-                "100000",
-                "--attack-cap",
-                "50000",
-                "--stress-benign-count",
-                "50000",
-                "--stress-hard-negative-count",
-                "30000",
-                "--stress-val-count",
-                "30000",
-            ],
-        ),
-        (
-            "run5_stress100k_harden",
+            "run1_baseline_run5",
             [
                 "--stress-attack-count",
                 "100000",
@@ -203,22 +162,60 @@ def main() -> None:
             ],
         ),
         (
-            "run6_stress100k_focus_exfil_c2",
+            "run2_focus_light",
             [
                 "--stress-attack-count",
                 "100000",
                 "--attack-cap",
                 "50000",
                 "--stress-benign-count",
-                "50000",
+                "60000",
                 "--stress-hard-negative-count",
-                "30000",
+                "40000",
                 "--stress-val-count",
                 "30000",
                 "--stress-attack-weights-file",
-                str(focus_exfil_path),
+                str(focus_light_path),
                 "--stress-val-weights-file",
-                str(focus_exfil_path),
+                str(focus_light_path),
+            ],
+        ),
+        (
+            "run3_focus_medium",
+            [
+                "--stress-attack-count",
+                "100000",
+                "--attack-cap",
+                "50000",
+                "--stress-benign-count",
+                "60000",
+                "--stress-hard-negative-count",
+                "40000",
+                "--stress-val-count",
+                "30000",
+                "--stress-attack-weights-file",
+                str(focus_medium_path),
+                "--stress-val-weights-file",
+                str(focus_medium_path),
+            ],
+        ),
+        (
+            "run4_focus_strong",
+            [
+                "--stress-attack-count",
+                "100000",
+                "--attack-cap",
+                "50000",
+                "--stress-benign-count",
+                "60000",
+                "--stress-hard-negative-count",
+                "40000",
+                "--stress-val-count",
+                "30000",
+                "--stress-attack-weights-file",
+                str(focus_strong_path),
+                "--stress-val-weights-file",
+                str(focus_strong_path),
             ],
         ),
     ]
@@ -289,5 +286,4 @@ def main() -> None:
     print(f"Combined log: {log_path}")
 
 
-if __name__ == "__main__":
-    main()
+if __na

