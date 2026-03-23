@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { ResultCard } from './ResultCard'
 import { usePayloadScan } from '@/hooks/usePredict'
-import { Search, Sparkles, Code, AlertTriangle, Terminal } from 'lucide-react'
+import { Search, Sparkles, Code, AlertTriangle, Terminal, Cpu } from 'lucide-react'
 
 const EXAMPLES = [
-  { label: "SQL Injection", value: "' OR '1'='1", icon: AlertTriangle, color: "text-red-400" },
-  { label: "XSS Attack", value: "<script>alert('XSS')</script>", icon: Code, color: "text-orange-400" },
-  { label: "Command Injection", value: "; cat /etc/passwd", icon: Terminal, color: "text-amber-400" },
-  { label: "Safe Input", value: "Hello, this is a normal message", icon: Sparkles, color: "text-emerald-400" },
+  { label: "SQL_INJECTION", value: "' OR '1'='1", icon: AlertTriangle, color: "text-danger border-danger/50 bg-danger/10" },
+  { label: "XSS_ATTACK", value: "<script>alert('XSS')</script>", icon: Code, color: "text-warning border-warning/50 bg-warning/10" },
+  { label: "CMD_INJECTION", value: "; cat /etc/passwd", icon: Terminal, color: "text-secondary border-secondary/50 bg-secondary/10" },
+  { label: "SAFE_INPUT", value: "Hello, this is a normal message", icon: Sparkles, color: "text-success border-success/50 bg-success/10" },
 ]
 
 export function PayloadScanner() {
@@ -24,67 +24,79 @@ export function PayloadScanner() {
   return (
     <div className="space-y-6">
       {/* Input Section */}
-      <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+      <div className="border border-cyber-border/80 bg-black/60 backdrop-blur-sm relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-50 shadow-neon-primary" />
         <form onSubmit={handleSubmit}>
-          <div className="p-4 border-b border-border/50">
-            <label className="text-sm font-medium text-muted-foreground">Payload Input</label>
+          <div className="p-4 border-b border-cyber-border/80 bg-white/5 flex items-center justify-between">
+            <label className="text-xs font-mono tracking-widest font-bold text-primary uppercase flex items-center gap-2">
+              <Cpu className="w-4 h-4" /> PAYLOAD_INPUT_STREAM
+            </label>
+            <div className="text-[10px] text-cyber-muted font-mono tracking-widest uppercase border border-cyber-border/50 px-2 py-1 bg-black">
+              CHARS: {payload.length}
+            </div>
           </div>
-          <div className="p-4">
+          <div className="p-4 bg-black/40 relative">
+            <div className="absolute inset-0 bg-cyber-grid opacity-10 pointer-events-none" />
             <textarea
               value={payload}
               onChange={(e) => setPayload(e.target.value)}
-              placeholder="Enter payload to analyze (e.g., ' OR 1=1--)"
+              placeholder="ENTER_PAYLOAD_DATA (E.G., ' OR 1=1--)"
               rows={4}
-              className="w-full bg-transparent resize-none text-foreground placeholder:text-muted-foreground focus:outline-none font-mono text-sm"
+              className="w-full bg-transparent resize-none focus:outline-none font-mono text-sm placeholder:text-cyber-muted/40 text-cyber-text focus:text-white transition-colors relative z-10"
+              spellCheck="false"
             />
           </div>
-          <div className="p-4 border-t border-border/50 bg-muted/30 flex items-center justify-between gap-4">
-            <div className="text-xs text-muted-foreground">
-              {payload.length} characters
-            </div>
-            <div className="flex gap-2">
-              {data && (
-                <button
-                  type="button"
-                  onClick={() => { reset(); setPayload('') }}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
-                >
-                  Clear
-                </button>
-              )}
+          <div className="p-4 border-t border-cyber-border/80 bg-black flex items-center justify-end gap-3">
+            {data && (
               <button
-                type="submit"
-                disabled={isPending || !payload.trim()}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg bg-gradient-to-r from-primary to-purple-600 text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                onClick={() => { reset(); setPayload('') }}
+                className="px-6 py-2 text-[10px] uppercase font-mono font-bold tracking-widest border border-cyber-border hover:bg-white/5 transition-colors text-cyber-text hover:text-white"
               >
-                {isPending ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Search className="w-4 h-4" />
-                )}
-                {isPending ? 'Analyzing...' : 'Analyze Payload'}
+                [ CLEAR_BUFFER ]
               </button>
-            </div>
+            )}
+            <button
+              type="submit"
+              disabled={isPending || !payload.trim()}
+              className="cyber-button flex items-center gap-2 px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn overflow-hidden relative"
+            >
+              <div className="absolute inset-0 bg-primary/20 scale-x-0 group-hover/btn:scale-x-100 origin-left transition-transform duration-300" />
+              {isPending ? (
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin relative z-10" />
+              ) : (
+                <Search className="w-4 h-4 relative z-10" />
+              )}
+              <span className="text-[10px] tracking-widest relative z-10">
+                {isPending ? '[ ANALYZING... ]' : '[ EXECUTE_SCAN ]'}
+              </span>
+            </button>
           </div>
         </form>
       </div>
 
       {/* Example Payloads */}
       <div className="space-y-3">
-        <p className="text-sm font-medium text-muted-foreground">Quick Examples</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <p className="text-[10px] font-mono font-bold tracking-widest text-cyber-muted uppercase">
+          // QUICK_INJECTION_VECTORS
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {EXAMPLES.map((ex) => (
             <button
               key={ex.value}
               onClick={() => setPayload(ex.value)}
-              className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card/30 hover:bg-card/60 hover:border-border transition-all text-left group"
+              className="flex items-center gap-3 p-3 border border-cyber-border/50 bg-black/40 hover:bg-white/5 hover:border-cyber-border transition-all text-left font-mono group"
             >
-              <div className={`p-2 rounded-lg bg-muted/50 ${ex.color}`}>
+              <div className={`p-2 border ${ex.color}`}>
                 <ex.icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{ex.label}</p>
-                <p className="text-xs text-muted-foreground truncate font-mono">{ex.value}</p>
+                <p className="text-[10px] font-bold tracking-widest uppercase text-white group-hover:text-primary transition-colors">
+                  {ex.label}
+                </p>
+                <p className="text-xs text-cyber-muted truncate mt-1">
+                  <span className="text-primary/50 mr-1 select-none">{'>'}</span>{ex.value}
+                </p>
               </div>
             </button>
           ))}

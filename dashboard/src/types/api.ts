@@ -11,6 +11,11 @@ export interface BatchResponse {
   total_processing_time_ms: number
 }
 
+export interface TimeSeriesRequest {
+  events: Record<string, any>[]
+  window_size?: number
+}
+
 export interface HealthResponse {
   status: string
   uptime_seconds: number

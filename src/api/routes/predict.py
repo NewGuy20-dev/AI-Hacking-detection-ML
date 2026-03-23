@@ -4,7 +4,7 @@ import time
 import os
 from pathlib import Path
 
-from src.api.schemas import PayloadRequest, URLRequest, BatchRequest, PredictResponse, BatchResponse
+from src.api.schemas import PayloadRequest, URLRequest, BatchRequest, PredictResponse, BatchResponse, TimeSeriesRequest
 from src.api import server
 from src.input_validator import ValidationError
 from src.prefilters.benign_pre_filter import get_filter
@@ -272,4 +272,51 @@ async def predict_batch(request: BatchRequest):
     return BatchResponse(
         results=results,
         total_processing_time_ms=total_latency_ms
+    )
+
+
+@router.post("/timeseries", response_model=PredictResponse)
+async def predict_timeseries(request: TimeSeriesRequest):
+    """Analyze time-series events for attack patterns."""
+    start = time.perf_counter()
+    predictor = server.get_predictor()
+    
+    if not predictor:
+        raise HTTPException(status_code=503, detail="Models not loaded")
+    
+    try:
+        result = predictor.predict_batch({'timeseries': [request.events]})
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Timeseries prediction failed: {str(e)}")
+    
+    confidence = float(result['confidence'][0])
+    thresholds = ModelWrapper._load_thresholds()
+    ts_threshold = float(thresholds.get('timeseries', 0.5))
+    is_attack = _resolve_is_attack(result, 0, confidence, ts_threshold)
+    
+    latency_ms = (time.perf_counter() - start) * 1000
+
+    if shadow_logger:
+        try:
+            shadow_logger.log(
+                model=predictor.active_model if hasattr(predictor, 'active_model') else 'timeseries',
+                route='timeseries',
+                input_data='timeseries',
+                prediction=int(is_attack),
+                confidence=confidence,
+                latency_ms=latency_ms,
+                version=getattr(predictor, 'version', ''),
+                error=None,
+            )
+        except Exception as e:
+            logger.warning("shadow_logger.log failed for route='timeseries': %s", e)
+
+    return PredictResponse(
+        is_attack=is_attack,
+        confidence=confidence,
+        attack_type="TIMESERIES_ANOMALY" if is_attack else None,
+        severity=_get_severity(confidence) if is_attack else "LOW",
+        processing_time_ms=latency_ms
     )

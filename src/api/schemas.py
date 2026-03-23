@@ -18,6 +18,11 @@ class BatchRequest(BaseModel):
     urls: Optional[List[str]] = Field(None, max_length=100)
 
 
+class TimeSeriesRequest(BaseModel):
+    events: List[Dict[str, Any]] = Field(..., max_length=1000, description="Time-series events to analyze")
+    window_size: Optional[int] = Field(10, description="Analysis window size")
+
+
 class PredictResponse(BaseModel):
     is_attack: bool
     confidence: float = Field(..., ge=0, le=1)

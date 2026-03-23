@@ -4,5 +4,5 @@ host: 0.9
 meta: 0.6
 network: 0.7
 payload: 0.85
-timeseries: 0.5
+timeseries: 0.060000000000000005
 url: 0.8

@@ -33,6 +33,20 @@ export function useURLScan() {
 
 export function useBatchScan() {
   return useMutation({
-    mutationFn: api.predictBatch,
+    mutationFn: (data: { payloads?: string[], urls?: string[] }) => 
+      api.predictBatch(data.payloads || [], data.urls),
+  })
+}
+
+export function useTimeSeriesScan() {
+  const addScan = useHistoryStore((s) => s.addScan)
+  const increment = useStatsStore((s) => s.increment)
+
+  return useMutation({
+    mutationFn: api.predictTimeSeries,
+    onSuccess: (data) => {
+      addScan('timeseries', 'payload', data)
+      increment(data.is_attack, data.attack_type || undefined)
+    },
   })
 }

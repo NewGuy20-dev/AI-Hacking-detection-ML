@@ -1,4 +1,4 @@
-import { PredictResponse, BatchResponse, HealthResponse, ReadinessResponse } from '@/types/api'
+import { PredictResponse, BatchResponse, HealthResponse, ReadinessResponse, TimeSeriesRequest } from '@/types/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -26,10 +26,16 @@ export const api = {
       body: JSON.stringify({ url }),
     }),
 
-  predictBatch: (payloads: string[]) =>
+  predictBatch: (payloads: string[], urls?: string[]) =>
     fetchAPI<BatchResponse>('/api/v1/predict/batch', {
       method: 'POST',
-      body: JSON.stringify({ payloads }),
+      body: JSON.stringify({ payloads, urls }),
+    }),
+
+  predictTimeSeries: (data: TimeSeriesRequest) =>
+    fetchAPI<PredictResponse>('/api/v1/predict/timeseries', {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
 
   health: () => fetchAPI<HealthResponse>('/health'),

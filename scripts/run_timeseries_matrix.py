@@ -94,7 +94,7 @@ def _print_recall_delta(run_dir: Path, run_name: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run timeseries experiment matrix with unified logging.")
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)

@@ -11,10 +11,10 @@ export function Card({ children, className, variant = 'default', ...props }: Car
   return (
     <div
       className={cn(
-        'clay-card',
+        'cyber-card',
         {
-          'shadow-lg': variant === 'elevated',
-          'shadow-clay-inset dark:shadow-clay-dark-inset': variant === 'inset',
+          'shadow-[0_0_20px_rgba(0,243,255,0.15)]': variant === 'elevated',
+          'shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]': variant === 'inset',
         },
         className
       )}

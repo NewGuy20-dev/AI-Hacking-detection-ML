@@ -6,54 +6,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light theme colors
-        clay: {
-          bg: '#f1f5f9',
-          card: '#ffffff',
-          border: '#e2e8f0',
-          text: '#1e293b',
-          muted: '#64748b',
+        cyber: {
+          bg: '#050505',
+          card: '#0a0a0a',
+          border: '#1a1f2e',
+          text: '#e2e8f0',
+          muted: '#8b949e',
         },
-        // Dark theme colors  
-        'clay-dark': {
-          bg: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
-          text: '#f8fafc',
-          muted: '#94a3b8',
-        },
-        primary: '#3b82f6',
-        secondary: '#8b5cf6',
-        success: '#10b981',
-        warning: '#f59e0b',
-        danger: '#ef4444',
-        info: '#06b6d4',
+        primary: '#00f3ff', // Neon Cyan
+        primaryHover: '#00c3cc',
+        secondary: '#bf00ff', // Neon Purple
+        success: '#00ff66',
+        warning: '#ffb000',
+        danger: '#ff003c',
+        info: '#00aeff',
       },
       boxShadow: {
-        'clay': '0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
-        'clay-dark': '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        'clay-inset': 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-        'clay-dark-inset': 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
+        'neon-primary': '0 0 10px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.1)',
+        'neon-primary-strong': '0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 15px rgba(0, 243, 255, 0.2)',
+        'neon-danger': '0 0 10px rgba(255, 0, 60, 0.5), inset 0 0 10px rgba(255, 0, 60, 0.1)',
+        'neon-success': '0 0 10px rgba(0, 255, 102, 0.5), inset 0 0 10px rgba(0, 255, 102, 0.1)',
       },
       borderRadius: {
-        'clay': '12px',
+        'cyber': '2px', // Sharp, tactical corners
       },
       backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'cyber-grid': 'linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px)',
+        'cyber-grid': 'linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px)',
+        'cyber-scanline': 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2))',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['Fira Code', 'monospace'],
+        sans: ['var(--font-chakra)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-fira-code)', 'monospace'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 6s ease-in-out infinite',
+        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glitch': 'glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
+        'scan': 'scan 8s linear infinite',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
+        glitch: {
+          '0%': { transform: 'translate(0)' },
+          '20%': { transform: 'translate(-2px, 2px)' },
+          '40%': { transform: 'translate(-2px, -2px)' },
+          '60%': { transform: 'translate(2px, 2px)' },
+          '80%': { transform: 'translate(2px, -2px)' },
+          '100%': { transform: 'translate(0)' }
+        },
+        scan: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100vh)' }
         }
       }
     },

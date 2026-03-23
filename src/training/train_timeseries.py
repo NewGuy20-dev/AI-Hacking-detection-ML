@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, Subset
 from torch.amp import GradScaler
 from tqdm import tqdm
 
-from src.torch_models.timeseries_lstm import TimeSeriesLSTM
+from src.torch_models.timeseries_lstm import TimeSeriesLSTM, FocalLoss
 from src.torch_models.datasets import TimeSeriesDataset
 from src.torch_models.utils import setup_gpu, EarlyStopping, save_model
 from src.training.checkpoint import CheckpointManager
@@ -401,13 +401,26 @@ def _tune_threshold(
     max_fpr: float = 0.05,
     default: float = 0.5,
 ) -> Tuple[float, Dict[str, float]]:
+    """Find the best threshold satisfying recall>=min_recall AND fpr<=max_fpr.
+
+    Fallback strategy (when the full constraint can't be met):
+      1. Find the best-recall threshold that still respects fpr<=max_fpr.
+      2. If even that fails (all thresholds violate FPR), fall back to ``default``.
+    This avoids silently returning 0.5 when the model is close to the gate.
+    """
     if not probabilities:
         return default, {}
+
     best_threshold = float(default)
     best_metrics: Optional[Dict[str, float]] = None
+    # Fallback: best recall within FPR budget (ignoring the recall gate)
+    fpr_safe_threshold: Optional[float] = None
+    fpr_safe_metrics: Optional[Dict[str, float]] = None
+
     thresholds = np.linspace(0.01, 0.99, 99)
     for threshold in thresholds:
         metrics = binary_metrics(probabilities, labels, float(threshold))
+        # Primary: both constraints satisfied
         if metrics["recall"] >= min_recall and metrics["fpr"] <= max_fpr:
             if best_metrics is None:
                 best_metrics = metrics
@@ -418,7 +431,22 @@ def _tune_threshold(
                 if candidate > current:
                     best_metrics = metrics
                     best_threshold = float(threshold)
+        # Fallback: only FPR constraint (maximize recall within budget)
+        if metrics["fpr"] <= max_fpr:
+            if fpr_safe_metrics is None or metrics["recall"] > fpr_safe_metrics["recall"]:
+                fpr_safe_metrics = metrics
+                fpr_safe_threshold = float(threshold)
+
     if best_metrics is None:
+        # Primary constraint not met — use best-FPR-safe threshold instead of hardcoded default
+        if fpr_safe_threshold is not None and fpr_safe_metrics is not None:
+            print(
+                f"WARNING: No threshold met recall>={min_recall:.2f} + fpr<={max_fpr:.2f}. "
+                f"Using best FPR-safe threshold={fpr_safe_threshold:.2f} "
+                f"(recall={fpr_safe_metrics['recall']:.4f}, fpr={fpr_safe_metrics['fpr']:.4f})"
+            )
+            return fpr_safe_threshold, fpr_safe_metrics
+        # Last resort: default
         best_metrics = binary_metrics(probabilities, labels, float(default))
     return best_threshold, best_metrics
 
@@ -683,8 +711,13 @@ def train():
     # Training setup
     pos_count = max(float(labels.sum()), 1.0)
     neg_count = max(float(len(labels) - labels.sum()), 1.0)
-    pos_weight = torch.tensor([neg_count / pos_count], device=device)
-    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    # Recall-aggressive pos_weight: floor at 3.0 so attack detection is always
+    # prioritised even when attack samples outnumber benign in the dataset.
+    computed_pw = neg_count / pos_count
+    recall_pw = max(computed_pw, 3.0)
+    pos_weight = torch.tensor([recall_pw], device=device)
+    print(f"pos_weight: {computed_pw:.3f} (raw) -> {recall_pw:.3f} (recall-adjusted)")
+    criterion = FocalLoss(gamma=2.0, pos_weight=pos_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, factor=0.5)
     scaler = GradScaler()

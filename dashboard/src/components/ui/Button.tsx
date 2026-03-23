@@ -12,22 +12,29 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          'clay-button font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed',
+          'cyber-button focus:outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed group',
           {
-            'bg-primary text-white hover:bg-primary/90': variant === 'primary',
-            'bg-secondary text-white hover:bg-secondary/90': variant === 'secondary',
-            'bg-danger text-white hover:bg-danger/90': variant === 'danger',
-            'hover:bg-clay-border/50 dark:hover:bg-clay-dark-border/50': variant === 'ghost',
-            'px-3 py-1.5 text-sm': size === 'sm',
-            'px-4 py-2': size === 'md',
-            'px-6 py-3 text-lg': size === 'lg',
+            'text-cyber-text border-cyber-border hover:text-primary': variant === 'default',
+            'border-primary text-primary shadow-neon-primary bg-primary/10 hover:bg-primary/20': variant === 'primary',
+            'border-secondary text-secondary hover:shadow-[0_0_15px_rgba(191,0,255,0.5)] hover:border-secondary': variant === 'secondary',
+            'border-danger text-danger hover:shadow-neon-danger': variant === 'danger',
+            'border-transparent bg-transparent shadow-none hover:border-cyber-border hover:bg-white/5': variant === 'ghost',
+            'px-3 py-1.5 text-xs': size === 'sm',
+            'px-4 py-2 text-sm': size === 'md',
+            'px-6 py-3 text-base': size === 'lg',
           },
           className
         )}
         disabled={loading || props.disabled}
         ref={ref}
         {...props}
-      />
+      >
+        <div className="absolute inset-0 bg-primary/10 w-0 group-hover:w-full transition-all duration-300 ease-out z-0 mix-blend-screen" />
+        <span className="relative z-10 flex items-center gap-2">
+          {loading ? <span className="animate-spin mr-2">⟳</span> : null}
+          {props.children}
+        </span>
+      </button>
     )
   }
 )
