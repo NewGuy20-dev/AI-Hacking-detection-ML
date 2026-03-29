@@ -1,0 +1,143 @@
+name: Chess Analysis Parallel Fan-out
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "Job identifier"
+        required: true
+      preprocessed_games_path:
+        description: "Path to preprocessed 300-game JSON/JSONL file"
+        required: true
+      convex_partial_endpoint:
+        description: "Optional endpoint for per-chunk partial result ingestion"
+        required: false
+      convex_final_endpoint:
+        description: "Optional endpoint for final report ingestion"
+        required: false
+
+jobs:
+  download:
+    name: Download + preprocess + split
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    outputs:
+      job_id: ${{ steps.meta.outputs.job_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set metadata
+        id: meta
+        run: |
+          echo "job_id=${{ github.event.inputs.job_id }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare 5x60 chunks
+        run: |
+          python scripts/chess/prepare_analysis_chunks.py \
+            --input "${{ github.event.inputs.preprocessed_games_path }}" \
+            --output-dir "chunks"
+
+      - name: Upload chunks artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-chunks-${{ github.run_id }}
+          path: |
+            chunks/chunk_*.json
+            chunks/manifest.json
+          retention-days: 1
+
+  analyse:
+    name: Analyse chunk ${{ matrix.chunk_id }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: download
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk_id: [0, 1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download chunk artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: analysis-chunks-${{ github.run_id }}
+          path: chunks
+
+      - name: Analyze chunk + persist partial result
+        run: |
+          python scripts/chess/analyze_chunk.py \
+            --job-id "${{ needs.download.outputs.job_id }}" \
+            --chunk-id "${{ matrix.chunk_id }}" \
+            --chunk-file "chunks/chunk_${{ matrix.chunk_id }}.json" \
+            --output "partials/partial_${{ matrix.chunk_id }}.json" \
+            --status-endpoint "${{ github.event.inputs.convex_partial_endpoint }}"
+
+      - name: Upload partial artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-partial-${{ matrix.chunk_id }}-${{ github.run_id }}
+          path: partials/partial_${{ matrix.chunk_id }}.json
+          retention-days: 1
+
+  aggregate:
+    name: Aggregate results + mark done
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: analyse
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download partial artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: analysis-partial-*-${{ github.run_id }}
+          path: partials_raw
+          merge-multiple: true
+
+      - name: Aggregate into report_json
+        run: |
+          python scripts/chess/aggregate_analysis_results.py \
+            --job-id "${{ github.event.inputs.job_id }}" \
+            --partials-dir "partials_raw" \
+            --output "report_json.json"
+
+      - name: Push final report_json
+        if: ${{ github.event.inputs.convex_final_endpoint != '' }}
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+
+          endpoint = "${{ github.event.inputs.convex_final_endpoint }}".strip()
+          with open("report_json.json", "rb") as f:
+            body = f.read()
+
+          req = urllib.request.Request(
+            endpoint,
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+          )
+          with urllib.request.urlopen(req) as response:
+            print(f"Final report posted: HTTP {response.status}")
+          PY
+
+      - name: Upload final report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-report-${{ github.run_id }}
+          path: report_json.json
+          retention-days: 7
